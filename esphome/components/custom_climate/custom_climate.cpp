@@ -29,8 +29,11 @@ void CustomClimate::control(const climate::ClimateCall &call) {
 
 climate::ClimateTraits CustomClimate::traits() {
   auto traits = climate::ClimateTraits();
-  traits.set_supports_current_temperature(true);
-  traits.set_supports_two_point_target_temperature(true);
+  traits.set_supports_current_temperature(true);  // Soporte para la temperatura actual
+  traits.set_visual_min_temperature(15.0);        // Temperatura mínima visible en la GUI
+  traits.set_visual_max_temperature(40.0);        // Temperatura máxima visible en la GUI
+  traits.set_visual_temperature_step(0.5);        // Incrementos de temperatura
+  traits.set_supports_two_point_target_temperature(false);  // Control de un solo punto
   return traits;
 }
 
