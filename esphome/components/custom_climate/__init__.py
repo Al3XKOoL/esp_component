@@ -1,6 +1,6 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.components import climate
+from esphome.components import climate, sensor, switch  # Importa los módulos correctos
 from esphome.const import CONF_ID
 
 CODEOWNERS = ["@tu_usuario_github"]
@@ -19,10 +19,10 @@ CONF_TEMPERATURE_DIFFERENCE = "temperature_difference"
 
 CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend({
     cv.GenerateID(): cv.declare_id(CustomClimate),
-    cv.Required(CONF_TEMPERATURE_AZOTEA_SENSOR): cv.use_id(cg.Sensor),
-    cv.Required(CONF_TEMPERATURE_SPA_SENSOR): cv.use_id(cg.Sensor),
-    cv.Required(CONF_TEMPERATURE_CALIENTE_SENSOR): cv.use_id(cg.Sensor),
-    cv.Required(CONF_BOMBA_SOLAR_SWITCH): cv.use_id(cg.Switch),
+    cv.Required(CONF_TEMPERATURE_AZOTEA_SENSOR): cv.use_id(sensor.Sensor),  # Cambio aquí
+    cv.Required(CONF_TEMPERATURE_SPA_SENSOR): cv.use_id(sensor.Sensor),
+    cv.Required(CONF_TEMPERATURE_CALIENTE_SENSOR): cv.use_id(sensor.Sensor),
+    cv.Required(CONF_BOMBA_SOLAR_SWITCH): cv.use_id(switch.Switch),  # Y aquí
     cv.Optional(CONF_MAX_TEMPERATURE, default=37.5): cv.float_,
     cv.Optional(CONF_TEMPERATURE_DIFFERENCE, default=2.0): cv.float_,
 }).extend(cv.COMPONENT_SCHEMA)
