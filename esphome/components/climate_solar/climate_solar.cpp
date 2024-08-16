@@ -8,17 +8,13 @@ namespace esphome {
       this->daily_active_time_ = 0;
       this->last_reset_time_ = millis();
 
+      // Crear y registrar sensores para el ciclo de tiempo, tiempo activo diario y consumo de energía
       this->last_cycle_time_sensor_ = new esphome::sensor::Sensor();
       this->daily_active_time_sensor_ = new esphome::sensor::Sensor();
       this->daily_energy_consumption_sensor_ = new esphome::sensor::Sensor();
       App.register_sensor(this->last_cycle_time_sensor_);
       App.register_sensor(this->daily_active_time_sensor_);
       App.register_sensor(this->daily_energy_consumption_sensor_);
-
-      // Inicializar los sensores
-      this->temp_sun_ = new esphome::sensor::Sensor();
-      this->temp_watter_ = new esphome::sensor::Sensor();
-      this->temp_output_ = new esphome::sensor::Sensor();
     }
 
     void ClimateSolar::control(const esphome::climate::ClimateCall &call) {
@@ -65,4 +61,15 @@ namespace esphome {
     }
 
     void ClimateSolar::loop() {
-      if (millis() - this->last_reset_time_ >=
+      if (millis() - this->last_reset_time_ >= 86400000) { // 24 horas
+        this->daily_active_time_ = 0;
+        this->last_reset_time_ = millis();
+      }
+
+      this->last_cycle_time_sensor_->publish_state((this->last_cycle_times_[0] + this->last_cycle_times_[1] + this->last_cycle_times_[2]) / 1000.0);
+      this->daily_active_time_sensor_->publish_state(this->daily_active_time_ / 1000.0);
+      this->daily_energy_consumption_sensor_->publish_state((this->daily_active_time_ / 3600000.0) * this->pump_power_);
+    }
+
+  }  // namespace climate_solar
+}  // namespace esphome
