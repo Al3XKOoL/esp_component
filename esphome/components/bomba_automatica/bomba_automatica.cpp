@@ -2,8 +2,6 @@
 
 #include "bomba_automatica.h"
 #include "esphome/core/log.h"
-#include "esphome/components/script/script.h"
-#include "esphome/components/sensor/sensor.h"
 
 namespace esphome {
 namespace bomba_automatica {
