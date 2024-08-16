@@ -1,12 +1,13 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome import pins
 from esphome.components import climate, sensor, switch
-from esphome.const import CONF_ID, CONF_TEMPERATURE, UNIT_CELSIUS, ICON_THERMOMETER, CONF_SWITCH
+from esphome.const import (
+    CONF_ID, CONF_TEMPERATURE, UNIT_CELSIUS, ICON_THERMOMETER
+)
 
 # Declaramos el namespace y el nombre del componente en C++
-climate_solar_ns = cg.esphome_ns.namespace("climate_solar")
-ClimateSolar = climate_solar_ns.class_("ClimateSolar", climate.Climate, cg.Component)
+climate_solar_ns = cg.esphome_ns.namespace('climate_solar')
+ClimateSolar = climate_solar_ns.class_('ClimateSolar', climate.Climate, cg.Component)
 
 # Definimos las opciones que vamos a soportar en el YAML
 CONF_TEMP_SUN = "temp_sun"
@@ -43,21 +44,23 @@ async def to_code(config):
     await cg.register_component(var, config)
     await climate.register_climate(var, config)
 
+    # Asignamos los sensores y el switch a las variables de C++
     temp_sun = await cg.get_variable(config[CONF_TEMP_SUN])
-    cg.add(var.temp_sun_, temp_sun)
+    cg.add(var.set_temp_sun(temp_sun))
 
     temp_watter = await cg.get_variable(config[CONF_TEMP_WATTER])
-    cg.add(var.temp_watter_, temp_watter)
+    cg.add(var.set_temp_watter(temp_watter))
 
     temp_output = await cg.get_variable(config[CONF_TEMP_OUTPUT])
-    cg.add(var.temp_output_, temp_output)
+    cg.add(var.set_temp_output(temp_output))
 
     pump_switch = await cg.get_variable(config[CONF_PUMP_SWITCH])
-    cg.add(var.pump_switch_, pump_switch)
+    cg.add(var.set_pump_switch(pump_switch))
 
-    cg.add(var.temp_max_, config[CONF_TEMP_MAX])
-    cg.add(var.diff_high_, config[CONF_DIFF_HIGH])
-    cg.add(var.diff_mid_, config[CONF_DIFF_MID])
-    cg.add(var.visual_min_temp_, config[CONF_VISUAL_MIN_TEMP])
-    cg.add(var.visual_max_temp_, config[CONF_VISUAL_MAX_TEMP])
-    cg.add(var.pump_power_, config[CONF_PUMP_POWER])
+    # Asignamos valores numéricos y de configuración al componente
+    cg.add(var.set_temp_max(config[CONF_TEMP_MAX]))
+    cg.add(var.set_diff_high(config[CONF_DIFF_HIGH]))
+    cg.add(var.set_diff_mid(config[CONF_DIFF_MID]))
+    cg.add(var.set_visual_min_temp(config[CONF_VISUAL_MIN_TEMP]))
+    cg.add(var.set_visual_max_temp(config[CONF_VISUAL_MAX_TEMP]))
+    cg.add(var.set_pump_power(config[CONF_PUMP_POWER]))
