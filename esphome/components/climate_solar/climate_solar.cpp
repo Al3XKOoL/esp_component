@@ -2,6 +2,9 @@
 
 void ClimateSolar::setup() {
   // Initialization code here
+  if (this->pump_switch_ == nullptr) {
+    ESP_LOGE("climate_solar", "Pump switch not configured");
+  }
 }
 
 void ClimateSolar::control(const esphome::climate::ClimateCall &call) {
@@ -11,14 +14,14 @@ void ClimateSolar::control(const esphome::climate::ClimateCall &call) {
       if (!this->bomba_activa) {
         if (this->temp_watter_->state < this->temp_max_ &&
             (this->temp_sun_->state - this->temp_watter_->state) >= this->diff_high_) {
-          this->pump_switch_->turn_on();  // Encender la bomba
+          this->pump_switch_->turn_on();  // Turn on the pump
           this->bomba_activa = true;
           this->cycle_start_time_ = millis();
-          ESP_LOGI("main", "Bomba encendida debido a la temperatura adecuada");
+          ESP_LOGI("main", "Pump turned on due to adequate temperature");
         }
       } else {
         if ((this->temp_output_->state - this->temp_watter_->state) < this->diff_mid_) {
-          this->pump_switch_->turn_off();  // Apagar la bomba
+          this->pump_switch_->turn_off();  // Turn off the pump
           this->bomba_activa = false;
           uint32_t cycle_time = millis() - this->cycle_start_time_;
           this->last_cycle_times_.push_back(cycle_time);
@@ -26,13 +29,18 @@ void ClimateSolar::control(const esphome::climate::ClimateCall &call) {
             this->last_cycle_times_.erase(this->last_cycle_times_.begin());
           }
           this->daily_active_time_ += cycle_time;
-          ESP_LOGI("main", "Bomba apagada debido a temperatura inadecuada");
+          ESP_LOGI("main", "Pump turned off due to inadequate temperature");
         }
       }
     } else {
-      this->pump_switch_->turn_off();  // Apagar la bomba si el modo HEAT está desactivado
+      this->pump_switch_->turn_off();  // Turn off the pump if HEAT mode is disabled
       this->bomba_activa = false;
-      ESP_LOGI("main", "Bomba apagada porque el modo HEAT está desactivado");
+      ESP_LOGI("main", "Pump turned off because HEAT mode is disabled");
     }
   }
+}
+
+// Optional: Implement a method to read the configuration from YAML
+void ClimateSolar::update_from_yaml() {
+  // Example: Retrieve values from YAML parameters (if necessary)
 }
