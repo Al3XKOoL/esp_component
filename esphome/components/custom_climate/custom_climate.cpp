@@ -26,6 +26,20 @@ void CustomClimate::control(const climate::ClimateCall &call) {
     this->publish_state();
   }
 }
+// TESTING
+void CustomClimate::update_state() {
+  // Configura el estado de tu climatizador
+  this->current_temperature = this->temperature_spa_sensor_->state;
+  this->target_temperature = this->get_target_temperature();  // Suponiendo que tienes un método para obtener la temperatura objetivo
+  this->mode = climate::CLIMATE_MODE_HEAT;  // Por ejemplo, modo calefacción
+  this->action = climate::CLIMATE_ACTION_HEATING;  // Indica que está calentando
+
+  // Publica el estado a Home Assistant
+  this->publish_state();
+}
+
+// Llama a update_state() en loop() o donde tiene sentido en tu lógica.
+
 
 climate::ClimateTraits CustomClimate::traits() {
   auto traits = climate::ClimateTraits();
