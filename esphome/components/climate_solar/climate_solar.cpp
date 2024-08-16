@@ -66,9 +66,4 @@ namespace esphome {
       }
 
       this->last_cycle_time_sensor_->publish_state((this->last_cycle_times_[0] + this->last_cycle_times_[1] + this->last_cycle_times_[2]) / 1000.0);
-      this->daily_active_time_sensor_->publish_state(this->daily_active_time_ / 1000.0);
-      this->daily_energy_consumption_sensor_->publish_state((this->daily_active_time_ / 3600000.0) * this->pump_power_);
-    }
-
-  }  // namespace climate_solar
-}  // namespace esphome
+      this->daily_active_time_sensor_->publish_state(this->daily
