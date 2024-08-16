@@ -4,13 +4,15 @@ namespace esphome {
 namespace climate_solar {
 
 void ClimateSolar::setup() {
-  // Inicializar los sensores
-  this->last_cycle_time_sensor_ = new esphome::sensor::Sensor();
-  this->daily_active_time_sensor_ = new esphome::sensor::Sensor();
-  this->daily_energy_consumption_sensor_ = new esphome::sensor::Sensor();
-  App.register_sensor(this->last_cycle_time_sensor_);
-  App.register_sensor(this->daily_active_time_sensor_);
-  App.register_sensor(this->daily_energy_consumption_sensor_);
+  // Inicialización de sensores
+  this->last_cycle_time_sensor_->publish_state(0.0);
+  this->daily_active_time_sensor_->publish_state(0.0);
+  this->daily_energy_consumption_sensor_->publish_state(0.0);
+
+  // Inicializa el interruptor de la bomba si está definido
+  if (this->pump_switch_) {
+    this->pump_switch_->turn_off();  // Asegúrate de que la bomba esté apagada al inicio
+  }
 }
 
 void ClimateSolar::control(const esphome::climate::ClimateCall &call) {
@@ -18,16 +20,20 @@ void ClimateSolar::control(const esphome::climate::ClimateCall &call) {
     esphome::climate::ClimateMode mode = *call.get_mode();
     if (mode == esphome::climate::CLIMATE_MODE_HEAT) {
       if (!this->bomba_activa) {
-        if (this->temp_sun_->state < this->temp_max_ && 
+        if (this->temp_sun_->state < this->temp_max_ &&
             (this->temp_sun_->state - this->temp_watter_->state) >= this->diff_high_) {
-          this->pump_switch_->turn_on();
+          if (this->pump_switch_) {
+            this->pump_switch_->turn_on();
+          }
           this->bomba_activa = true;
           this->cycle_start_time_ = millis();
           ESP_LOGI("main", "Bomba encendida debido a la temperatura adecuada");
         }
       } else {
         if ((this->temp_output_->state - this->temp_watter_->state) < this->diff_mid_) {
-          this->pump_switch_->turn_off();
+          if (this->pump_switch_) {
+            this->pump_switch_->turn_off();
+          }
           this->bomba_activa = false;
           uint32_t cycle_time = millis() - this->cycle_start_time_;
           this->last_cycle_times_.push_back(cycle_time);
@@ -39,7 +45,9 @@ void ClimateSolar::control(const esphome::climate::ClimateCall &call) {
         }
       }
     } else {
-      this->pump_switch_->turn_off();
+      if (this->pump_switch_) {
+        this->pump_switch_->turn_off();
+      }
       this->bomba_activa = false;
       ESP_LOGI("main", "Bomba apagada porque el modo HEAT está desactivado");
     }
@@ -57,14 +65,14 @@ esphome::climate::ClimateTraits ClimateSolar::traits() {
 }
 
 void ClimateSolar::loop() {
-  // Lógica adicional para verificar la temperatura y el estado de la bomba
-  if (millis() - this->last_reset_time_ >= 86400000) { // 24 horas
+  // Lógica para actualizar la hora de funcionamiento diaria
+  if (millis() - this->last_reset_time_ >= 86400000) {  // 24 horas
     this->daily_active_time_ = 0;
     this->last_reset_time_ = millis();
   }
 
-  // Actualizar los sensores
-  this->last_cycle_time_sensor_->publish_state((this->last_cycle_times_[0] + this->last_cycle_times_[1] + this->last_cycle_times_[2]) / 1000.0);
+  // Actualiza los sensores con los datos actuales
+  this->last_cycle_time_sensor_->publish_state((this->last_cycle_times_.empty() ? 0 : (this->last_cycle_times_[0] + this->last_cycle_times_[1] + this->last_cycle_times_[2]) / 1000.0));
   this->daily_active_time_sensor_->publish_state(this->daily_active_time_ / 1000.0);
   this->daily_energy_consumption_sensor_->publish_state((this->daily_active_time_ / 3600000.0) * this->pump_power_);
 }
