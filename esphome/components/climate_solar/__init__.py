@@ -1,7 +1,7 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import climate, sensor, switch
-from esphome.const import CONF_ID, CONF_TEMPERATURE, UNIT_CELSIUS, UNIT_PERCENT, ICON_THERMOMETER
+from esphome.const import CONF_ID, UNIT_CELSIUS, UNIT_PERCENT, ICON_THERMOMETER
 
 AUTO_LOAD = ['sensor', 'climate', 'switch']
 
@@ -26,8 +26,8 @@ CONFIG_SCHEMA = cv.Schema({
     cv.Required(CONF_TEMP_OUTPUT): cv.use_id(sensor.Sensor),
     cv.Optional(CONF_PUMP_SWITCH): cv.use_id(switch.Switch),
     cv.Optional(CONF_TEMP_MAX, default=37.5): cv.temperature,
-    cv.Optional(CONF_DIFF_HIGH, default=1.0): cv.small_float,
-    cv.Optional(CONF_DIFF_MID, default=1.0): cv.small_float,
+    cv.Optional(CONF_DIFF_HIGH, default=1.0): cv.float_,
+    cv.Optional(CONF_DIFF_MID, default=1.0): cv.float_,
     cv.Optional(CONF_VISUAL_MIN_TEMP, default=25.0): cv.temperature,
     cv.Optional(CONF_VISUAL_MAX_TEMP, default=40.0): cv.temperature,
     cv.Optional(CONF_PUMP_POWER, default=100): cv.percentage,
