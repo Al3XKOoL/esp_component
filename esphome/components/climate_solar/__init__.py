@@ -21,7 +21,7 @@ CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend({
     cv.Required("visual_min_temp"): cv.float_,
     cv.Required("visual_max_temp"): cv.float_,
     cv.Required("pump_power"): cv.float_,
-    cv.Required("pump_switch"): cv.use_id(switch.Switch),  # Usa `cv.use_id` para el switch
+    cv.Required("pump_switch"): cv.use_id(switch.Switch),
 }).extend(cv.COMPONENT_SCHEMA)
 
 # Esta función permite la configuración del componente desde el YAML
@@ -50,4 +50,4 @@ async def to_code(config):
 
     # Configura el switch de la bomba
     pump_switch = await cg.get_variable(config["pump_switch"])
-    cg.add(var.set_pump_power(pump_switch))  # Usa `set_pump_power` si es el método correcto
+    cg.add(var.set_pump_switch(pump_switch))  # Asegúrate de que este método esté definido
