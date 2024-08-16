@@ -30,7 +30,7 @@ CONFIG_SCHEMA = cv.Schema({
     cv.Optional(CONF_DIFF_MID, default=1.0): cv.float_,
     cv.Optional(CONF_VISUAL_MIN_TEMP, default=25.0): cv.temperature,
     cv.Optional(CONF_VISUAL_MAX_TEMP, default=40.0): cv.temperature,
-    cv.Optional(CONF_PUMP_POWER, default=100): cv.percentage,
+    cv.Optional(CONF_PUMP_POWER, default=100.0): cv.float_,  # Cambiado a float_
 }).extend(cv.COMPONENT_SCHEMA)
 
 def to_code(config):
