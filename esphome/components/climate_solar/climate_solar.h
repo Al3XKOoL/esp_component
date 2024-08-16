@@ -1,31 +1,38 @@
-#pragma once
+#include "climate_solar.h"
 
-#include "esphome.h"
+void ClimateSolar::setup() {
+  // Initialization code here
+}
 
-class ClimateSolar : public esphome::Component, public esphome::climate::Climate {
- public:
-  void set_temp_sun(esphome::sensor::Sensor *temp_sun) { this->temp_sun_ = temp_sun; }
-  void set_temp_watter(esphome::sensor::Sensor *temp_watter) { this->temp_watter_ = temp_watter; }
-  void set_temp_output(esphome::sensor::Sensor *temp_output) { this->temp_output_ = temp_output; }
-  void set_pump_switch(esphome::switch_::Switch *pump_switch) { this->pump_switch_ = pump_switch; }
-
-  void setup() override;
-  void control(const esphome::climate::ClimateCall &call) override;
-
- protected:
-  esphome::sensor::Sensor *temp_sun_;
-  esphome::sensor::Sensor *temp_watter_;
-  esphome::sensor::Sensor *temp_output_;
-  esphome::switch_::Switch *pump_switch_;  // Switch for the pump
-
-  // Additional variables
-  float temp_max_;
-  float diff_high_;
-  float diff_mid_;
-  float visual_min_temp_;
-  float visual_max_temp_;
-  bool bomba_activa = false;
-  uint32_t cycle_start_time_ = 0;
-  std::vector<uint32_t> last_cycle_times_;
-  uint32_t daily_active_time_ = 0;
-};
+void ClimateSolar::control(const esphome::climate::ClimateCall &call) {
+  if (call.get_mode().has_value()) {
+    esphome::climate::ClimateMode mode = *call.get_mode();
+    if (mode == esphome::climate::CLIMATE_MODE_HEAT) {
+      if (!this->bomba_activa) {
+        if (this->temp_watter_->state < this->temp_max_ &&
+            (this->temp_sun_->state - this->temp_watter_->state) >= this->diff_high_) {
+          this->pump_switch_->turn_on();  // Encender la bomba
+          this->bomba_activa = true;
+          this->cycle_start_time_ = millis();
+          ESP_LOGI("main", "Bomba encendida debido a la temperatura adecuada");
+        }
+      } else {
+        if ((this->temp_output_->state - this->temp_watter_->state) < this->diff_mid_) {
+          this->pump_switch_->turn_off();  // Apagar la bomba
+          this->bomba_activa = false;
+          uint32_t cycle_time = millis() - this->cycle_start_time_;
+          this->last_cycle_times_.push_back(cycle_time);
+          if (this->last_cycle_times_.size() > 3) {
+            this->last_cycle_times_.erase(this->last_cycle_times_.begin());
+          }
+          this->daily_active_time_ += cycle_time;
+          ESP_LOGI("main", "Bomba apagada debido a temperatura inadecuada");
+        }
+      }
+    } else {
+      this->pump_switch_->turn_off();  // Apagar la bomba si el modo HEAT está desactivado
+      this->bomba_activa = false;
+      ESP_LOGI("main", "Bomba apagada porque el modo HEAT está desactivado");
+    }
+  }
+}
