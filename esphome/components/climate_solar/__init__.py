@@ -2,7 +2,7 @@ import esphome.config_validation as cv
 from esphome import automation
 from esphome.components import climate, sensor, switch
 import esphome.codegen as cg
-from esphome.const import CONF_ID, CONF_SENSOR
+from esphome.const import CONF_ID, CONF_SENSOR, CONF_SWITCH
 
 # Define el nombre de tu componente y crea un namespace
 CONF_CLIMATE_SOLAR = "climate_solar"
@@ -21,7 +21,8 @@ CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend({
     cv.Required("visual_min_temp"): cv.float_,
     cv.Required("visual_max_temp"): cv.float_,
     cv.Required("pump_power"): cv.float_,
-    cv.Required("pump_switch"): cv.use_id(switch.Switch),  # Puedes mantener esta línea
+    # Usa `cv.use_id` para el switch de la bomba
+    cv.Required("pump_switch"): cv.use_id(switch.Switch),
 }).extend(cv.COMPONENT_SCHEMA)
 
 # Esta función permite la configuración del componente desde el YAML
@@ -50,4 +51,4 @@ async def to_code(config):
 
     # Configura el switch de la bomba
     pump_switch = await cg.get_variable(config["pump_switch"])
-    cg.add(var.set_pump_switch(pump_switch))
+    cg.add(var.set_pump_power(pump_switch))  # Asegúrate de usar `set_pump_power` si eso es lo que has definido
