@@ -2,21 +2,24 @@
 
 #include "esphome/components/climate/climate.h"
 #include "esphome/components/sensor/sensor.h"
+#include "esphome/core/component.h"
 
 namespace esphome {
 namespace climate_solar {
 
-class ClimateSolar : public climate::Climate {
+class ClimateSolar : public esphome::Component, public climate::Climate {
  public:
   void setup() override;
+  void loop() override;
   void control(const climate::ClimateCall &call) override;
   climate::ClimateTraits traits() override;
-  void loop() override;
 
   void set_last_cycle_time_sensor(sensor::Sensor *sensor) { last_cycle_time_sensor_ = sensor; }
   void set_daily_active_time_sensor(sensor::Sensor *sensor) { daily_active_time_sensor_ = sensor; }
   void set_daily_energy_consumption_sensor(sensor::Sensor *sensor) { daily_energy_consumption_sensor_ = sensor; }
   void set_temp_sun(sensor::Sensor *sensor) { temp_sun_ = sensor; }
+  void set_temp_watter(sensor::Sensor *sensor) { temp_watter_ = sensor; }
+  void set_temp_output(sensor::Sensor *sensor) { temp_output_ = sensor; }
   void set_temp_max(float temp) { temp_max_ = temp; }
   void set_temp_min(float temp) { temp_min_ = temp; }
   void set_diff_high(float diff) { diff_high_ = diff; }
