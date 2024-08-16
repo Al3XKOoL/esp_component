@@ -1,15 +1,13 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import climate, sensor, switch
-from esphome.const import (
-    CONF_ID, CONF_TEMPERATURE, UNIT_CELSIUS, ICON_THERMOMETER
-)
+from esphome.const import CONF_ID, UNIT_CELSIUS, ICON_THERMOMETER
 
-# Declaramos el namespace y el nombre del componente en C++
+# Definir el namespace y clase
 climate_solar_ns = cg.esphome_ns.namespace('climate_solar')
 ClimateSolar = climate_solar_ns.class_('ClimateSolar', climate.Climate, cg.Component)
 
-# Definimos las opciones que vamos a soportar en el YAML
+# Declarar los parámetros que serán utilizados en el YAML
 CONF_TEMP_SUN = "temp_sun"
 CONF_TEMP_WATTER = "temp_watter"
 CONF_TEMP_OUTPUT = "temp_output"
@@ -21,7 +19,7 @@ CONF_VISUAL_MAX_TEMP = "visual_max_temp"
 CONF_PUMP_POWER = "pump_power"
 CONF_PUMP_SWITCH = "pump_switch"
 
-# Especificamos la configuración
+# Definir el esquema de configuración
 CONFIG_SCHEMA = cv.Schema({
     cv.GenerateID(): cv.declare_id(ClimateSolar),
     cv.Required(CONF_TEMP_SUN): cv.use_id(sensor.Sensor),
@@ -36,15 +34,15 @@ CONFIG_SCHEMA = cv.Schema({
     cv.Required(CONF_PUMP_SWITCH): cv.use_id(switch.Switch),
 }).extend(cv.COMPONENT_SCHEMA).extend(climate.CLIMATE_SCHEMA)
 
-# Función para construir el componente
+# Función para traducir el YAML a código C++
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
 
-    # Asignamos las configuraciones del YAML a las variables en C++
+    # Registrar el componente en ESPHome
     await cg.register_component(var, config)
     await climate.register_climate(var, config)
 
-    # Asignamos los sensores y el switch a las variables de C++
+    # Conectar cada configuración YAML con su setter correspondiente en el código C++
     temp_sun = await cg.get_variable(config[CONF_TEMP_SUN])
     cg.add(var.set_temp_sun(temp_sun))
 
@@ -57,7 +55,7 @@ async def to_code(config):
     pump_switch = await cg.get_variable(config[CONF_PUMP_SWITCH])
     cg.add(var.set_pump_switch(pump_switch))
 
-    # Asignamos valores numéricos y de configuración al componente
+    # Configurar los valores numéricos
     cg.add(var.set_temp_max(config[CONF_TEMP_MAX]))
     cg.add(var.set_diff_high(config[CONF_DIFF_HIGH]))
     cg.add(var.set_diff_mid(config[CONF_DIFF_MID]))
