@@ -11,12 +11,20 @@ void ClimateSolar::setup() {
   this->daily_active_time_ = 0;
   this->last_reset_time_ = millis();
 
-  this->last_cycle_time_sensor_ = new esphome::sensor::Sensor();
-  this->daily_active_time_sensor_ = new esphome::sensor::Sensor();
-  this->daily_energy_consumption_sensor_ = new esphome::sensor::Sensor();
-  App.register_sensor(this->last_cycle_time_sensor_);
-  App.register_sensor(this->daily_active_time_sensor_);
-  App.register_sensor(this->daily_energy_consumption_sensor_);
+  if (this->last_cycle_time_sensor_) {
+    this->last_cycle_time_sensor_->set_name("Last Cycle Time");
+    App.register_sensor(this->last_cycle_time_sensor_);
+  }
+
+  if (this->daily_active_time_sensor_) {
+    this->daily_active_time_sensor_->set_name("Daily Active Time");
+    App.register_sensor(this->daily_active_time_sensor_);
+  }
+
+  if (this->daily_energy_consumption_sensor_) {
+    this->daily_energy_consumption_sensor_->set_name("Daily Energy Consumption");
+    App.register_sensor(this->daily_energy_consumption_sensor_);
+  }
 }
 
 void ClimateSolar::control(const climate::ClimateCall &call) {
@@ -24,7 +32,7 @@ void ClimateSolar::control(const climate::ClimateCall &call) {
     climate::ClimateMode mode = *call.get_mode();
     if (mode == climate::CLIMATE_MODE_HEAT) {
       if (!this->bomba_activa) {
-        if (this->temp_sun_ != nullptr && this->temp_watter_ != nullptr) {
+        if (this->temp_sun_ && this->temp_watter_) {
           if (this->temp_watter_->state < this->temp_max_ && 
               (this->temp_sun_->state - this->temp_watter_->state) >= this->diff_high_) {
             this->activate_pump();
@@ -34,7 +42,7 @@ void ClimateSolar::control(const climate::ClimateCall &call) {
           }
         }
       } else {
-        if (this->temp_output_ != nullptr && this->temp_watter_ != nullptr) {
+        if (this->temp_output_ && this->temp_watter_) {
           if ((this->temp_output_->state - this->temp_watter_->state) < this->diff_mid_) {
             this->deactivate_pump();
             this->bomba_activa = false;
@@ -72,17 +80,17 @@ void ClimateSolar::loop() {
     this->last_reset_time_ = millis();
   }
 
-  if (this->last_cycle_time_sensor_ != nullptr) {
+  if (this->last_cycle_time_sensor_) {
     float avg_cycle_time = (this->last_cycle_times_.size() > 0) ?
       (this->last_cycle_times_[0] + this->last_cycle_times_[1] + this->last_cycle_times_[2]) / 1000.0 : 0;
     this->last_cycle_time_sensor_->publish_state(avg_cycle_time);
   }
 
-  if (this->daily_active_time_sensor_ != nullptr) {
+  if (this->daily_active_time_sensor_) {
     this->daily_active_time_sensor_->publish_state(this->daily_active_time_ / 1000.0);
   }
 
-  if (this->daily_energy_consumption_sensor_ != nullptr) {
+  if (this->daily_energy_consumption_sensor_) {
     float energy_consumption = (this->daily_active_time_ / 3600000.0) * this->pump_power_;
     this->daily_energy_consumption_sensor_->publish_state(energy_consumption);
   }
