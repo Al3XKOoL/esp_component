@@ -2,15 +2,15 @@
 
 #include "esphome.h"
 
-class CustomClimate : public Climate, public Component, public Interval {
+class CustomClimate : public Climate, public Component {
  public:
-  CustomClimate() : Interval(60000) {}  // Intervalo de 1 minuto
+  CustomClimate() {}
 
   void setup() override {
     tiempo_inicio = 0;
     espera = false;
     tiempo_espera_fin = 0;
-    this->set_on_interval([this]() { this->loop(); });
+    // Configura la lógica adicional si es necesario
   }
 
   void loop() override {
