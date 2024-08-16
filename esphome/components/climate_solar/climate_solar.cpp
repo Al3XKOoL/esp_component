@@ -5,32 +5,27 @@
 namespace esphome {
 namespace climate_solar {
 
-void ClimateSolar::setup() {
-  this->last_cycle_times_ = {0, 0, 0};
-  this->daily_active_time_ = 0;
-  this->last_reset_time_ = millis();
-  this->last_cycle_time_sensor_ = new esphome::sensor::Sensor();
-  this->daily_active_time_sensor_ = new esphome::sensor::Sensor();
-  this->daily_energy_consumption_sensor_ = new esphome::sensor::Sensor();
+static const char *TAG = "climate_solar";
 
-  esphome::App.register_sensor(this->last_cycle_time_sensor_);
-  esphome::App.register_sensor(this->daily_active_time_sensor_);
-  esphome::App.register_sensor(this->daily_energy_consumption_sensor_);
+void ClimateSolar::setup() {
+  // Inicialización si es necesario
 }
 
 void ClimateSolar::control(const esphome::climate::ClimateCall &call) {
   if (this->pump_switch_ != nullptr && call.get_mode().has_value()) {
     if (call.get_mode().value() == esphome::climate::CLIMATE_MODE_HEAT) {
-      if (this->temp_sun_->state > this->temp_watter_->state + this->diff_high_) {
-        this->pump_switch_->turn_on();
-        ESP_LOGI("main", "Bomba encendida debido a la temperatura adecuada");
-      } else if (this->temp_sun_->state < this->temp_watter_->state + this->diff_mid_) {
-        this->pump_switch_->turn_off();
-        ESP_LOGI("main", "Bomba apagada debido a temperatura inadecuada");
+      if (this->temp_sun_ != nullptr && this->temp_watter_ != nullptr) {
+        if (this->temp_sun_->state > this->temp_watter_->state + this->temp_max_) {
+          this->pump_switch_->turn_on();
+          ESP_LOGI(TAG, "Bomba encendida debido a la temperatura adecuada");
+        } else if (this->temp_sun_->state < this->temp_watter_->state + this->temp_min_) {
+          this->pump_switch_->turn_off();
+          ESP_LOGI(TAG, "Bomba apagada debido a temperatura inadecuada");
+        }
       }
     } else {
       this->pump_switch_->turn_off();
-      ESP_LOGI("main", "Bomba apagada porque el modo HEAT está desactivado");
+      ESP_LOGI(TAG, "Bomba apagada porque el modo HEAT está desactivado");
     }
   }
 }
@@ -43,14 +38,7 @@ esphome::climate::ClimateTraits ClimateSolar::traits() {
 }
 
 void ClimateSolar::loop() {
-  if (millis() - this->last_reset_time_ >= 86400000) {  // 24 horas
-    this->daily_active_time_ = 0;
-    this->last_reset_time_ = millis();
-  }
-
-  this->last_cycle_time_sensor_->publish_state((this->last_cycle_times_[0] + this->last_cycle_times_[1] + this->last_cycle_times_[2]) / 1000.0);
-  this->daily_active_time_sensor_->publish_state(this->daily_active_time_ / 1000.0);
-  this->daily_energy_consumption_sensor_->publish_state((this->daily_active_time_ / 3600000.0) * this->pump_power_);
+  // Código para el loop si es necesario
 }
 
 }  // namespace climate_solar
