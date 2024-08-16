@@ -27,6 +27,11 @@ class ClimateSolar : public esphome::Component, public esphome::climate::Climate
     App.register_sensor(this->last_cycle_time_sensor_);
     App.register_sensor(this->daily_active_time_sensor_);
     App.register_sensor(this->daily_energy_consumption_sensor_);
+
+    // Inicializar los sensores
+    this->temp_sun_ = new esphome::sensor::Sensor();
+    this->temp_watter_ = new esphome::sensor::Sensor();
+    this->temp_output_ = new esphome::sensor::Sensor();
   }
 
   void control(const esphome::climate::ClimateCall &call) override {
