@@ -7,12 +7,10 @@ namespace climate_solar {
 static const char *const TAG = "climate_solar";
 
 void ClimateSolar::setup() {
-  // Configuración inicial sin parámetro por defecto
   this->last_cycle_times_ = {0, 0, 0};
   this->daily_active_time_ = 0;
   this->last_reset_time_ = millis();
 
-  // Inicializar los sensores internamente
   this->last_cycle_time_sensor_ = new esphome::sensor::Sensor();
   this->daily_active_time_sensor_ = new esphome::sensor::Sensor();
   this->daily_energy_consumption_sensor_ = new esphome::sensor::Sensor();
@@ -69,13 +67,11 @@ climate::ClimateTraits ClimateSolar::traits() {
 }
 
 void ClimateSolar::loop() {
-  // Lógica adicional para verificar la temperatura y el estado de la bomba
   if (millis() - this->last_reset_time_ >= 86400000) { // 24 horas
     this->daily_active_time_ = 0;
     this->last_reset_time_ = millis();
   }
 
-  // Actualizar los sensores
   if (this->last_cycle_time_sensor_ != nullptr) {
     float avg_cycle_time = (this->last_cycle_times_.size() > 0) ?
       (this->last_cycle_times_[0] + this->last_cycle_times_[1] + this->last_cycle_times_[2]) / 1000.0 : 0;
@@ -95,13 +91,11 @@ void ClimateSolar::loop() {
 void ClimateSolar::activate_pump() {
   ESP_LOGI(TAG, "Bomba activada.");
   // Aquí debes agregar el código para activar la bomba
-  // Por ejemplo, cambiar el estado de un GPIO o relé
 }
 
 void ClimateSolar::deactivate_pump() {
   ESP_LOGI(TAG, "Bomba desactivada.");
   // Aquí debes agregar el código para desactivar la bomba
-  // Por ejemplo, cambiar el estado de un GPIO o relé
 }
 
 }  // namespace climate_solar
