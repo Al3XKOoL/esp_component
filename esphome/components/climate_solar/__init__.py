@@ -1,7 +1,7 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import climate, sensor, switch
-from esphome.const import CONF_ID, UNIT_CELSIUS, ICON_THERMOMETER
+from esphome.const import CONF_ID
 
 # Definir el namespace y clase
 climate_solar_ns = cg.esphome_ns.namespace('climate_solar')
@@ -38,8 +38,10 @@ CONFIG_SCHEMA = cv.Schema({
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
 
-    # Registrar el componente en ESPHome
+    # Primero registrar ClimateSolar como un componente
     await cg.register_component(var, config)
+    
+    # Luego registrar ClimateSolar en la lógica de Climate
     await climate.register_climate(var, config)
 
     # Conectar cada configuración YAML con su setter correspondiente en el código C++
