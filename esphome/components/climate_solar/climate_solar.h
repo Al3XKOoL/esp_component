@@ -5,7 +5,10 @@
 class ClimateSolar : public esphome::Component, public esphome::climate::Climate {
  public:
   void setup() override {
-    // Inicializar los sensores
+    this->last_cycle_times_ = {0, 0, 0};
+    this->daily_active_time_ = 0;
+    this->last_reset_time_ = millis();
+
     this->last_cycle_time_sensor_ = new esphome::sensor::Sensor();
     this->daily_active_time_sensor_ = new esphome::sensor::Sensor();
     this->daily_energy_consumption_sensor_ = new esphome::sensor::Sensor();
@@ -19,16 +22,20 @@ class ClimateSolar : public esphome::Component, public esphome::climate::Climate
       esphome::climate::ClimateMode mode = *call.get_mode();
       if (mode == esphome::climate::CLIMATE_MODE_HEAT) {
         if (!this->bomba_activa) {
-          if (this->temp_sun_->state < this->temp_max_ && 
+          if (this->temp_sun_->state < this->temp_max_ &&
               (this->temp_sun_->state - this->temp_watter_->state) >= this->diff_high_) {
-            this->pump_switch_->turn_on();
+            if (this->pump_switch_ != nullptr) {
+              this->pump_switch_->turn_on();
+            }
             this->bomba_activa = true;
             this->cycle_start_time_ = millis();
             ESP_LOGI("main", "Bomba encendida debido a la temperatura adecuada");
           }
         } else {
           if ((this->temp_output_->state - this->temp_watter_->state) < this->diff_mid_) {
-            this->pump_switch_->turn_off();
+            if (this->pump_switch_ != nullptr) {
+              this->pump_switch_->turn_off();
+            }
             this->bomba_activa = false;
             uint32_t cycle_time = millis() - this->cycle_start_time_;
             this->last_cycle_times_.push_back(cycle_time);
@@ -40,7 +47,9 @@ class ClimateSolar : public esphome::Component, public esphome::climate::Climate
           }
         }
       } else {
-        this->pump_switch_->turn_off();
+        if (this->pump_switch_ != nullptr) {
+          this->pump_switch_->turn_off();
+        }
         this->bomba_activa = false;
         ESP_LOGI("main", "Bomba apagada porque el modo HEAT está desactivado");
       }
@@ -58,19 +67,16 @@ class ClimateSolar : public esphome::Component, public esphome::climate::Climate
   }
 
   void loop() override {
-    // Lógica adicional para verificar la temperatura y el estado de la bomba
     if (millis() - this->last_reset_time_ >= 86400000) { // 24 horas
       this->daily_active_time_ = 0;
       this->last_reset_time_ = millis();
     }
 
-    // Actualizar los sensores
     this->last_cycle_time_sensor_->publish_state((this->last_cycle_times_[0] + this->last_cycle_times_[1] + this->last_cycle_times_[2]) / 1000.0);
     this->daily_active_time_sensor_->publish_state(this->daily_active_time_ / 1000.0);
     this->daily_energy_consumption_sensor_->publish_state((this->daily_active_time_ / 3600000.0) * this->pump_power_);
   }
 
-  // Métodos para configurar los parámetros desde la interfaz
   void set_temp_max(float temp_max) { this->temp_max_ = temp_max; }
   void set_diff_high(float diff_high) { this->diff_high_ = diff_high; }
   void set_diff_mid(float diff_mid) { this->diff_mid_ = diff_mid; }
@@ -79,7 +85,6 @@ class ClimateSolar : public esphome::Component, public esphome::climate::Climate
   void set_pump_power(float pump_power) { this->pump_power_ = pump_power; }
   void set_pump_switch(esphome::switch_::Switch *pump_switch) { this->pump_switch_ = pump_switch; }
 
-  // Métodos para configurar los parámetros desde el YAML
   void set_parameters(esphome::sensor::Sensor *temp_sun, esphome::sensor::Sensor *temp_watter, esphome::sensor::Sensor *temp_output, float temp_max, float diff_high, float diff_mid, float visual_min_temp, float visual_max_temp, float pump_power, esphome::switch_::Switch *pump_switch) {
     this->temp_max_ = temp_max;
     this->diff_high_ = diff_high;
@@ -111,5 +116,5 @@ class ClimateSolar : public esphome::Component, public esphome::climate::Climate
   esphome::sensor::Sensor *last_cycle_time_sensor_;
   esphome::sensor::Sensor *daily_active_time_sensor_;
   esphome::sensor::Sensor *daily_energy_consumption_sensor_;
-  esphome::switch_::Switch *pump_switch_;
+  esphome::switch_::Switch *pump_switch_;  // Agregado
 };
