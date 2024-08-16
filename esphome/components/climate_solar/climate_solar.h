@@ -1,6 +1,7 @@
 #pragma once
 
 #include "esphome.h"
+#include "esphome/components/climate/climate.h"
 
 class ClimateSolar : public esphome::Component, public esphome::climate::Climate {
  public:
