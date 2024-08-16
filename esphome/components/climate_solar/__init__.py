@@ -1,70 +1,63 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.components import climate, sensor
-from esphome.const import CONF_ID, CONF_TEMPERATURE, UNIT_CELSIUS, ICON_THERMOMETER
+from esphome import pins
+from esphome.components import climate, sensor, switch
+from esphome.const import CONF_ID, CONF_TEMPERATURE, UNIT_CELSIUS, ICON_THERMOMETER, CONF_SWITCH
 
-AUTO_LOAD = ['sensor', 'climate']
+# Declaramos el namespace y el nombre del componente en C++
+climate_solar_ns = cg.esphome_ns.namespace("climate_solar")
+ClimateSolar = climate_solar_ns.class_("ClimateSolar", climate.Climate, cg.Component)
 
-climate_solar_ns = cg.esphome_ns.namespace('climate_solar')
-ClimateSolar = climate_solar_ns.class_('ClimateSolar', climate.Climate, cg.Component)
+# Definimos las opciones que vamos a soportar en el YAML
+CONF_TEMP_SUN = "temp_sun"
+CONF_TEMP_WATTER = "temp_watter"
+CONF_TEMP_OUTPUT = "temp_output"
+CONF_TEMP_MAX = "temp_max"
+CONF_DIFF_HIGH = "diff_high"
+CONF_DIFF_MID = "diff_mid"
+CONF_VISUAL_MIN_TEMP = "visual_min_temp"
+CONF_VISUAL_MAX_TEMP = "visual_max_temp"
+CONF_PUMP_POWER = "pump_power"
+CONF_PUMP_SWITCH = "pump_switch"
 
-CONF_TEMP_SUN = 'temp_sun'
-CONF_TEMP_WATTER = 'temp_watter'
-CONF_TEMP_OUTPUT = 'temp_output'
-CONF_LAST_CYCLE_TIME_SENSOR = 'last_cycle_time_sensor'
-CONF_DAILY_ACTIVE_TIME_SENSOR = 'daily_active_time_sensor'
-CONF_DAILY_ENERGY_CONSUMPTION_SENSOR = 'daily_energy_consumption_sensor'
-CONF_TEMP_MAX = 'temp_max'
-CONF_DIFF_HIGH = 'diff_high'
-CONF_DIFF_MID = 'diff_mid'
-CONF_VISUAL_MIN_TEMP = 'visual_min_temp'
-CONF_VISUAL_MAX_TEMP = 'visual_max_temp'
-CONF_PUMP_POWER = 'pump_power'
-
+# Especificamos la configuración
 CONFIG_SCHEMA = cv.Schema({
     cv.GenerateID(): cv.declare_id(ClimateSolar),
-    cv.Optional(CONF_TEMP_SUN): cv.use_id(sensor.Sensor),
-    cv.Optional(CONF_TEMP_WATTER): cv.use_id(sensor.Sensor),
-    cv.Optional(CONF_TEMP_OUTPUT): cv.use_id(sensor.Sensor),
-    cv.Optional(CONF_LAST_CYCLE_TIME_SENSOR): cv.use_id(sensor.Sensor),
-    cv.Optional(CONF_DAILY_ACTIVE_TIME_SENSOR): cv.use_id(sensor.Sensor),
-    cv.Optional(CONF_DAILY_ENERGY_CONSUMPTION_SENSOR): cv.use_id(sensor.Sensor),
-    cv.Optional(CONF_TEMP_MAX): cv.float_,
-    cv.Optional(CONF_DIFF_HIGH): cv.float_,
-    cv.Optional(CONF_DIFF_MID): cv.float_,
-    cv.Optional(CONF_VISUAL_MIN_TEMP): cv.float_,
-    cv.Optional(CONF_VISUAL_MAX_TEMP): cv.float_,
-    cv.Optional(CONF_PUMP_POWER): cv.float_,
-}).extend(cv.COMPONENT_SCHEMA)
+    cv.Required(CONF_TEMP_SUN): cv.use_id(sensor.Sensor),
+    cv.Required(CONF_TEMP_WATTER): cv.use_id(sensor.Sensor),
+    cv.Required(CONF_TEMP_OUTPUT): cv.use_id(sensor.Sensor),
+    cv.Required(CONF_TEMP_MAX): cv.float_,
+    cv.Required(CONF_DIFF_HIGH): cv.float_,
+    cv.Required(CONF_DIFF_MID): cv.float_,
+    cv.Required(CONF_VISUAL_MIN_TEMP): cv.temperature,
+    cv.Required(CONF_VISUAL_MAX_TEMP): cv.temperature,
+    cv.Required(CONF_PUMP_POWER): cv.float_,
+    cv.Required(CONF_PUMP_SWITCH): cv.use_id(switch.Switch),
+}).extend(cv.COMPONENT_SCHEMA).extend(climate.CLIMATE_SCHEMA)
 
-def to_code(config):
+# Función para construir el componente
+async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
 
-    if CONF_TEMP_SUN in config:
-        cg.add(var.set_temp_sun(config[CONF_TEMP_SUN]))
-    if CONF_TEMP_WATTER in config:
-        cg.add(var.set_temp_watter(config[CONF_TEMP_WATTER]))
-    if CONF_TEMP_OUTPUT in config:
-        cg.add(var.set_temp_output(config[CONF_TEMP_OUTPUT]))
-    if CONF_LAST_CYCLE_TIME_SENSOR in config:
-        cg.add(var.set_last_cycle_time_sensor(config[CONF_LAST_CYCLE_TIME_SENSOR]))
-    if CONF_DAILY_ACTIVE_TIME_SENSOR in config:
-        cg.add(var.set_daily_active_time_sensor(config[CONF_DAILY_ACTIVE_TIME_SENSOR]))
-    if CONF_DAILY_ENERGY_CONSUMPTION_SENSOR in config:
-        cg.add(var.set_daily_energy_consumption_sensor(config[CONF_DAILY_ENERGY_CONSUMPTION_SENSOR]))
+    # Asignamos las configuraciones del YAML a las variables en C++
+    await cg.register_component(var, config)
+    await climate.register_climate(var, config)
 
-    if CONF_TEMP_MAX in config:
-        cg.add(var.set_temp_max(config[CONF_TEMP_MAX]))
-    if CONF_DIFF_HIGH in config:
-        cg.add(var.set_diff_high(config[CONF_DIFF_HIGH]))
-    if CONF_DIFF_MID in config:
-        cg.add(var.set_diff_mid(config[CONF_DIFF_MID]))
-    if CONF_VISUAL_MIN_TEMP in config:
-        cg.add(var.set_visual_min_temp(config[CONF_VISUAL_MIN_TEMP]))
-    if CONF_VISUAL_MAX_TEMP in config:
-        cg.add(var.set_visual_max_temp(config[CONF_VISUAL_MAX_TEMP]))
-    if CONF_PUMP_POWER in config:
-        cg.add(var.set_pump_power(config[CONF_PUMP_POWER]))
+    temp_sun = await cg.get_variable(config[CONF_TEMP_SUN])
+    cg.add(var.temp_sun_, temp_sun)
 
-    cg.add(var.setup())
-    climate.register_climate(var, config)
+    temp_watter = await cg.get_variable(config[CONF_TEMP_WATTER])
+    cg.add(var.temp_watter_, temp_watter)
+
+    temp_output = await cg.get_variable(config[CONF_TEMP_OUTPUT])
+    cg.add(var.temp_output_, temp_output)
+
+    pump_switch = await cg.get_variable(config[CONF_PUMP_SWITCH])
+    cg.add(var.pump_switch_, pump_switch)
+
+    cg.add(var.temp_max_, config[CONF_TEMP_MAX])
+    cg.add(var.diff_high_, config[CONF_DIFF_HIGH])
+    cg.add(var.diff_mid_, config[CONF_DIFF_MID])
+    cg.add(var.visual_min_temp_, config[CONF_VISUAL_MIN_TEMP])
+    cg.add(var.visual_max_temp_, config[CONF_VISUAL_MAX_TEMP])
+    cg.add(var.pump_power_, config[CONF_PUMP_POWER])
