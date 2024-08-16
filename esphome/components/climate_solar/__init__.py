@@ -1,64 +1,38 @@
+from esphome import automation
+from esphome.components import sensor, switch
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.components import climate, sensor, switch
-from esphome.const import CONF_ID, UNIT_CELSIUS, UNIT_PERCENT, ICON_THERMOMETER
+from esphome.const import CONF_ID, CONF_NAME
 
-AUTO_LOAD = ['sensor', 'climate', 'switch']
+# Definir el nombre del componente
+DEPENDENCIES = ['sensor', 'switch']
 
+# Registrar el componente en el código generado
 climate_solar_ns = cg.esphome_ns.namespace('climate_solar')
-ClimateSolar = climate_solar_ns.class_('ClimateSolar', climate.Climate, cg.Component)
-
-CONF_TEMP_SUN = 'temp_sun'
-CONF_TEMP_WATTER = 'temp_watter'
-CONF_TEMP_OUTPUT = 'temp_output'
-CONF_PUMP_SWITCH = 'pump_switch'
-CONF_TEMP_MAX = 'temp_max'
-CONF_DIFF_HIGH = 'diff_high'
-CONF_DIFF_MID = 'diff_mid'
-CONF_VISUAL_MIN_TEMP = 'visual_min_temp'
-CONF_VISUAL_MAX_TEMP = 'visual_max_temp'
-CONF_PUMP_POWER = 'pump_power'
+ClimateSolar = climate_solar_ns.class_('ClimateSolar', cg.Component)
 
 CONFIG_SCHEMA = cv.Schema({
     cv.GenerateID(): cv.declare_id(ClimateSolar),
-    cv.Required(CONF_TEMP_SUN): cv.use_id(sensor.Sensor),
-    cv.Required(CONF_TEMP_WATTER): cv.use_id(sensor.Sensor),
-    cv.Required(CONF_TEMP_OUTPUT): cv.use_id(sensor.Sensor),
-    cv.Optional(CONF_PUMP_SWITCH): cv.use_id(switch.Switch),
-    cv.Optional(CONF_TEMP_MAX, default=37.5): cv.temperature,
-    cv.Optional(CONF_DIFF_HIGH, default=1.0): cv.float_,
-    cv.Optional(CONF_DIFF_MID, default=1.0): cv.float_,
-    cv.Optional(CONF_VISUAL_MIN_TEMP, default=25.0): cv.temperature,
-    cv.Optional(CONF_VISUAL_MAX_TEMP, default=40.0): cv.temperature,
-    cv.Optional(CONF_PUMP_POWER, default=100.0): cv.float_,  # Cambiado a float_
+    cv.Required(CONF_NAME): cv.string,
+    cv.Required('temp_sun'): cv.use_id(sensor.Sensor),
+    cv.Required('temp_spa'): cv.use_id(sensor.Sensor),
+    cv.Required('temp_hot'): cv.use_id(sensor.Sensor),
+    cv.Required('pump_switch'): cv.use_id(switch.Switch),
+    cv.Optional('temp_diff_on', default=1.4): cv.float_,
+    cv.Optional('max_temp', default=40): cv.float_,
+    cv.Optional('temp_diff_off', default=0.7): cv.float_,
 }).extend(cv.COMPONENT_SCHEMA)
 
+
+# Función para configurar el componente
 def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
-
-    # Obtener y asignar los sensores a las variables correspondientes
-    temp_sun_sensor = yield cg.get_variable(config[CONF_TEMP_SUN])
-    cg.add(var.set_temp_sun(temp_sun_sensor))
-
-    temp_watter_sensor = yield cg.get_variable(config[CONF_TEMP_WATTER])
-    cg.add(var.set_temp_watter(temp_watter_sensor))
-
-    temp_output_sensor = yield cg.get_variable(config[CONF_TEMP_OUTPUT])
-    cg.add(var.set_temp_output(temp_output_sensor))
-
-    # Registrar el interruptor de la bomba si está presente
-    if CONF_PUMP_SWITCH in config:
-        pump_switch = yield cg.get_variable(config[CONF_PUMP_SWITCH])
-        cg.add(var.set_pump_switch(pump_switch))
-
-    # Configuración de parámetros adicionales
-    cg.add(var.set_temp_max(config[CONF_TEMP_MAX]))
-    cg.add(var.set_diff_high(config[CONF_DIFF_HIGH]))
-    cg.add(var.set_diff_mid(config[CONF_DIFF_MID]))
-    cg.add(var.set_visual_min_temp(config[CONF_VISUAL_MIN_TEMP]))
-    cg.add(var.set_visual_max_temp(config[CONF_VISUAL_MAX_TEMP]))
-    cg.add(var.set_pump_power(config[CONF_PUMP_POWER]))
-
-    # Configuración final del componente Climate
-    cg.add(var.setup())
-    climate.register_climate(var, config)
+    cg.add(var.set_temp_sun(config['temp_sun']))
+    cg.add(var.set_temp_spa(config['temp_spa']))
+    cg.add(var.set_temp_hot(config['temp_hot']))
+    cg.add(var.set_pump_switch(config['pump_switch']))
+    cg.add(var.set_temp_diff_on(config['temp_diff_on']))
+    cg.add(var.set_max_temp(config['max_temp']))
+    cg.add(var.set_temp_diff_off(config['temp_diff_off']))
+    cg.add(var.set_name(config[CONF_NAME]))
+    cg.register_component(var, config)
