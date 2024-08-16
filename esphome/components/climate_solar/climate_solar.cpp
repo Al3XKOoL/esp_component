@@ -14,7 +14,6 @@ void ClimateSolar::setup() {
 void ClimateSolar::control(const climate::ClimateCall &call) {
   ESP_LOGD(TAG, "Control called");
   // Lógica para manejar comandos de control
-  // Aquí podrías revisar si el usuario ha cambiado alguna configuración
 }
 
 climate::ClimateTraits ClimateSolar::traits() {
@@ -29,14 +28,39 @@ climate::ClimateTraits ClimateSolar::traits() {
 }
 
 void ClimateSolar::loop() {
-  // Código que debe ejecutarse en cada ciclo
+  // Ejecutar la lógica de control en cada ciclo
   update_control_logic();
 }
 
 void ClimateSolar::update_control_logic() {
-  // Aquí va la lógica para actualizar el control
-  // Ejemplo: Verificar si la temperatura del agua es lo suficientemente alta para encender la bomba
-  // Y luego realizar las acciones correspondientes.
+  if (temp_sun_ == nullptr || temp_watter_ == nullptr || pump_switch_ == nullptr)
+    return;  // Asegurarse de que los sensores y la bomba estén configurados
+
+  float temp_sun_value = this->temp_sun_->state;
+  float temp_watter_value = this->temp_watter_->state;
+
+  if (temp_sun_value > temp_watter_value + diff_high_ && temp_watter_value < temp_max_) {
+    if (!pump_is_on_) {
+      pump_switch_->turn_on();
+      pump_is_on_ = true;
+      pump_start_time_ = millis();  // Guardar el tiempo en que se encendió la bomba
+      ESP_LOGD(TAG, "Bomba encendida");
+    }
+  } else {
+    if (pump_is_on_) {
+      pump_switch_->turn_off();
+      pump_is_on_ = false;
+      unsigned long pump_end_time = millis();
+      unsigned long pump_duration = pump_end_time - pump_start_time_;  // Duración en milisegundos
+
+      // Calcular energía consumida (vatios-hora)
+      float duration_hours = pump_duration / 3600000.0;  // Convertir milisegundos a horas
+      float energy_used = pump_power_ * duration_hours;  // Potencia en vatios multiplicada por tiempo en horas
+      total_energy_consumed_ += energy_used;
+
+      ESP_LOGD(TAG, "Bomba apagada, energía consumida: %f Wh", energy_used);
+    }
+  }
 }
 
 void ClimateSolar::set_temp_sun(sensor::Sensor *temp_sun) {
