@@ -36,4 +36,18 @@ async def to_code(config):
     cg.add(var.set_temp_sun(temp_sun))
     
     temp_watter = await cg.get_variable(config["temp_watter"])
-    cg.add(var.set_temp_w
+    cg.add(var.set_temp_watter(temp_watter))
+    
+    temp_output = await cg.get_variable(config["temp_output"])
+    cg.add(var.set_temp_output(temp_output))
+    
+    cg.add(var.set_temp_max(config["temp_max"]))
+    cg.add(var.set_diff_high(config["diff_high"]))
+    cg.add(var.set_diff_mid(config["diff_mid"]))
+    cg.add(var.set_visual_min_temp(config["visual_min_temp"]))
+    cg.add(var.set_visual_max_temp(config["visual_max_temp"]))
+    cg.add(var.set_pump_power(config["pump_power"]))
+
+    # Configura el switch de la bomba
+    pump_switch = await cg.get_variable(config["pump_switch"])
+    cg.add(var.set_pump_switch(pump_switch))
