@@ -4,6 +4,7 @@
 ClimateSolar *control_bomba;
 
 void setup() {
-  // Configuración inicial
   control_bomba = new ClimateSolar();
-  App.register
+  App.register_component(control_bomba);
+  // Configurar sensores, switches, etc. si es necesario
+}
