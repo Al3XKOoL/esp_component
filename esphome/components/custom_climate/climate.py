@@ -42,7 +42,8 @@ async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
     await climate.register_climate(var, config)
-
+    if config[CONF_RESTORE_STATE]:
+        cg.add(var.set_restore_state(True))
     sensor_temp_sol = await cg.get_variable(config[CONF_SENSOR_TEMP_SOL])
     cg.add(var.set_sensor_temp_sol(sensor_temp_sol))
     sensor_temp_agua = await cg.get_variable(config[CONF_SENSOR_TEMP_AGUA])
@@ -66,6 +67,3 @@ async def to_code(config):
     if CONF_TIEMPO_HOMEASSISTANT in config:
         tiempo_homeassistant = await cg.get_variable(config[CONF_TIEMPO_HOMEASSISTANT])
         cg.add(var.set_tiempo_homeassistant(tiempo_homeassistant))
-
-    if config[CONF_RESTORE_STATE]:
-        cg.add(var.set_restore_state(True))
