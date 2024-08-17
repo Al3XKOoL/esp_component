@@ -1,90 +1,101 @@
 #include "custom_climate.h"
+#include <cstdarg>
+#include <cstdio>
 
 namespace custom_climate {
 
 static const char *const TAG = "custom_climate";
 
+void CustomClimate::log_mensaje(const char* nivel, const char* formato, ...) {
+    va_list args;
+    va_start(args, formato);
+    char buffer[256];
+    vsnprintf(buffer, sizeof(buffer), formato, args);
+    va_end(args);
+    ESP_LOGD("custom_climate", "%s: %s", nivel, buffer);
+}
+
 void CustomClimate::setup() {
-  // Initialization if needed
+  // Inicialización si es necesaria
 }
 
 void CustomClimate::loop() {
-  unsigned long current_time = millis();
+  unsigned long tiempo_actual = millis();
 
-  if (current_time - last_check_time_ >= interval_seconds_ * 1000) {
-    last_check_time_ = current_time;
+  if (tiempo_actual - ultimo_tiempo_verificacion_ >= intervalo_segundos_ * 1000) {
+    ultimo_tiempo_verificacion_ = tiempo_actual;
 
-    ESP_LOGD(TAG, "Ejecutando loop()");
+    log_mensaje("DEBUG", "Ejecutando loop()");
 
-    // Get current time
-    int64_t tiempo_actual = 0;
-    if (homeassistant_time_ != nullptr) {
-      tiempo_actual = homeassistant_time_->now().timestamp;
+    // Obtener tiempo actual
+    int64_t timestamp_actual = 0;
+    if (tiempo_homeassistant_ != nullptr) {
+      timestamp_actual = tiempo_homeassistant_->now().timestamp;
     }
-    if (tiempo_actual == 0 && sntp_time_ != nullptr) {
-      tiempo_actual = sntp_time_->now().timestamp;
+    if (timestamp_actual == 0 && tiempo_sntp_ != nullptr) {
+      timestamp_actual = tiempo_sntp_->now().timestamp;
     }
 
     if (espera_) {
-      if (tiempo_actual >= tiempo_espera_fin_) {
+      if (timestamp_actual >= tiempo_espera_fin_) {
         espera_ = false;
-        ESP_LOGD(TAG, "Reanudando verificaciones después de espera de 5 minutos.");
+        log_mensaje("DEBUG", "Reanudando verificaciones después de espera de 5 minutos.");
       } else {
-        ESP_LOGD(TAG, "En espera hasta %lld", tiempo_espera_fin_);
+        log_mensaje("DEBUG", "En espera hasta %lld", tiempo_espera_fin_);
         return;
       }
     }
 
-    bool estado_bomba_actual = pump_switch_->state;
+    bool estado_bomba_actual = interruptor_bomba_->state;
 
-    if (temp_sun_->state > (temp_water_->state + diff_high_) && temp_water_->state < temp_max_) {
+    if (sensor_temp_sol_->state > (sensor_temp_agua_->state + diferencia_alta_) && sensor_temp_agua_->state < temperatura_maxima_) {
       if (!estado_bomba_actual) {
-        pump_switch_->turn_on();
+        interruptor_bomba_->turn_on();
         conteo_encendidos_++;
-        tiempo_inicio_ = tiempo_actual;
-        ESP_LOGD(TAG, "Bomba encendida debido a la temperatura adecuada");
+        tiempo_inicio_ = timestamp_actual;
+        log_mensaje("DEBUG", "Bomba encendida debido a la temperatura adecuada");
       } else {
-        ESP_LOGD(TAG, "Bomba ya está encendida");
+        log_mensaje("DEBUG", "Bomba ya está encendida");
       }
     } else {
       if (estado_bomba_actual) {
-        pump_switch_->turn_off();
-        int64_t tiempo_total_encendido = tiempo_actual - tiempo_inicio_;
+        interruptor_bomba_->turn_off();
+        int64_t tiempo_total_encendido = timestamp_actual - tiempo_inicio_;
         tiempo_encendida_ += tiempo_total_encendido;
-        ESP_LOGD(TAG, "Bomba apagada debido a temperatura inadecuada");
-        ESP_LOGW(TAG, "Tiempo total de funcionamiento de la bomba: %lld segundos", tiempo_total_encendido);
+        log_mensaje("DEBUG", "Bomba apagada debido a temperatura inadecuada");
+        log_mensaje("WARN", "Tiempo total de funcionamiento de la bomba: %lld segundos", tiempo_total_encendido);
         espera_ = true;
-        tiempo_espera_fin_ = tiempo_actual + 300; // 5 minutes in seconds
+        tiempo_espera_fin_ = timestamp_actual + 300; // 5 minutos en segundos
         return;
       } else {
-        ESP_LOGD(TAG, "Bomba ya está apagada");
+        log_mensaje("DEBUG", "Bomba ya está apagada");
         return;
       }
     }
 
-    if (estado_bomba_actual && temp_output_->state < (temp_water_->state + 1)) {
-      pump_switch_->turn_off();
-      int64_t tiempo_total_encendido = tiempo_actual - tiempo_inicio_;
+    if (estado_bomba_actual && sensor_temp_salida_->state < (sensor_temp_agua_->state + 1)) {
+      interruptor_bomba_->turn_off();
+      int64_t tiempo_total_encendido = timestamp_actual - tiempo_inicio_;
       tiempo_encendida_ += tiempo_total_encendido;
-      ESP_LOGD(TAG, "Bomba apagada debido a temperatura de salida insuficiente");
-      ESP_LOGW(TAG, "Tiempo total de funcionamiento de la bomba: %lld segundos", tiempo_total_encendido);
+      log_mensaje("DEBUG", "Bomba apagada debido a temperatura de salida insuficiente");
+      log_mensaje("WARN", "Tiempo total de funcionamiento de la bomba: %lld segundos", tiempo_total_encendido);
       espera_ = true;
-      tiempo_espera_fin_ = tiempo_actual + 300; // 5 minutes in seconds
+      tiempo_espera_fin_ = timestamp_actual + 300; // 5 minutos en segundos
       return;
     }
 
     if (estado_bomba_actual) {
-      int64_t tiempo_transcurrido = tiempo_actual - tiempo_inicio_;
-      ESP_LOGW(TAG, "Tiempo transcurrido de funcionamiento de la bomba: %02d:%02d:%02d",
+      int64_t tiempo_transcurrido = timestamp_actual - tiempo_inicio_;
+      log_mensaje("WARN", "Tiempo transcurrido de funcionamiento de la bomba: %02d:%02d:%02d",
                (int)(tiempo_transcurrido / 3600),
                (int)((tiempo_transcurrido % 3600) / 60),
                (int)(tiempo_transcurrido % 60));
     }
 
-    ESP_LOGW(TAG, "Diferencia Sol-Agua: %.2f°C", temp_sun_->state - temp_water_->state);
-    ESP_LOGW(TAG, "Diferencia Salida-Agua: %.2f°C", temp_output_->state - temp_water_->state);
-    ESP_LOGW(TAG, "Estado de la bomba: %d", pump_switch_->state);
-    ESP_LOGD(TAG, "Conteo de encendidos de la bomba: %d", conteo_encendidos_);
+    log_mensaje("WARN", "Diferencia Sol-Agua: %.2f°C", sensor_temp_sol_->state - sensor_temp_agua_->state);
+    log_mensaje("WARN", "Diferencia Salida-Agua: %.2f°C", sensor_temp_salida_->state - sensor_temp_agua_->state);
+    log_mensaje("WARN", "Estado de la bomba: %d", interruptor_bomba_->state);
+    log_mensaje("DEBUG", "Conteo de encendidos de la bomba: %d", conteo_encendidos_);
 
     this->publish_state();
   }
@@ -94,8 +105,8 @@ esphome::climate::ClimateTraits CustomClimate::traits() {
   auto traits = esphome::climate::ClimateTraits();
   traits.set_supports_current_temperature(true);
   traits.set_supports_two_point_target_temperature(true);
-  traits.set_visual_min_temperature(visual_min_temp_);
-  traits.set_visual_max_temperature(visual_max_temp_);
+  traits.set_visual_min_temperature(temperatura_visual_minima_);
+  traits.set_visual_max_temperature(temperatura_visual_maxima_);
   traits.set_visual_temperature_step(0.1);
   return traits;
 }
