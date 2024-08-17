@@ -75,20 +75,27 @@ void CustomClimate::loop() {
 
       if (temp_sol > (temp_agua + diferencia_alta_) && temp_agua < this->target_temperature) {
         if (!estado_bomba_actual) {
-          // Calcular el tiempo de activación de la bomba en segundos
-          float diferencia_temp = temp_sol - temp_agua;
-          int tiempo_activacion = static_cast<int>(diferencia_temp * factor_tiempo_activacion_);
-          
-          interruptor_bomba_->turn_on();
-          conteo_encendidos_++;
-          tiempo_inicio_ = timestamp_actual;
-          log_mensaje("WARN", "Bomba encendida durante %d segundos debido a la diferencia de temperatura de %.2f grados", tiempo_activacion, diferencia_temp);
-          
-          // Establecer el tiempo de espera después de la activación de la bomba
-          espera_ = true;
-          tiempo_espera_fin_ = timestamp_actual + tiempo_activacion;
-          this->publish_state();
-          return;
+          if (temp_agua >= (this->target_temperature - temperatura_cerca_)) {
+            // Activar la nueva lógica solo cuando falten X grados para llegar a la temperatura deseada
+            float diferencia_temp = temp_sol - temp_agua;
+            int tiempo_activacion = static_cast<int>(diferencia_temp * factor_tiempo_activacion_);
+            
+            interruptor_bomba_->turn_on();
+            conteo_encendidos_++;
+            tiempo_inicio_ = timestamp_actual;
+            log_mensaje("WARN", "Bomba encendida durante %d segundos debido a la diferencia de temperatura de %.2f grados", tiempo_activacion, diferencia_temp);
+            
+            espera_ = true;
+            tiempo_espera_fin_ = timestamp_actual + tiempo_activacion;
+            this->publish_state();
+            return;
+          } else {
+            // Usar la lógica anterior cuando falten más de X grados para llegar a la temperatura deseada
+            interruptor_bomba_->turn_on();
+            conteo_encendidos_++;
+            tiempo_inicio_ = timestamp_actual;
+            log_mensaje("WARN", "Bomba encendida debido a la temperatura adecuada");
+          }
         } else {
           log_mensaje("WARN", "Bomba ya está encendida");
         }
