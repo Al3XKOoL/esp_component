@@ -38,7 +38,7 @@ CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend({
     cv.Required(CONF_TIEMPO_HOMEASSISTANT): cv.use_id(time.RealTimeClock),
     cv.Optional(CONF_FACTOR_TIEMPO_ACTIVACION, default=10.0): cv.float_,
     cv.Optional(CONF_TEMPERATURA_CERCA, default=1.0): cv.float_,
-    # Remove restore_from_flash from the schema if not supported
+    cv.Optional('restore_from_flash', default=False): cv.boolean,  # Handle restore from flash option
 }).extend(cv.COMPONENT_SCHEMA)
 
 # Generate code for the custom climate component
@@ -74,5 +74,6 @@ async def to_code(config):
     cg.add(var.set_factor_tiempo_activacion(config[CONF_FACTOR_TIEMPO_ACTIVACION]))
     cg.add(var.set_temperatura_cerca(config[CONF_TEMPERATURA_CERCA]))
 
-    # Handle restore from flash if supported
-    # Since CONF_RESTORE_FROM_FLASH is not available, you may need to handle this in a different way
+    # Handle restore from flash option
+    if config.get('restore_from_flash', False):
+        cg.add(var.restore_state_from_flash())
