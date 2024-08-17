@@ -50,12 +50,9 @@ void CustomClimate::loop() {
 
     if (this->mode == CLIMATE_MODE_HEAT) {
       log_mensaje("INFO", "Modo HEAT activo, iniciando control de bomba");
-      try {
-        control_bomba();
-      } catch (const std::exception& e) {
-        log_mensaje("ERROR", "Excepción en control_bomba: %s", e.what());
-      } catch (...) {
-        log_mensaje("ERROR", "Excepción desconocida en control_bomba");
+      bool control_exitoso = control_bomba();
+      if (!control_exitoso) {
+        log_mensaje("ERROR", "Error en control_bomba");
       }
     } else {
       log_mensaje("INFO", "Modo no es HEAT, verificando estado de la bomba");
@@ -71,7 +68,7 @@ void CustomClimate::loop() {
   }
 }
 
-void CustomClimate::control_bomba() {
+bool CustomClimate::control_bomba() {
   log_mensaje("INFO", "Iniciando control de bomba");
 
   if (espera_) {
@@ -81,7 +78,7 @@ void CustomClimate::control_bomba() {
       espera_ = false;
     } else {
       log_mensaje("INFO", "En espera hasta %lld (actual: %lld)", tiempo_espera_fin_, tiempo_actual);
-      return;
+      return true;
     }
   }
 
@@ -95,6 +92,7 @@ void CustomClimate::control_bomba() {
   }
 
   log_mensaje("INFO", "Control de bomba completado");
+  return true;
 }
 
 bool CustomClimate::modo_cerca_temperatura_objetivo() {
