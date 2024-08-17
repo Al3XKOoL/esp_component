@@ -29,6 +29,7 @@ class CustomClimate : public esphome::climate::Climate, public esphome::Componen
   void control(const esphome::climate::ClimateCall &call) override;
   float get_current_temperature();
   void dump_config() override;
+  void restore_target_temperature();
 
  protected:
   esphome::sensor::Sensor *sensor_temp_sol_;
@@ -44,6 +45,7 @@ class CustomClimate : public esphome::climate::Climate, public esphome::Componen
   esphome::time::RealTimeClock *tiempo_homeassistant_{nullptr};
   float factor_tiempo_activacion_{10.0};
   float temperatura_cerca_{1.0};
+  bool restore_state_{false};
 
   unsigned long ultimo_tiempo_verificacion_{0};
   const unsigned long intervalo_segundos_{2};
