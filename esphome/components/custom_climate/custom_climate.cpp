@@ -35,7 +35,7 @@ void CustomClimate::loop() {
   if (tiempo_actual - ultimo_tiempo_verificacion_ >= intervalo_segundos_ * 1000) {
     ultimo_tiempo_verificacion_ = tiempo_actual;
 
-    log_mensaje("DEBUG", "Ejecutando loop()");
+    log_mensaje("WARN", "Ejecutando loop()");
 
     // Actualizar lecturas de todos los sensores
     float temp_sol = sensor_temp_sol_->state;
@@ -47,7 +47,7 @@ void CustomClimate::loop() {
       this->current_temperature = temp_agua;
     }
 
-    log_mensaje("DEBUG", "Temperaturas - Sol: %.2f, Agua: %.2f, Salida: %.2f", temp_sol, temp_agua, temp_salida);
+    log_mensaje("WARN", "Temperaturas - Sol: %.2f, Agua: %.2f, Salida: %.2f", temp_sol, temp_agua, temp_salida);
 
     // Solo realizar comprobaciones si el modo es HEAT
     if (this->mode == CLIMATE_MODE_HEAT) {
@@ -63,9 +63,9 @@ void CustomClimate::loop() {
       if (espera_) {
         if (timestamp_actual >= tiempo_espera_fin_) {
           espera_ = false;
-          log_mensaje("DEBUG", "Reanudando verificaciones después de espera de 5 minutos.");
+          log_mensaje("WARN", "Reanudando verificaciones después de espera de 5 minutos.");
         } else {
-          log_mensaje("DEBUG", "En espera hasta %lld", tiempo_espera_fin_);
+          log_mensaje("WARN", "En espera hasta %lld", tiempo_espera_fin_);
           this->publish_state();
           return;
         }
@@ -78,23 +78,23 @@ void CustomClimate::loop() {
           interruptor_bomba_->turn_on();
           conteo_encendidos_++;
           tiempo_inicio_ = timestamp_actual;
-          log_mensaje("DEBUG", "Bomba encendida debido a la temperatura adecuada");
+          log_mensaje("WARN", "Bomba encendida debido a la temperatura adecuada");
         } else {
-          log_mensaje("DEBUG", "Bomba ya está encendida");
+          log_mensaje("WARN", "Bomba ya está encendida");
         }
       } else {
         if (estado_bomba_actual) {
           interruptor_bomba_->turn_off();
           int64_t tiempo_total_encendido = timestamp_actual - tiempo_inicio_;
           tiempo_encendida_ += tiempo_total_encendido;
-          log_mensaje("DEBUG", "Bomba apagada debido a temperatura inadecuada");
+          log_mensaje("WARN", "Bomba apagada debido a temperatura inadecuada");
           log_mensaje("WARN", "Tiempo total de funcionamiento de la bomba: %lld segundos", tiempo_total_encendido);
           espera_ = true;
           tiempo_espera_fin_ = timestamp_actual + 300; // 5 minutos en segundos
           this->publish_state();
           return;
         } else {
-          log_mensaje("DEBUG", "Bomba ya está apagada");
+          log_mensaje("WARN", "Bomba ya está apagada");
           this->publish_state();
           return;
         }
@@ -104,7 +104,7 @@ void CustomClimate::loop() {
         interruptor_bomba_->turn_off();
         int64_t tiempo_total_encendido = timestamp_actual - tiempo_inicio_;
         tiempo_encendida_ += tiempo_total_encendido;
-        log_mensaje("DEBUG", "Bomba apagada debido a temperatura de salida insuficiente");
+        log_mensaje("WARN", "Bomba apagada debido a temperatura de salida insuficiente");
         log_mensaje("WARN", "Tiempo total de funcionamiento de la bomba: %lld segundos", tiempo_total_encendido);
         espera_ = true;
         tiempo_espera_fin_ = timestamp_actual + 300; // 5 minutos en segundos
@@ -123,12 +123,12 @@ void CustomClimate::loop() {
       log_mensaje("WARN", "Diferencia Sol-Agua: %.2f°C", temp_sol - temp_agua);
       log_mensaje("WARN", "Diferencia Salida-Agua: %.2f°C", temp_salida - temp_agua);
       log_mensaje("WARN", "Estado de la bomba: %d", estado_bomba_actual);
-      log_mensaje("DEBUG", "Conteo de encendidos de la bomba: %d", conteo_encendidos_);
+      log_mensaje("WARN", "Conteo de encendidos de la bomba: %d", conteo_encendidos_);
     } else {
       // Si no está en modo HEAT, asegurarse de que la bomba esté apagada
       if (interruptor_bomba_->state) {
         interruptor_bomba_->turn_off();
-        log_mensaje("DEBUG", "Bomba apagada porque el modo HEAT está desactivado");
+        log_mensaje("WARN", "Bomba apagada porque el modo HEAT está desactivado");
       }
     }
 
@@ -154,9 +154,9 @@ void CustomClimate::control(const esphome::climate::ClimateCall &call) {
       this->mode = new_mode;
       if (this->mode == CLIMATE_MODE_OFF) {
         interruptor_bomba_->turn_off();
-        log_mensaje("DEBUG", "Bomba apagada debido a cambio a modo OFF");
+        log_mensaje("WARN", "Bomba apagada debido a cambio a modo OFF");
       } else if (this->mode == CLIMATE_MODE_HEAT) {
-        log_mensaje("DEBUG", "Modo HEAT activado");
+        log_mensaje("WARN", "Modo HEAT activado");
       }
     }
   }
