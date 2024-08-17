@@ -4,6 +4,10 @@
 #include "esphome/components/climate/climate.h"
 #include "esphome/components/time/real_time_clock.h"
 
+// Añade estas líneas para definir las macros de registro
+#define ESPHOME_LOG_LEVEL ESPHOME_LOG_LEVEL_DEBUG
+#include "esphome/core/log.h"
+
 namespace custom_climate {
 
 class CustomClimate : public esphome::climate::Climate, public esphome::Component {
