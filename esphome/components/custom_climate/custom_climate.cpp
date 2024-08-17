@@ -10,6 +10,10 @@ namespace custom_climate {
 static const char *TAG = "custom_climate";
 
 void CustomClimate::setup() {
+  this->mode = climate::CLIMATE_MODE_OFF;
+  this->current_temperature = this->get_current_temperature();
+  this->target_temperature = 37.0;  // Temperatura objetivo predeterminada
+
   // Inicializar valores de los números
   if (this->diferencia_media_number_ != nullptr) {
     this->diferencia_media_ = this->diferencia_media_number_->state;
@@ -21,6 +25,9 @@ void CustomClimate::setup() {
   // Inicializar otros componentes y variables
   this->ultimo_tiempo_verificacion_ = millis();
   this->ultimo_reset_diario_ = this->obtener_tiempo_actual();
+
+  this->publish_state();
+  this->log_mensaje("INFO", "Setup completado");
 }
 
 void CustomClimate::loop() {
@@ -28,7 +35,14 @@ void CustomClimate::loop() {
   if (tiempo_actual - this->ultimo_tiempo_verificacion_ >= this->intervalo_segundos_ * 1000) {
     this->ultimo_tiempo_verificacion_ = tiempo_actual;
 
-    this->control_bomba();
+    if (this->mode == climate::CLIMATE_MODE_HEAT) {
+      this->log_mensaje("DEBUG", "Modo HEAT activo, iniciando control de bomba");
+      this->control_bomba();
+    } else {
+      this->log_mensaje("DEBUG", "Modo no es HEAT, apagando bomba");
+      this->apagar_bomba();
+    }
+
     this->actualizar_consumo();
     this->reset_consumo_diario();
 
@@ -45,6 +59,8 @@ void CustomClimate::loop() {
     if (this->kwh_total_sensor_ != nullptr) {
       this->kwh_total_sensor_->publish_state(this->kwh_total_);
     }
+
+    this->publish_state();
   }
 }
 
@@ -66,115 +82,139 @@ climate::ClimateTraits CustomClimate::traits() {
   traits.set_visual_min_temperature(this->temperatura_visual_minima_);
   traits.set_visual_max_temperature(this->temperatura_visual_maxima_);
   traits.set_supports_action(true);
+  traits.add_supported_mode(climate::CLIMATE_MODE_OFF);
+  traits.add_supported_mode(climate::CLIMATE_MODE_HEAT);
   return traits;
 }
 
 bool CustomClimate::control_bomba() {
-  float diferencia_media = this->diferencia_media_number_ != nullptr ? this->diferencia_media_number_->state : this->diferencia_media_;
-  float diferencia_alta = this->diferencia_alta_number_ != nullptr ? this->diferencia_alta_number_->state : this->diferencia_alta_;
+  this->log_mensaje("DEBUG", "Iniciando control de bomba");
 
   if (this->espera_) {
-    if (this->obtener_tiempo_actual() >= this->tiempo_espera_fin_) {
+    int64_t tiempo_actual = this->obtener_tiempo_actual();
+    if (tiempo_actual >= this->tiempo_espera_fin_) {
+      this->log_mensaje("DEBUG", "Fin del tiempo de espera");
       this->espera_ = false;
     } else {
-      return false;
+      this->log_mensaje("DEBUG", "En espera hasta %lld (actual: %lld)", this->tiempo_espera_fin_, tiempo_actual);
+      return true;
     }
   }
 
-  if (this->modo_cerca_temperatura_objetivo()) {
+  bool cerca_objetivo = this->modo_cerca_temperatura_objetivo();
+  this->log_mensaje("DEBUG", "Cerca del objetivo: %s", cerca_objetivo ? "Sí" : "No");
+
+  if (cerca_objetivo) {
     this->control_bomba_cerca_objetivo();
   } else {
     this->control_bomba_normal();
   }
 
+  this->log_mensaje("DEBUG", "Control de bomba completado");
   return true;
 }
 
 bool CustomClimate::modo_cerca_temperatura_objetivo() {
-  return std::abs(this->get_current_temperature() - this->target_temperature) <= this->temperatura_cerca_;
+  return (this->current_temperature >= (this->target_temperature - this->temperatura_cerca_));
 }
 
 void CustomClimate::control_bomba_cerca_objetivo() {
-  if (this->diferencia_temperatura_suficiente()) {
-    if (this->get_current_temperature() < this->target_temperature) {
-      this->encender_bomba();
-    } else {
+  this->log_mensaje("DEBUG", "Control de bomba cerca del objetivo");
+  if (!this->interruptor_bomba_->state && this->diferencia_temperatura_suficiente()) {
+    this->encender_bomba();
+    this->esperar_estabilizacion();
+    this->activar_espera_proporcional();
+  } else if (this->interruptor_bomba_->state) {
+    if (this->temperatura_alcanzada()) {
       this->apagar_bomba();
     }
-  } else {
-    this->apagar_bomba();
   }
 }
 
 void CustomClimate::control_bomba_normal() {
-  if (this->diferencia_temperatura_suficiente()) {
+  this->log_mensaje("DEBUG", "Control de bomba normal");
+  if (!this->interruptor_bomba_->state && this->diferencia_temperatura_suficiente()) {
     this->encender_bomba();
-  } else {
+    this->esperar_estabilizacion();
+  } else if (this->interruptor_bomba_->state && !this->diferencia_temperatura_suficiente()) {
     this->apagar_bomba();
+    this->activar_espera_fija();
   }
 }
 
 bool CustomClimate::diferencia_temperatura_suficiente() {
   float diferencia_media = this->diferencia_media_number_ != nullptr ? this->diferencia_media_number_->state : this->diferencia_media_;
-  float diferencia_alta = this->diferencia_alta_number_ != nullptr ? this->diferencia_alta_number_->state : this->diferencia_alta_;
-
   float temp_sol = this->sensor_temp_sol_->state;
-  float temp_agua = this->sensor_temp_agua_->state;
-  float temp_salida = this->sensor_temp_salida_->state;
-
-  return (temp_sol - temp_agua >= diferencia_media) || (temp_salida - temp_agua >= diferencia_alta);
+  float temp_agua = this->get_current_temperature();
+  
+  return (temp_sol - temp_agua >= diferencia_media) && (temp_agua < this->target_temperature);
 }
 
 void CustomClimate::encender_bomba() {
-  if (!this->interruptor_bomba_->state) {
+  this->log_mensaje("WARN", "Encendiendo bomba");
+  if (this->interruptor_bomba_ != nullptr) {
     this->interruptor_bomba_->turn_on();
     this->conteo_encendidos_++;
     this->tiempo_inicio_ = this->obtener_tiempo_actual();
-    this->esperar_estabilizacion();
+  } else {
+    this->log_mensaje("ERROR", "Interruptor de bomba no configurado");
   }
 }
 
 void CustomClimate::apagar_bomba() {
-  if (this->interruptor_bomba_->state) {
+  this->log_mensaje("WARN", "Apagando bomba");
+  if (this->interruptor_bomba_ != nullptr) {
     this->interruptor_bomba_->turn_off();
     this->actualizar_consumo();
-    this->activar_espera_proporcional();
+  } else {
+    this->log_mensaje("ERROR", "Interruptor de bomba no configurado");
   }
 }
 
 void CustomClimate::esperar_estabilizacion() {
-  this->activar_espera_fija();
+  this->log_mensaje("DEBUG", "Esperando 15 segundos para estabilización");
+  delay(15000);  // 15 segundos
 }
 
 void CustomClimate::activar_espera_proporcional() {
-  int64_t tiempo_encendido = this->obtener_tiempo_actual() - this->tiempo_inicio_;
-  int64_t tiempo_espera = tiempo_encendido * this->factor_tiempo_activacion_;
-  this->tiempo_espera_fin_ = this->obtener_tiempo_actual() + tiempo_espera;
+  float diferencia_temp = this->sensor_temp_sol_->state - this->current_temperature;
+  int tiempo_activacion = static_cast<int>(diferencia_temp * this->factor_tiempo_activacion_);
   this->espera_ = true;
+  this->tiempo_espera_fin_ = this->obtener_tiempo_actual() + tiempo_activacion;
+  this->log_mensaje("DEBUG", "Activada espera proporcional por %d segundos", tiempo_activacion);
 }
 
 void CustomClimate::activar_espera_fija() {
-  this->tiempo_espera_fin_ = this->obtener_tiempo_actual() + 60;  // 60 segundos de espera fija
   this->espera_ = true;
+  this->tiempo_espera_fin_ = this->obtener_tiempo_actual() + 180;  // 3 minutos
+  this->log_mensaje("DEBUG", "Activada espera fija por 3 minutos");
+}
+
+bool CustomClimate::temperatura_alcanzada() {
+  return (this->current_temperature >= this->target_temperature);
 }
 
 int64_t CustomClimate::obtener_tiempo_actual() {
-  if (this->tiempo_sntp_ != nullptr && this->tiempo_sntp_->now().is_valid()) {
-    return this->tiempo_sntp_->now().timestamp;
-  } else if (this->tiempo_homeassistant_ != nullptr && this->tiempo_homeassistant_->now().is_valid()) {
+  if (this->tiempo_homeassistant_ != nullptr && this->tiempo_homeassistant_->now().is_valid()) {
     return this->tiempo_homeassistant_->now().timestamp;
+  } else if (this->tiempo_sntp_ != nullptr && this->tiempo_sntp_->now().is_valid()) {
+    return this->tiempo_sntp_->now().timestamp;
   } else {
     return millis() / 1000;
   }
 }
 
 float CustomClimate::get_current_temperature() {
+  if (this->sensor_temp_agua_ == nullptr) {
+    this->log_mensaje("ERROR", "Sensor de temperatura de agua no configurado");
+    return NAN;
+  }
   return this->sensor_temp_agua_->state;
 }
 
 void CustomClimate::actualizar_consumo() {
   int64_t tiempo_actual = this->obtener_tiempo_actual();
-  if (this->interruptor_bomba_->state) {
+  if (this->interruptor_bomba_ != nullptr && this->interruptor_bomba_->state) {
     int64_t tiempo_encendido = tiempo_actual - this->tiempo_inicio_;
     this->tiempo_encendido_ += tiempo_encendido;
     float kwh = (this->potencia_bomba_ / 1000.0f) * (tiempo_encendido / 3600.0f);
@@ -189,6 +229,7 @@ void CustomClimate::reset_consumo_diario() {
   if (tiempo_actual - this->ultimo_reset_diario_ >= 24 * 60 * 60) {
     this->kwh_hoy_ = 0.0f;
     this->ultimo_reset_diario_ = tiempo_actual;
+    this->log_mensaje("INFO", "Reseteo diario de consumo");
   }
 }
 
