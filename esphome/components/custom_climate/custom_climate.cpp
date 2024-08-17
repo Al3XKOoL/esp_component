@@ -197,7 +197,7 @@ float CustomClimate::get_current_temperature() {
 
 void CustomClimate::dump_config() {
   LOG_CLIMATE("", "Custom Climate", this);
-  esphome::esp_log_printf_(ESPHOME_LOG_LEVEL_CONFIG, TAG, __LINE__, ESPHOME_LOG_FORMAT("  Target Temperature: %.1f"), this->target_temperature);
+  log_mensaje("WARN", "  Target Temperature: %.1f", this->target_temperature);
 }
 
 void CustomClimate::restore_target_temperature() {
