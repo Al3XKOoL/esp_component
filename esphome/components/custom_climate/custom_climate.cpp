@@ -2,8 +2,11 @@
 #include <cstdarg>
 #include <cstdio>
 #include "esphome/core/log.h"
+#include "esphome/components/climate/climate.h"
 
 namespace custom_climate {
+
+using namespace esphome::climate;  
 
 static const char *const TAG = "custom_climate";
 
