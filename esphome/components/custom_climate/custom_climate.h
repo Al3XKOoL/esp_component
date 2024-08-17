@@ -27,6 +27,7 @@ class CustomClimate : public esphome::climate::Climate, public esphome::Componen
   esphome::climate::ClimateTraits traits() override;
   void control(const esphome::climate::ClimateCall &call) override;
   float get_current_temperature();
+  void dump_config() override;
 
  protected:
   esphome::sensor::Sensor *sensor_temp_sol_;
