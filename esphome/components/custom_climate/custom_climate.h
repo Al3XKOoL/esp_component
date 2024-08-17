@@ -50,6 +50,10 @@ class CustomClimate : public esphome::climate::Climate, public esphome::Componen
   int64_t tiempo_espera_fin_{0};
   int64_t tiempo_inicio_{0};
 
+  // Métodos para guardar y restaurar el estado
+  void save_state() override;
+  void restore_state(const esphome::climate::ClimateDeviceRestoreState &state) override;
+
   void log_mensaje(const char* nivel, const char* formato, ...);
 };
 
