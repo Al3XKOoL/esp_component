@@ -1,6 +1,7 @@
 #include "custom_climate.h"
 #include <cstdarg>
 #include <cstdio>
+#include "esphome/core/log.h"
 
 namespace custom_climate {
 
@@ -12,7 +13,7 @@ void CustomClimate::log_mensaje(const char* nivel, const char* formato, ...) {
     char buffer[256];
     vsnprintf(buffer, sizeof(buffer), formato, args);
     va_end(args);
-    ESP_LOGD("custom_climate", "%s: %s", nivel, buffer);
+    esphome::ESP_LOGD(TAG, "%s: %s", nivel, buffer);
 }
 
 void CustomClimate::setup() {
