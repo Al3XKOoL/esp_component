@@ -1,53 +1,47 @@
 #pragma once
 
 #include "esphome.h"
-#include "esphome/core/component.h"
 #include "esphome/components/climate/climate.h"
 
-namespace esphome {
 namespace custom_climate {
 
-class CustomClimate : public Component, public climate::Climate {
+class CustomClimate : public climate::Climate, public Component {
  public:
+  void set_temp_sun(sensor::Sensor *temp_sun) { temp_sun_ = temp_sun; }
+  void set_temp_water(sensor::Sensor *temp_water) { temp_water_ = temp_water; }
+  void set_temp_output(sensor::Sensor *temp_output) { temp_output_ = temp_output; }
+  void set_temp_max(float temp_max) { temp_max_ = temp_max; }
+  void set_diff_high(float diff_high) { diff_high_ = diff_high; }
+  void set_diff_mid(float diff_mid) { diff_mid_ = diff_mid; }
+  void set_visual_min_temp(float visual_min_temp) { visual_min_temp_ = visual_min_temp; }
+  void set_visual_max_temp(float visual_max_temp) { visual_max_temp_ = visual_max_temp; }
+  void set_pump_power(float pump_power) { pump_power_ = pump_power; }
+  void set_pump_switch(switch_::Switch *pump_switch) { pump_switch_ = pump_switch; }
+
   void setup() override;
   void loop() override;
-  void control(const climate::ClimateCall &call) override;
   climate::ClimateTraits traits() override;
-
-  void set_temperature_azotea_sensor(sensor::Sensor *sensor) { temperature_azotea_sensor_ = sensor; }
-  void set_temperature_spa_sensor(sensor::Sensor *sensor) { temperature_spa_sensor_ = sensor; }
-  void set_temperature_caliente_sensor(sensor::Sensor *sensor) { temperature_caliente_sensor_ = sensor; }
-  void set_bomba_solar_switch(switch_::Switch *sw) { bomba_solar_switch_ = sw; }
-
-  void set_max_temperature(float temp) { max_temperature_ = temp; }
-  void set_temperature_difference(float diff) { temperature_difference_ = diff; }
+  void control(const climate::ClimateCall &call) override;
 
  protected:
-  // Sensores de temperatura
-  sensor::Sensor *temperature_azotea_sensor_{nullptr};
-  sensor::Sensor *temperature_spa_sensor_{nullptr};
-  sensor::Sensor *temperature_caliente_sensor_{nullptr};
+  sensor::Sensor *temp_sun_;
+  sensor::Sensor *temp_water_;
+  sensor::Sensor *temp_output_;
+  float temp_max_;
+  float diff_high_;
+  float diff_mid_;
+  float visual_min_temp_;
+  float visual_max_temp_;
+  float pump_power_;
+  switch_::Switch *pump_switch_;
 
-  // Switch para controlar la bomba solar
-  switch_::Switch *bomba_solar_switch_{nullptr};
-
-  // Configuraciones adicionales
-  float max_temperature_{37.5};             // Temperatura máxima por defecto
-  float temperature_difference_{2.0};       // Diferencia de temperatura para controlar la bomba
-
-  unsigned long last_check_time_{0};        // Tiempo de la última verificación
-  const unsigned long interval_seconds_{30}; // Intervalo de verificación en segundos
-
-  int64_t tiempo_inicio_{0};
+  unsigned long last_check_time_{0};
+  const unsigned long interval_seconds_{30};
   bool espera_{false};
   int64_t tiempo_espera_fin_{0};
-
-  // Método que se encarga de la lógica de control de la bomba
-  void check_and_control_pump();
-
-  // Método para actualizar y publicar el estado del climatizador
-  void update_state();
+  int64_t tiempo_inicio_{0};
+  int conteo_encendidos_{0};
+  int64_t tiempo_encendida_{0};
 };
 
 }  // namespace custom_climate
-}  // namespace esphome
