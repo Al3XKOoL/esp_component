@@ -22,11 +22,16 @@ CONF_TEMPERATURA_CERCA = "temperatura_cerca"
 
 CONF_DIFERENCIA_MEDIA_NUMBER = "diferencia_media_number"
 CONF_DIFERENCIA_ALTA_NUMBER = "diferencia_alta_number"
+CONF_CONTEO_ENCENDIDOS = "conteo_encendidos"
+CONF_TIEMPO_ENCENDIDO = "tiempo_encendido"
+CONF_KWH_HOY = "kwh_hoy"
+CONF_KWH_TOTAL = "kwh_total"
 
 custom_climate_ns = cg.esphome_ns.namespace('custom_climate')
 CustomClimate = custom_climate_ns.class_('CustomClimate', climate.Climate, cg.Component)
 
 CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend({
+    cv.GenerateID(): cv.declare_id(CustomClimate),
     cv.GenerateID(): cv.declare_id(CustomClimate),
     cv.Required(CONF_SENSOR_TEMP_SOL): cv.use_id(sensor.Sensor),
     cv.Required(CONF_SENSOR_TEMP_AGUA): cv.use_id(sensor.Sensor),
@@ -55,6 +60,26 @@ CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend({
         cv.Optional(CONF_MAX_VALUE, default=5.0): cv.float_,
         cv.Optional(CONF_STEP, default=0.1): cv.float_,
     }),
+    cv.Required(CONF_CONTEO_ENCENDIDOS): sensor.sensor_schema(
+        unit_of_measurement="",
+        accuracy_decimals=0,
+        device_class=None,
+    ),
+    cv.Required(CONF_TIEMPO_ENCENDIDO): sensor.sensor_schema(
+        unit_of_measurement="s",
+        accuracy_decimals=0,
+        device_class=None,
+    ),
+    cv.Required(CONF_KWH_HOY): sensor.sensor_schema(
+        unit_of_measurement="kWh",
+        accuracy_decimals=3,
+        device_class=None,
+    ),
+    cv.Required(CONF_KWH_TOTAL): sensor.sensor_schema(
+        unit_of_measurement="kWh",
+        accuracy_decimals=3,
+        device_class=None,
+    ),
 }).extend(cv.COMPONENT_SCHEMA)
 
 async def to_code(config):
@@ -89,57 +114,20 @@ async def to_code(config):
         tiempo_homeassistant = await cg.get_variable(config[CONF_TIEMPO_HOMEASSISTANT])
         cg.add(var.set_tiempo_homeassistant(tiempo_homeassistant))
 
-    diferencia_media_conf = config[CONF_DIFERENCIA_MEDIA_NUMBER]
-    diferencia_media_number = await number.new_number(
-        min_value=diferencia_media_conf[CONF_MIN_VALUE],
-        max_value=diferencia_media_conf[CONF_MAX_VALUE],
-        step=diferencia_media_conf[CONF_STEP],
-        config=diferencia_media_conf,
-    )
+    diferencia_media_number = await number.new_number(config[CONF_DIFERENCIA_MEDIA_NUMBER])
     cg.add(var.set_diferencia_media_number(diferencia_media_number))
 
-    diferencia_alta_conf = config[CONF_DIFERENCIA_ALTA_NUMBER]
-    diferencia_alta_number = await number.new_number(
-        min_value=diferencia_alta_conf[CONF_MIN_VALUE],
-        max_value=diferencia_alta_conf[CONF_MAX_VALUE],
-        step=diferencia_alta_conf[CONF_STEP],
-        config=diferencia_alta_conf,
-    )
+    diferencia_alta_number = await number.new_number(config[CONF_DIFERENCIA_ALTA_NUMBER])
     cg.add(var.set_diferencia_alta_number(diferencia_alta_number))
 
-    # Crear sensores
-    conteo_encendidos_sensor_config = sensor.sensor_schema({
-        cv.GenerateID(): cv.declare_id(sensor.Sensor),
-        cv.Optional(CONF_NAME, default="Conteo Encendidos"): cv.string,
-        cv.Optional(CONF_UNIT_OF_MEASUREMENT, default=""): cv.string,
-        cv.Optional(CONF_ACCURACY_DECIMALS, default=0): cv.int_,
-    })
-    conteo_encendidos_sens = await sensor.new_sensor(conteo_encendidos_sensor_config)
-    cg.add(var.set_conteo_encendidos_sensor(conteo_encendidos_sens))
+    conteo_encendidos_sensor = await sensor.new_sensor(config[CONF_CONTEO_ENCENDIDOS])
+    cg.add(var.set_conteo_encendidos_sensor(conteo_encendidos_sensor))
 
-    tiempo_encendido_sensor_config = sensor.sensor_schema({
-        cv.GenerateID(): cv.declare_id(sensor.Sensor),
-        cv.Optional(CONF_NAME, default="Tiempo Encendido"): cv.string,
-        cv.Optional(CONF_UNIT_OF_MEASUREMENT, default="s"): cv.string,
-        cv.Optional(CONF_ACCURACY_DECIMALS, default=0): cv.int_,
-    })
-    tiempo_encendido_sens = await sensor.new_sensor(tiempo_encendido_sensor_config)
-    cg.add(var.set_tiempo_encendido_sensor(tiempo_encendido_sens))
+    tiempo_encendido_sensor = await sensor.new_sensor(config[CONF_TIEMPO_ENCENDIDO])
+    cg.add(var.set_tiempo_encendido_sensor(tiempo_encendido_sensor))
 
-    kwh_hoy_sensor_config = sensor.sensor_schema({
-        cv.GenerateID(): cv.declare_id(sensor.Sensor),
-        cv.Optional(CONF_NAME, default="kWh Hoy"): cv.string,
-        cv.Optional(CONF_UNIT_OF_MEASUREMENT, default="kWh"): cv.string,
-        cv.Optional(CONF_ACCURACY_DECIMALS, default=3): cv.int_,
-    })
-    kwh_hoy_sens = await sensor.new_sensor(kwh_hoy_sensor_config)
-    cg.add(var.set_kwh_hoy_sensor(kwh_hoy_sens))
+    kwh_hoy_sensor = await sensor.new_sensor(config[CONF_KWH_HOY])
+    cg.add(var.set_kwh_hoy_sensor(kwh_hoy_sensor))
 
-    kwh_total_sensor_config = sensor.sensor_schema({
-        cv.GenerateID(): cv.declare_id(sensor.Sensor),
-        cv.Optional(CONF_NAME, default="kWh Total"): cv.string,
-        cv.Optional(CONF_UNIT_OF_MEASUREMENT, default="kWh"): cv.string,
-        cv.Optional(CONF_ACCURACY_DECIMALS, default=3): cv.int_,
-    })
-    kwh_total_sens = await sensor.new_sensor(kwh_total_sensor_config)
-    cg.add(var.set_kwh_total_sensor(kwh_total_sens))
+    kwh_total_sensor = await sensor.new_sensor(config[CONF_KWH_TOTAL])
+    cg.add(var.set_kwh_total_sensor(kwh_total_sensor))
