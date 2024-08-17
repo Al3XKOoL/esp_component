@@ -23,23 +23,24 @@ void CustomClimate::log_mensaje(const char* nivel, const char* formato, ...) {
 }
 
 void CustomClimate::setup() {
-  // Configuración inicial del modo y temperatura objetivo
+  // Configuración inicial
   this->mode = CLIMATE_MODE_OFF;
   this->target_temperature = 37.0;
   this->current_temperature = get_current_temperature();
 
-  // Restaurar el estado guardado si se habilitó la opción
-  if (restore_state_) {
-    auto restore = this->restore_state;
-    if (restore.mode != CLIMATE_MODE_OFF) {
-      this->mode = restore.mode;
+  // Restaurar el estado del dispositivo
+  auto restore = this->restore_state();
+  if (restore.has_value()) {
+    auto restored_state = restore.value();
+    if (restored_state.mode != CLIMATE_MODE_OFF) {
+      this->mode = restored_state.mode;
     }
-    if (!std::isnan(restore.target_temperature)) {
-      this->target_temperature = restore.target_temperature;
+    if (!std::isnan(restored_state.target_temperature)) {
+      this->target_temperature = restored_state.target_temperature;
     }
   }
 
-  // Publicar el estado después de la restauración
+  // Publicar el estado actualizado
   this->publish_state();
 }
 
