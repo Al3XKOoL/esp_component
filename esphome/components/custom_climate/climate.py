@@ -1,7 +1,7 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import climate, sensor, switch, time, number
-from esphome.const import CONF_ID
+from esphome.const import CONF_ID, CONF_MIN_VALUE, CONF_MAX_VALUE, CONF_STEP, CONF_INITIAL_VALUE, CONF_NAME, CONF_UNIT_OF_MEASUREMENT, CONF_ACCURACY_DECIMALS
 
 CONF_SENSOR_TEMP_SOL = "sensor_temp_sol"
 CONF_SENSOR_TEMP_AGUA = "sensor_temp_agua"
@@ -68,48 +68,60 @@ async def to_code(config):
 
     # Registrar los nuevos números
     diferencia_media_number = await number.new_number(
-        number.number_schema(
-            min_value=0.1,
-            max_value=5.0,
-            step=0.1,
-            initial_value=config[CONF_DIFERENCIA_MEDIA],
-            name="Diferencia Media",
-        ),
+        number.NumberSchema({
+            CONF_MIN_VALUE: 0.1,
+            CONF_MAX_VALUE: 5.0,
+            CONF_STEP: 0.1,
+            CONF_INITIAL_VALUE: config[CONF_DIFERENCIA_MEDIA],
+            CONF_NAME: "Diferencia Media",
+        }),
         var.set_diferencia_media_number,
     )
 
     diferencia_alta_number = await number.new_number(
-        number.number_schema(
-            min_value=0.1,
-            max_value=5.0,
-            step=0.1,
-            initial_value=config[CONF_DIFERENCIA_ALTA],
-            name="Diferencia Alta",
-        ),
+        number.NumberSchema({
+            CONF_MIN_VALUE: 0.1,
+            CONF_MAX_VALUE: 5.0,
+            CONF_STEP: 0.1,
+            CONF_INITIAL_VALUE: config[CONF_DIFERENCIA_ALTA],
+            CONF_NAME: "Diferencia Alta",
+        }),
         var.set_diferencia_alta_number,
     )
 
     # Registrar los nuevos sensores
-    conteo_encendidos_sensor = await sensor.new_sensor(sensor.sensor_schema(
-        unit_of_measurement="",
-        accuracy_decimals=0,
-        name="Conteo Encendidos",
-    ), var.set_conteo_encendidos_sensor)
+    conteo_encendidos_sensor = await sensor.new_sensor(
+        sensor.SensorSchema({
+            CONF_UNIT_OF_MEASUREMENT: "",
+            CONF_ACCURACY_DECIMALS: 0,
+            CONF_NAME: "Conteo Encendidos",
+        }),
+        var.set_conteo_encendidos_sensor
+    )
 
-    tiempo_encendido_sensor = await sensor.new_sensor(sensor.sensor_schema(
-        unit_of_measurement="s",
-        accuracy_decimals=0,
-        name="Tiempo Encendido",
-    ), var.set_tiempo_encendido_sensor)
+    tiempo_encendido_sensor = await sensor.new_sensor(
+        sensor.SensorSchema({
+            CONF_UNIT_OF_MEASUREMENT: "s",
+            CONF_ACCURACY_DECIMALS: 0,
+            CONF_NAME: "Tiempo Encendido",
+        }),
+        var.set_tiempo_encendido_sensor
+    )
 
-    kwh_hoy_sensor = await sensor.new_sensor(sensor.sensor_schema(
-        unit_of_measurement="kWh",
-        accuracy_decimals=3,
-        name="kWh Hoy",
-    ), var.set_kwh_hoy_sensor)
+    kwh_hoy_sensor = await sensor.new_sensor(
+        sensor.SensorSchema({
+            CONF_UNIT_OF_MEASUREMENT: "kWh",
+            CONF_ACCURACY_DECIMALS: 3,
+            CONF_NAME: "kWh Hoy",
+        }),
+        var.set_kwh_hoy_sensor
+    )
 
-    kwh_total_sensor = await sensor.new_sensor(sensor.sensor_schema(
-        unit_of_measurement="kWh",
-        accuracy_decimals=3,
-        name="kWh Total",
-    ), var.set_kwh_total_sensor)
+    kwh_total_sensor = await sensor.new_sensor(
+        sensor.SensorSchema({
+            CONF_UNIT_OF_MEASUREMENT: "kWh",
+            CONF_ACCURACY_DECIMALS: 3,
+            CONF_NAME: "kWh Total",
+        }),
+        var.set_kwh_total_sensor
+    )
