@@ -23,13 +23,8 @@ void CustomClimate::setup() {
   this->current_temperature = get_current_temperature();
 
   // Restaurar el estado del dispositivo desde la memoria 
-  if (auto restore = this->restore_state_()) {
-    if (restore->target_temperature.has_value()) {
-      this->target_temperature = restore->target_temperature.value();
-    }
-    if (restore->mode.has_value()) {
-      this->mode = restore->mode.value();
-    }
+  if (this->get_config()->restore_from_flash) {
+    restore_state_from_flash();
   }
 
   this->publish_state();
@@ -187,6 +182,7 @@ void CustomClimate::control(const esphome::climate::ClimateCall &call) {
     this->target_temperature = *call.get_target_temperature();
   }
   this->publish_state();
+  save_state_to_flash(); // Guardar el estado después de una actualización
 }
 
 float CustomClimate::get_current_temperature() {
@@ -215,6 +211,19 @@ void CustomClimate::dump_config() {
   LOG_FLOAT("  ", "Temperatura Cerca", this->temperatura_cerca_);
   LOG_FLOAT("  ", "Temperatura Actual", this->current_temperature);
   LOG_INT("  ", "Conteo Encendidos", this->conteo_encendidos_);
+}
+
+void CustomClimate::restore_state_from_flash() {
+  // Aquí debería implementarse la restauración del estado desde la memoria flash
+  // Ejemplo ficticio:
+  this->target_temperature = ... // Restaurar desde flash
+  this->mode = ... // Restaurar desde flash
+}
+
+void CustomClimate::save_state_to_flash() {
+  // Aquí debería implementarse la guardia del estado en la memoria flash
+  // Ejemplo ficticio:
+  // Guardar target_temperature y mode en la memoria flash
 }
 
 }  // namespace custom_climate
