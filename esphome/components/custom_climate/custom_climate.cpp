@@ -29,12 +29,12 @@ void CustomClimate::setup() {
     this->current_temperature = get_current_temperature();
 
     // Restaurar el estado del dispositivo desde la memoria flash
-    auto restore = this->restore_state();
-    if (restore.has_value()) {
-        this->mode = restore->mode;
-
-        if (!std::isnan(restore->target_temperature)) {
-            this->target_temperature = restore->target_temperature;
+    if (auto restore = this->restore_state()) {
+        if (restore->mode.has_value()) {
+            this->mode = restore->mode.value();
+        }
+        if (restore->target_temperature.has_value()) {
+            this->target_temperature = restore->target_temperature.value();
         }
     }
 
@@ -196,10 +196,17 @@ void CustomClimate::control(const esphome::climate::ClimateCall &call) {
 }
 
 float CustomClimate::get_current_temperature() {
-    if (sensor_temp_agua_ != nullptr) {
+    if (sensor_temp_agua_ != nullptr && !std::isnan(sensor_temp_agua_->state)) {
         return sensor_temp_agua_->state;
+    } else {
+        log_mensaje("WARN", "El sensor de temperatura del agua no está disponible o devuelve NaN.");
+        return NAN;
     }
-    return NAN;
+}
+
+void CustomClimate::dump_config() {
+    log_mensaje("WARN", "Custom Climate:");
+    log_mensaje("WARN", "  Target Temperature: %.1f", this->target_temperature);
 }
 
 }  // namespace custom_climate
