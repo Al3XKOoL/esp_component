@@ -20,54 +20,81 @@ void CustomClimate::log_mensaje(const char* nivel, const char* formato, ...) {
 }
 
 void CustomClimate::setup() {
+  log_mensaje("INFO", "Iniciando setup");
   this->mode = CLIMATE_MODE_OFF;
   this->target_temperature = 37.0;
   this->current_temperature = get_current_temperature();
   this->publish_state();
+  log_mensaje("INFO", "Setup completado");
 }
 
 void CustomClimate::loop() {
   unsigned long tiempo_actual = millis();
   if (tiempo_actual - ultimo_tiempo_verificacion_ >= intervalo_segundos_ * 1000) {
     ultimo_tiempo_verificacion_ = tiempo_actual;
-    log_mensaje("WARN", "Ejecutando loop()");
+    log_mensaje("INFO", "Iniciando ciclo de loop");
+    log_mensaje("INFO", "Memoria libre: %d bytes", ESP.getFreeHeap());
 
-    if (!std::isnan(sensor_temp_agua_->state)) {
-      this->current_temperature = sensor_temp_agua_->state;
+    // Verificar sensores
+    if (sensor_temp_sol_ == nullptr || std::isnan(sensor_temp_sol_->state) ||
+        sensor_temp_agua_ == nullptr || std::isnan(sensor_temp_agua_->state) ||
+        sensor_temp_salida_ == nullptr || std::isnan(sensor_temp_salida_->state)) {
+      log_mensaje("ERROR", "Uno o más sensores no están disponibles o devuelven valores inválidos");
+      return;
     }
 
-    log_mensaje("WARN", "Temperaturas - Sol: %.2f, Agua: %.2f, Salida: %.2f", 
+    this->current_temperature = sensor_temp_agua_->state;
+
+    log_mensaje("INFO", "Temperaturas - Sol: %.2f, Agua: %.2f, Salida: %.2f", 
                 sensor_temp_sol_->state, sensor_temp_agua_->state, sensor_temp_salida_->state);
 
     if (this->mode == CLIMATE_MODE_HEAT) {
-      control_bomba();
+      log_mensaje("INFO", "Modo HEAT activo, iniciando control de bomba");
+      try {
+        control_bomba();
+      } catch (const std::exception& e) {
+        log_mensaje("ERROR", "Excepción en control_bomba: %s", e.what());
+      } catch (...) {
+        log_mensaje("ERROR", "Excepción desconocida en control_bomba");
+      }
     } else {
+      log_mensaje("INFO", "Modo no es HEAT, verificando estado de la bomba");
       if (interruptor_bomba_->state) {
+        log_mensaje("WARN", "Bomba encendida en modo no-HEAT, apagando");
         apagar_bomba();
-        log_mensaje("WARN", "Bomba apagada porque el modo HEAT está desactivado");
       }
     }
 
+    log_mensaje("INFO", "Publicando estado");
     this->publish_state();
+    log_mensaje("INFO", "Ciclo de loop completado");
   }
 }
 
 void CustomClimate::control_bomba() {
+  log_mensaje("INFO", "Iniciando control de bomba");
+
   if (espera_) {
-    if (obtener_tiempo_actual() >= tiempo_espera_fin_) {
+    int64_t tiempo_actual = obtener_tiempo_actual();
+    if (tiempo_actual >= tiempo_espera_fin_) {
+      log_mensaje("INFO", "Fin del tiempo de espera");
       espera_ = false;
-      log_mensaje("WARN", "Reanudando verificaciones después de espera");
     } else {
-      log_mensaje("WARN", "En espera hasta %lld", tiempo_espera_fin_);
+      log_mensaje("INFO", "En espera hasta %lld (actual: %lld)", tiempo_espera_fin_, tiempo_actual);
       return;
     }
   }
 
-  if (modo_cerca_temperatura_objetivo()) {
+  bool cerca_objetivo = modo_cerca_temperatura_objetivo();
+  log_mensaje("INFO", "Cerca del objetivo: %s", cerca_objetivo ? "Sí" : "No");
+
+  if (cerca_objetivo) {
     control_bomba_cerca_objetivo();
   } else {
     control_bomba_normal();
   }
+
+  log_mensaje("INFO", "Control de bomba completado");
 }
 
 bool CustomClimate::modo_cerca_temperatura_objetivo() {
@@ -75,6 +102,7 @@ bool CustomClimate::modo_cerca_temperatura_objetivo() {
 }
 
 void CustomClimate::control_bomba_cerca_objetivo() {
+  log_mensaje("INFO", "Control de bomba cerca del objetivo");
   if (!interruptor_bomba_->state && diferencia_temperatura_suficiente()) {
     encender_bomba();
     esperar_estabilizacion();
@@ -87,6 +115,7 @@ void CustomClimate::control_bomba_cerca_objetivo() {
 }
 
 void CustomClimate::control_bomba_normal() {
+  log_mensaje("INFO", "Control de bomba normal");
   if (!interruptor_bomba_->state && diferencia_temperatura_suficiente()) {
     encender_bomba();
     esperar_estabilizacion();
@@ -101,13 +130,20 @@ bool CustomClimate::diferencia_temperatura_suficiente() {
 }
 
 void CustomClimate::encender_bomba() {
+  log_mensaje("WARN", "Encendiendo bomba");
   interruptor_bomba_->turn_on();
-  log_mensaje("WARN", "Bomba encendida");
+  if (conteo_encendidos_ != nullptr) {
+    (*conteo_encendidos_)++;
+  }
+  tiempo_inicio_ = obtener_tiempo_actual();
 }
 
 void CustomClimate::apagar_bomba() {
+  log_mensaje("WARN", "Apagando bomba");
   interruptor_bomba_->turn_off();
-  log_mensaje("WARN", "Bomba apagada");
+  if (tiempo_encendida_ != nullptr) {
+    *tiempo_encendida_ += obtener_tiempo_actual() - tiempo_inicio_;
+  }
 }
 
 void CustomClimate::esperar_estabilizacion() {
@@ -155,22 +191,43 @@ esphome::climate::ClimateTraits CustomClimate::traits() {
 }
 
 void CustomClimate::control(const esphome::climate::ClimateCall &call) {
+  log_mensaje("INFO", "Iniciando función de control");
+
   if (call.get_mode().has_value()) {
-    auto new_mode = *call.get_mode();
+    ClimateMode new_mode = *call.get_mode();
+    log_mensaje("INFO", "Cambio de modo solicitado: %d", new_mode);
+
     if (new_mode != this->mode) {
-      this->mode = new_mode;
-      if (this->mode == CLIMATE_MODE_OFF) {
+      log_mensaje("INFO", "Cambiando de modo %d a %d", this->mode, new_mode);
+      
+      // Apagar la bomba antes de cambiar de modo
+      if (interruptor_bomba_->state) {
+        log_mensaje("INFO", "Apagando bomba antes de cambiar de modo");
         apagar_bomba();
-        log_mensaje("WARN", "Bomba apagada debido a cambio a modo OFF");
+      }
+
+      this->mode = new_mode;
+
+      if (this->mode == CLIMATE_MODE_OFF) {
+        log_mensaje("INFO", "Modo cambiado a OFF");
       } else if (this->mode == CLIMATE_MODE_HEAT) {
-        log_mensaje("WARN", "Modo HEAT activado");
+        log_mensaje("INFO", "Modo cambiado a HEAT");
+        // Reiniciar variables de control si es necesario
+        espera_ = false;
+        tiempo_espera_fin_ = 0;
       }
     }
   }
+
   if (call.get_target_temperature().has_value()) {
-    this->target_temperature = *call.get_target_temperature();
+    float new_target_temp = *call.get_target_temperature();
+    log_mensaje("INFO", "Nueva temperatura objetivo: %.1f", new_target_temp);
+    this->target_temperature = new_target_temp;
   }
+
+  log_mensaje("INFO", "Publicando nuevo estado");
   this->publish_state();
+  log_mensaje("INFO", "Función de control finalizada");
 }
 
 float CustomClimate::get_current_temperature() {
@@ -182,4 +239,4 @@ float CustomClimate::get_current_temperature() {
   }
 }
 
-}  // namespace custom_climate
+}  //
