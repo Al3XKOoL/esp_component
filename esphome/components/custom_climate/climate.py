@@ -17,6 +17,9 @@ CONF_TIEMPO_HOMEASSISTANT = "tiempo_homeassistant"
 CONF_FACTOR_TIEMPO_ACTIVACION = "factor_tiempo_activacion"
 CONF_TEMPERATURA_CERCA = "temperatura_cerca"
 
+# Definir NUMBER_MODE_SLIDER
+NUMBER_MODE_SLIDER = 2
+
 custom_climate_ns = cg.esphome_ns.namespace('custom_climate')
 CustomClimate = custom_climate_ns.class_('CustomClimate', climate.Climate, cg.Component)
 
@@ -72,7 +75,7 @@ async def to_code(config):
             min_value=0.1,
             max_value=5.0,
             step=0.1,
-            mode=number.2,
+            mode=NUMBER_MODE_SLIDER,
         ).extend({
             cv.GenerateID(): cv.declare_id(number.Number),
             cv.Optional(CONF_NAME): cv.string_strict,
@@ -89,7 +92,7 @@ async def to_code(config):
             min_value=0.1,
             max_value=5.0,
             step=0.1,
-            mode=number.2,
+            mode=NUMBER_MODE_SLIDER,
         ).extend({
             cv.GenerateID(): cv.declare_id(number.Number),
             cv.Optional(CONF_NAME): cv.string_strict,
