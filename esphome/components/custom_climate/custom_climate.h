@@ -11,7 +11,6 @@ class CustomClimate : public esphome::climate::Climate, public esphome::Componen
   void set_sensor_temp_sol(esphome::sensor::Sensor *sensor_temp_sol) { sensor_temp_sol_ = sensor_temp_sol; }
   void set_sensor_temp_agua(esphome::sensor::Sensor *sensor_temp_agua) { sensor_temp_agua_ = sensor_temp_agua; }
   void set_sensor_temp_salida(esphome::sensor::Sensor *sensor_temp_salida) { sensor_temp_salida_ = sensor_temp_salida; }
-  void set_temperatura_maxima(float temperatura_maxima) { temperatura_maxima_ = temperatura_maxima; }
   void set_diferencia_alta(float diferencia_alta) { diferencia_alta_ = diferencia_alta; }
   void set_diferencia_media(float diferencia_media) { diferencia_media_ = diferencia_media; }
   void set_temperatura_visual_minima(float temperatura_visual_minima) { temperatura_visual_minima_ = temperatura_visual_minima; }
@@ -30,7 +29,6 @@ class CustomClimate : public esphome::climate::Climate, public esphome::Componen
   esphome::sensor::Sensor *sensor_temp_sol_;
   esphome::sensor::Sensor *sensor_temp_agua_;
   esphome::sensor::Sensor *sensor_temp_salida_;
-  float temperatura_maxima_;
   float diferencia_alta_;
   float diferencia_media_;
   float temperatura_visual_minima_;
