@@ -102,3 +102,4 @@ async def to_code(config):
     ]:
         sensor_var = await sensor.new_sensor(config[conf])
         cg.add(getattr(var, setter)(sensor_var))
+
