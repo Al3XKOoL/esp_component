@@ -21,7 +21,6 @@ class CustomClimate : public esphome::climate::Climate, public esphome::Componen
   void set_tiempo_homeassistant(esphome::time::RealTimeClock *tiempo_homeassistant) { tiempo_homeassistant_ = tiempo_homeassistant; }
   void set_factor_tiempo_activacion(float factor_tiempo_activacion) { factor_tiempo_activacion_ = factor_tiempo_activacion; }
   void set_temperatura_cerca(float temperatura_cerca) { temperatura_cerca_ = temperatura_cerca; }
-  void set_restore_state(bool restore_state) { restore_state_ = restore_state; }
 
   void setup() override;
   void loop() override;
@@ -44,7 +43,6 @@ class CustomClimate : public esphome::climate::Climate, public esphome::Componen
   esphome::time::RealTimeClock *tiempo_homeassistant_{nullptr};
   float factor_tiempo_activacion_{10.0};
   float temperatura_cerca_{1.0};
-  bool restore_state_{false};  // Es un bool, no usa has_value() ni value()
 
   unsigned long ultimo_tiempo_verificacion_{0};
   const unsigned long intervalo_segundos_{2};
