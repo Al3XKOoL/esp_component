@@ -20,6 +20,9 @@ CONF_TIEMPO_HOMEASSISTANT = "tiempo_homeassistant"
 CONF_FACTOR_TIEMPO_ACTIVACION = "factor_tiempo_activacion"
 CONF_TEMPERATURA_CERCA = "temperatura_cerca"
 
+CONF_DIFERENCIA_MEDIA_NUMBER = "diferencia_media_number"
+CONF_DIFERENCIA_ALTA_NUMBER = "diferencia_alta_number"
+
 custom_climate_ns = cg.esphome_ns.namespace('custom_climate')
 CustomClimate = custom_climate_ns.class_('CustomClimate', climate.Climate, cg.Component)
 
@@ -38,6 +41,20 @@ CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend({
     cv.Optional(CONF_TIEMPO_HOMEASSISTANT): cv.use_id(time.RealTimeClock),
     cv.Required(CONF_FACTOR_TIEMPO_ACTIVACION): cv.float_,
     cv.Required(CONF_TEMPERATURA_CERCA): cv.float_,
+    cv.Required(CONF_DIFERENCIA_MEDIA_NUMBER): number.NUMBER_SCHEMA.extend({
+        cv.GenerateID(): cv.declare_id(number.Number),
+        cv.Optional(CONF_NAME, default="Diferencia Media"): cv.string,
+        cv.Optional(CONF_MIN_VALUE, default=0.1): cv.float_,
+        cv.Optional(CONF_MAX_VALUE, default=5.0): cv.float_,
+        cv.Optional(CONF_STEP, default=0.1): cv.float_,
+    }),
+    cv.Required(CONF_DIFERENCIA_ALTA_NUMBER): number.NUMBER_SCHEMA.extend({
+        cv.GenerateID(): cv.declare_id(number.Number),
+        cv.Optional(CONF_NAME, default="Diferencia Alta"): cv.string,
+        cv.Optional(CONF_MIN_VALUE, default=0.1): cv.float_,
+        cv.Optional(CONF_MAX_VALUE, default=5.0): cv.float_,
+        cv.Optional(CONF_STEP, default=0.1): cv.float_,
+    }),
 }).extend(cv.COMPONENT_SCHEMA)
 
 async def to_code(config):
@@ -72,29 +89,10 @@ async def to_code(config):
         tiempo_homeassistant = await cg.get_variable(config[CONF_TIEMPO_HOMEASSISTANT])
         cg.add(var.set_tiempo_homeassistant(tiempo_homeassistant))
 
-    # Registrar los nuevos números
-    diferencia_media_number = await number.new_number(
-        min_value=0.1,
-        max_value=5.0,
-        step=0.1,
-        config=number.number_schema({
-            cv.GenerateID(): cv.declare_id(number.Number),
-            cv.Optional(CONF_NAME, default="Diferencia Media"): cv.string,
-            cv.Optional(CONF_MODE, default="slider"): cv.enum(number.NUMBER_MODES, lower=True),
-        })
-    )
+    diferencia_media_number = await number.new_number(config[CONF_DIFERENCIA_MEDIA_NUMBER])
     cg.add(var.set_diferencia_media_number(diferencia_media_number))
 
-    diferencia_alta_number = await number.new_number(
-        min_value=0.1,
-        max_value=5.0,
-        step=0.1,
-        config=number.number_schema({
-            cv.GenerateID(): cv.declare_id(number.Number),
-            cv.Optional(CONF_NAME, default="Diferencia Alta"): cv.string,
-            cv.Optional(CONF_MODE, default="slider"): cv.enum(number.NUMBER_MODES, lower=True),
-        })
-    )
+    diferencia_alta_number = await number.new_number(config[CONF_DIFERENCIA_ALTA_NUMBER])
     cg.add(var.set_diferencia_alta_number(diferencia_alta_number))
 
     # Registrar los nuevos sensores
