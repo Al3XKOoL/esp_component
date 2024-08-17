@@ -68,7 +68,7 @@ async def to_code(config):
 
     # Registrar los nuevos números
     diferencia_media_number = await number.new_number(
-        number.NumberSchema({
+        number.number_schema({
             cv.GenerateID(): cv.declare_id(number.Number),
             cv.Optional(CONF_NAME, default="Diferencia Media"): cv.string,
             cv.Required(CONF_MIN_VALUE): cv.float_,
@@ -85,7 +85,7 @@ async def to_code(config):
     cg.add(var.set_diferencia_media_number(diferencia_media_number))
 
     diferencia_alta_number = await number.new_number(
-        number.NumberSchema({
+        number.number_schema({
             cv.GenerateID(): cv.declare_id(number.Number),
             cv.Optional(CONF_NAME, default="Diferencia Alta"): cv.string,
             cv.Required(CONF_MIN_VALUE): cv.float_,
@@ -102,20 +102,20 @@ async def to_code(config):
     cg.add(var.set_diferencia_alta_number(diferencia_alta_number))
 
     # Registrar los nuevos sensores
-    conteo_encendidos_sensor = await sensor.new_sensor(sensor.SensorSchema({
+    conteo_encendidos_sensor = await sensor.new_sensor(sensor.sensor_schema({
         cv.GenerateID(): cv.declare_id(sensor.Sensor),
         cv.Optional(CONF_NAME, default="Conteo Encendidos"): cv.string,
     }))
     cg.add(var.set_conteo_encendidos_sensor(conteo_encendidos_sensor))
 
-    tiempo_encendido_sensor = await sensor.new_sensor(sensor.SensorSchema({
+    tiempo_encendido_sensor = await sensor.new_sensor(sensor.sensor_schema({
         cv.GenerateID(): cv.declare_id(sensor.Sensor),
         cv.Optional(CONF_NAME, default="Tiempo Encendido"): cv.string,
         cv.Optional(CONF_UNIT_OF_MEASUREMENT, default="s"): cv.string,
     }))
     cg.add(var.set_tiempo_encendido_sensor(tiempo_encendido_sensor))
 
-    kwh_hoy_sensor = await sensor.new_sensor(sensor.SensorSchema({
+    kwh_hoy_sensor = await sensor.new_sensor(sensor.sensor_schema({
         cv.GenerateID(): cv.declare_id(sensor.Sensor),
         cv.Optional(CONF_NAME, default="kWh Hoy"): cv.string,
         cv.Optional(CONF_UNIT_OF_MEASUREMENT, default="kWh"): cv.string,
@@ -123,7 +123,7 @@ async def to_code(config):
     }))
     cg.add(var.set_kwh_hoy_sensor(kwh_hoy_sensor))
 
-    kwh_total_sensor = await sensor.new_sensor(sensor.SensorSchema({
+    kwh_total_sensor = await sensor.new_sensor(sensor.sensor_schema({
         cv.GenerateID(): cv.declare_id(sensor.Sensor),
         cv.Optional(CONF_NAME, default="kWh Total"): cv.string,
         cv.Optional(CONF_UNIT_OF_MEASUREMENT, default="kWh"): cv.string,
