@@ -22,26 +22,21 @@ void CustomClimate::log_mensaje(const char* nivel, const char* formato, ...) {
     esphome::ESP_LOGD(TAG, "\033[1;31m%s: %s\033[0m", nivel, buffer);  // Rojo para todos los niveles
 }
 
-ClimateDeviceRestoreState CustomClimate::restore_state() {
-  ClimateDeviceRestoreState state{};
-  state.mode = this->mode;
-  state.target_temperature = this->target_temperature;
-  return state;
-}
-
 void CustomClimate::setup() {
   this->mode = CLIMATE_MODE_OFF;
   this->target_temperature = 37.0;
   this->current_temperature = get_current_temperature();
-  if (restore_state_) {
-    auto restored = this->restore_state();
-    if (restored.mode.has_value()) {
-      this->mode = *restored.mode;
+
+  if (this->restore_state_.has_value()) {
+    auto state = this->restore_state_.value();
+    if (state.mode.has_value()) {
+      this->mode = *state.mode;
     }
-    if (restored.target_temperature.has_value()) {
-      this->target_temperature = *restored.target_temperature;
+    if (state.target_temperature.has_value()) {
+      this->target_temperature = *state.target_temperature;
     }
   }
+
   this->publish_state();
 }
 
@@ -203,7 +198,7 @@ float CustomClimate::get_current_temperature() {
   if (sensor_temp_agua_ != nullptr && !std::isnan(sensor_temp_agua_->state)) {
     return sensor_temp_agua_->state;
   } else {
-    log_mensaje("ERROR", "El sensor de temperatura del agua no está disponible o devuelve NaN.");
+    log_mensaje("WARN", "El sensor de temperatura del agua no está disponible o devuelve NaN.");
     return NAN;
   }
 }
