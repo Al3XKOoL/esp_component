@@ -75,23 +75,27 @@ async def to_code(config):
         (CONF_SENSOR_TEMP_SOL, 'set_sensor_temp_sol'),
         (CONF_SENSOR_TEMP_AGUA, 'set_sensor_temp_agua'),
         (CONF_SENSOR_TEMP_SALIDA, 'set_sensor_temp_salida'),
-        (CONF_DIFERENCIA_ALTA, 'set_diferencia_alta'),
-        (CONF_DIFERENCIA_MEDIA, 'set_diferencia_media'),
-        (CONF_TEMPERATURA_VISUAL_MINIMA, 'set_temperatura_visual_minima'),
-        (CONF_TEMPERATURA_VISUAL_MAXIMA, 'set_temperatura_visual_maxima'),
-        (CONF_POTENCIA_BOMBA, 'set_potencia_bomba'),
         (CONF_INTERRUPTOR_BOMBA, 'set_interruptor_bomba'),
-        (CONF_FACTOR_TIEMPO_ACTIVACION, 'set_factor_tiempo_activacion'),
-        (CONF_TEMPERATURA_CERCA, 'set_temperatura_cerca'),
         (CONF_TIEMPO_SNTP, 'set_tiempo_sntp'),
         (CONF_TIEMPO_HOMEASSISTANT, 'set_tiempo_homeassistant'),
         (CONF_DIFERENCIA_MEDIA_NUMBER, 'set_diferencia_media_number'),
         (CONF_DIFERENCIA_ALTA_NUMBER, 'set_diferencia_alta_number'),
     ]:
         if conf in config:
+            value = await cg.get_variable(config[conf])
+            cg.add(getattr(var, setter)(value))
+
+    for conf, setter in [
+        (CONF_DIFERENCIA_ALTA, 'set_diferencia_alta'),
+        (CONF_DIFERENCIA_MEDIA, 'set_diferencia_media'),
+        (CONF_TEMPERATURA_VISUAL_MINIMA, 'set_temperatura_visual_minima'),
+        (CONF_TEMPERATURA_VISUAL_MAXIMA, 'set_temperatura_visual_maxima'),
+        (CONF_POTENCIA_BOMBA, 'set_potencia_bomba'),
+        (CONF_FACTOR_TIEMPO_ACTIVACION, 'set_factor_tiempo_activacion'),
+        (CONF_TEMPERATURA_CERCA, 'set_temperatura_cerca'),
+    ]:
+        if conf in config:
             value = config[conf]
-            if isinstance(value, str) and value.startswith("!"):
-                value = await cg.get_variable(value[1:])
             cg.add(getattr(var, setter)(value))
 
     for conf, setter in [
@@ -102,4 +106,3 @@ async def to_code(config):
     ]:
         sensor_var = await sensor.new_sensor(config[conf])
         cg.add(getattr(var, setter)(sensor_var))
-
