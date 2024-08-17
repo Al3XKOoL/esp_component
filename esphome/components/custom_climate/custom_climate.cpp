@@ -28,15 +28,17 @@ void CustomClimate::setup() {
   this->target_temperature = 37.0;
   this->current_temperature = get_current_temperature();
 
-  // Restaurar el estado del dispositivo
-  auto restore = this->restore_state();
-  if (restore.has_value()) {
-    auto restored_state = restore.value();
-    if (restored_state.mode != CLIMATE_MODE_OFF) {
-      this->mode = restored_state.mode;
-    }
-    if (!std::isnan(restored_state.target_temperature)) {
-      this->target_temperature = restored_state.target_temperature;
+  // Restaurar el estado del dispositivo si existe en la memoria
+  auto restored_state = this->restore_state();
+  if (restored_state.has_value()) {
+    auto restore = restored_state.value();
+
+    // Restaurar el modo
+    this->mode = restore.mode;
+
+    // Restaurar la temperatura, si está definida
+    if (!std::isnan(restore.target_temperature)) {
+      this->target_temperature = restore.target_temperature;
     }
   }
 
@@ -57,7 +59,7 @@ void CustomClimate::loop() {
     float temp_agua = sensor_temp_agua_->state;
     float temp_salida = sensor_temp_salida_->state;
 
-    // Actualizar la temperatura actual del climate (usando temp_agua)
+    // Actualizar la temperatura actual del clima (usando temp_agua)
     if (!std::isnan(temp_agua)) {
       this->current_temperature = temp_agua;
     }
