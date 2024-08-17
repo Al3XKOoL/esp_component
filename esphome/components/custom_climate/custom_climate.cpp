@@ -1,6 +1,7 @@
 #include "custom_climate.h"
 #include "esphome/core/log.h"
 #include "esphome/components/climate/climate.h"
+#include "esphome/components/esp32/esp32_storage.h"
 
 namespace custom_climate {
 
@@ -23,9 +24,7 @@ void CustomClimate::setup() {
   this->current_temperature = get_current_temperature();
 
   // Restaurar el estado del dispositivo desde la memoria 
-  if (this->get_config()->restore_from_flash) {
-    restore_state_from_flash();
-  }
+  restore_state_from_flash();
 
   this->publish_state();
 }
@@ -214,16 +213,27 @@ void CustomClimate::dump_config() {
 }
 
 void CustomClimate::restore_state_from_flash() {
-  // Aquí debería implementarse la restauración del estado desde la memoria flash
-  // Ejemplo ficticio:
-  this->target_temperature = ... // Restaurar desde flash
-  this->mode = ... // Restaurar desde flash
+  // Implementar la restauración del estado desde la memoria flash
+  // Por ejemplo, leer valores desde un archivo de almacenamiento en flash
+  // Aquí se usa ESP32Storage como ejemplo
+  uint32_t target_temp;
+  uint32_t mode;
+  if (esphome::esp32::Esp32Storage::read("custom_climate_target_temperature", &target_temp, sizeof(target_temp))) {
+    this->target_temperature = *reinterpret_cast<float*>(&target_temp);
+  }
+  if (esphome::esp32::Esp32Storage::read("custom_climate_mode", &mode, sizeof(mode))) {
+    this->mode = static_cast<esphome::climate::ClimateMode>(mode);
+  }
 }
 
 void CustomClimate::save_state_to_flash() {
-  // Aquí debería implementarse la guardia del estado en la memoria flash
-  // Ejemplo ficticio:
-  // Guardar target_temperature y mode en la memoria flash
+  // Implementar la guardia del estado en la memoria flash
+  // Por ejemplo, guardar valores en un archivo de almacenamiento en flash
+  // Aquí se usa ESP32Storage como ejemplo
+  uint32_t target_temp = *reinterpret_cast<uint32_t*>(&this->target_temperature);
+  uint32_t mode = static_cast<uint32_t>(this->mode);
+  esphome::esp32::Esp32Storage::write("custom_climate_target_temperature", &target_temp, sizeof(target_temp));
+  esphome::esp32::Esp32Storage::write("custom_climate_mode", &mode, sizeof(mode));
 }
 
 }  // namespace custom_climate
