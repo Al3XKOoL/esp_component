@@ -1,5 +1,6 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
+from esphome.components.template.number import TemplateNumber
 from esphome.components import climate, sensor, switch, time, number
 from esphome.const import (
     CONF_ID, CONF_MIN_VALUE, CONF_MAX_VALUE, CONF_STEP, CONF_NAME, 
@@ -32,7 +33,6 @@ CustomClimate = custom_climate_ns.class_('CustomClimate', climate.Climate, cg.Co
 
 CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend({
     cv.GenerateID(): cv.declare_id(CustomClimate),
-    cv.GenerateID(): cv.declare_id(CustomClimate),
     cv.Required(CONF_SENSOR_TEMP_SOL): cv.use_id(sensor.Sensor),
     cv.Required(CONF_SENSOR_TEMP_AGUA): cv.use_id(sensor.Sensor),
     cv.Required(CONF_SENSOR_TEMP_SALIDA): cv.use_id(sensor.Sensor),
@@ -47,19 +47,8 @@ CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend({
     cv.Required(CONF_FACTOR_TIEMPO_ACTIVACION): cv.float_,
     cv.Required(CONF_TEMPERATURA_CERCA): cv.float_,
     cv.Required(CONF_DIFERENCIA_MEDIA_NUMBER): number.NUMBER_SCHEMA.extend({
-        cv.GenerateID(): cv.declare_id(number.Number),
-        cv.Optional(CONF_NAME, default="Diferencia Media"): cv.string,
-        cv.Optional(CONF_MIN_VALUE, default=0.1): cv.float_,
-        cv.Optional(CONF_MAX_VALUE, default=5.0): cv.float_,
-        cv.Optional(CONF_STEP, default=0.1): cv.float_,
-    }),
-    cv.Required(CONF_DIFERENCIA_ALTA_NUMBER): number.NUMBER_SCHEMA.extend({
-        cv.GenerateID(): cv.declare_id(number.Number),
-        cv.Optional(CONF_NAME, default="Diferencia Alta"): cv.string,
-        cv.Optional(CONF_MIN_VALUE, default=0.1): cv.float_,
-        cv.Optional(CONF_MAX_VALUE, default=5.0): cv.float_,
-        cv.Optional(CONF_STEP, default=0.1): cv.float_,
-    }),
+    cv.Required('diferencia_media'): cv.use_id(TemplateNumber),
+    cv.Required('diferencia_alta'): cv.use_id(TemplateNumber),
     cv.Required(CONF_CONTEO_ENCENDIDOS): sensor.sensor_schema(
         unit_of_measurement="",
         accuracy_decimals=0,
@@ -110,23 +99,11 @@ async def to_code(config):
         tiempo_homeassistant = await cg.get_variable(config[CONF_TIEMPO_HOMEASSISTANT])
         cg.add(var.set_tiempo_homeassistant(tiempo_homeassistant))
 
-    diferencia_media_conf = config[CONF_DIFERENCIA_MEDIA_NUMBER]
-    diferencia_media_number = await number.new_number(
-        min_value=diferencia_media_conf[CONF_MIN_VALUE],
-        max_value=diferencia_media_conf[CONF_MAX_VALUE],
-        step=diferencia_media_conf[CONF_STEP],
-        config=diferencia_media_conf,
-    )
-    cg.add(var.set_diferencia_media_number(diferencia_media_number))
+    diferencia_media = yield cg.get_variable(config['diferencia_media'])
+    cg.add(var.set_diferencia_media_number(diferencia_media))
 
-    diferencia_alta_conf = config[CONF_DIFERENCIA_ALTA_NUMBER]
-    diferencia_alta_number = await number.new_number(
-        min_value=diferencia_alta_conf[CONF_MIN_VALUE],
-        max_value=diferencia_alta_conf[CONF_MAX_VALUE],
-        step=diferencia_alta_conf[CONF_STEP],
-        config=diferencia_alta_conf,
-    )
-    cg.add(var.set_diferencia_alta_number(diferencia_alta_number))
+    diferencia_alta = yield cg.get_variable(config['diferencia_alta'])
+    cg.add(var.set_diferencia_alta_number(diferencia_alta))
 
     conteo_encendidos_sensor = await sensor.new_sensor(config[CONF_CONTEO_ENCENDIDOS])
     cg.add(var.set_conteo_encendidos_sensor(conteo_encendidos_sensor))
