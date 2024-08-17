@@ -30,7 +30,7 @@ void CustomClimate::setup() {
 
   // Restaurar el estado guardado si se habilitó la opción
   if (restore_state_) {
-    auto restored_state = this->restore_state;
+    auto restored_state = this->restore_state_;
     if (restored_state.has_value()) {
       auto restore = restored_state.value();
       if (restore.mode.has_value()) {
