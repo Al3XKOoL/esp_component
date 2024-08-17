@@ -24,6 +24,32 @@ void CustomClimate::setup() {
   this->mode = CLIMATE_MODE_OFF;
   this->target_temperature = 37.0;
   this->current_temperature = get_current_temperature();
+
+  diferencia_media_number_.set_name("Diferencia Media");
+  diferencia_media_number_.set_min_value(0.1f);
+  diferencia_media_number_.set_max_value(5.0f);
+  diferencia_media_number_.set_step(0.1f);
+  diferencia_media_number_.set_initial_value(diferencia_media_);
+  diferencia_media_number_.add_on_state_callback([this](float value) {
+    this->diferencia_media_ = value;
+    log_mensaje("INFO", "Diferencia media actualizada a %.1f", value);
+  });
+
+  diferencia_alta_number_.set_name("Diferencia Alta");
+  diferencia_alta_number_.set_min_value(0.1f);
+  diferencia_alta_number_.set_max_value(5.0f);
+  diferencia_alta_number_.set_step(0.1f);
+  diferencia_alta_number_.set_initial_value(diferencia_alta_);
+  diferencia_alta_number_.add_on_state_callback([this](float value) {
+    this->diferencia_alta_ = value;
+    log_mensaje("INFO", "Diferencia alta actualizada a %.1f", value);
+  });
+
+  conteo_encendidos_sensor_.set_unit_of_measurement("");
+  tiempo_encendido_sensor_.set_unit_of_measurement("s");
+  kwh_hoy_sensor_.set_unit_of_measurement("kWh");
+  kwh_total_sensor_.set_unit_of_measurement("kWh");
+
   this->publish_state();
   log_mensaje("INFO", "Setup completado");
 }
@@ -33,7 +59,6 @@ void CustomClimate::loop() {
   if (tiempo_actual - ultimo_tiempo_verificacion_ >= intervalo_segundos_ * 1000) {
     ultimo_tiempo_verificacion_ = tiempo_actual;
     log_mensaje("INFO", "Iniciando ciclo de loop");
-    log_mensaje("INFO", "Memoria libre: %d bytes", ESP.getFreeHeap());
 
     // Verificar sensores
     if (sensor_temp_sol_ == nullptr || std::isnan(sensor_temp_sol_->state) ||
@@ -62,7 +87,9 @@ void CustomClimate::loop() {
       }
     }
 
-    log_mensaje("INFO", "Publicando estado");
+    actualizar_consumo();
+    reset_consumo_diario();
+
     this->publish_state();
     log_mensaje("INFO", "Ciclo de loop completado");
   }
@@ -124,24 +151,23 @@ void CustomClimate::control_bomba_normal() {
 }
 
 bool CustomClimate::diferencia_temperatura_suficiente() {
-  return (sensor_temp_sol_->state > (this->current_temperature + diferencia_alta_));
+  return (sensor_temp_sol_->state > (this->current_temperature + diferencia_media_));
 }
 
 void CustomClimate::encender_bomba() {
   log_mensaje("WARN", "Encendiendo bomba");
   interruptor_bomba_->turn_on();
-  if (conteo_encendidos_ != nullptr) {
-    (*conteo_encendidos_)++;
-  }
+  conteo_encendidos_++;
+  conteo_encendidos_sensor_.publish_state(conteo_encendidos_);
   tiempo_inicio_ = obtener_tiempo_actual();
 }
 
 void CustomClimate::apagar_bomba() {
   log_mensaje("WARN", "Apagando bomba");
   interruptor_bomba_->turn_off();
-  if (tiempo_encendida_ != nullptr) {
-    *tiempo_encendida_ += obtener_tiempo_actual() - tiempo_inicio_;
-  }
+  int64_t tiempo_actual = obtener_tiempo_actual();
+  tiempo_encendido_ += tiempo_actual - tiempo_inicio_;
+  tiempo_encendido_sensor_.publish_state(tiempo_encendido_);
 }
 
 void CustomClimate::esperar_estabilizacion() {
@@ -179,62 +205,4 @@ int64_t CustomClimate::obtener_tiempo_actual() {
 
 esphome::climate::ClimateTraits CustomClimate::traits() {
   auto traits = esphome::climate::ClimateTraits();
-  traits.set_supports_current_temperature(true);
-  traits.set_visual_min_temperature(temperatura_visual_minima_);
-  traits.set_visual_max_temperature(temperatura_visual_maxima_);
-  traits.set_visual_temperature_step(0.1);
-  traits.add_supported_mode(CLIMATE_MODE_OFF);
-  traits.add_supported_mode(CLIMATE_MODE_HEAT);
-  return traits;
-}
-
-void CustomClimate::control(const esphome::climate::ClimateCall &call) {
-  log_mensaje("INFO", "Iniciando función de control");
-
-  if (call.get_mode().has_value()) {
-    ClimateMode new_mode = *call.get_mode();
-    log_mensaje("INFO", "Cambio de modo solicitado: %d", new_mode);
-
-    if (new_mode != this->mode) {
-      log_mensaje("INFO", "Cambiando de modo %d a %d", this->mode, new_mode);
-      
-      // Apagar la bomba antes de cambiar de modo
-      if (interruptor_bomba_->state) {
-        log_mensaje("INFO", "Apagando bomba antes de cambiar de modo");
-        apagar_bomba();
-      }
-
-      this->mode = new_mode;
-
-      if (this->mode == CLIMATE_MODE_OFF) {
-        log_mensaje("INFO", "Modo cambiado a OFF");
-      } else if (this->mode == CLIMATE_MODE_HEAT) {
-        log_mensaje("INFO", "Modo cambiado a HEAT");
-        // Reiniciar variables de control si es necesario
-        espera_ = false;
-        tiempo_espera_fin_ = 0;
-      }
-    }
-  }
-
-  if (call.get_target_temperature().has_value()) {
-    float new_target_temp = *call.get_target_temperature();
-    log_mensaje("INFO", "Nueva temperatura objetivo: %.1f", new_target_temp);
-    this->target_temperature = new_target_temp;
-  }
-
-  log_mensaje("INFO", "Publicando nuevo estado");
-  this->publish_state();
-  log_mensaje("INFO", "Función de control finalizada");
-}
-
-float CustomClimate::get_current_temperature() {
-  if (sensor_temp_agua_ != nullptr && !std::isnan(sensor_temp_agua_->state)) {
-    return sensor_temp_agua_->state;
-  } else {
-    log_mensaje("ERROR", "El sensor de temperatura del agua no está disponible o devuelve NaN.");
-    return NAN;
-  }
-}
-
-}  //
+  traits.set_supports_current_temperature(
