@@ -37,7 +37,7 @@ async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
     await climate.register_climate(var, config)
-    
+
     sensor_temp_sol = await cg.get_variable(config[CONF_SENSOR_TEMP_SOL])
     cg.add(var.set_sensor_temp_sol(sensor_temp_sol))
     sensor_temp_agua = await cg.get_variable(config[CONF_SENSOR_TEMP_AGUA])
