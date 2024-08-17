@@ -49,7 +49,7 @@ void CustomClimate::loop() {
 
     bool estado_bomba_actual = interruptor_bomba_->state;
 
-    if (sensor_temp_sol_->state > (sensor_temp_agua_->state + diferencia_alta_) && sensor_temp_agua_->state < temperatura_maxima_) {
+    if (sensor_temp_sol_->state > (sensor_temp_agua_->state + diferencia_alta_) && sensor_temp_agua_->state < this->target_temperature) {
       if (!estado_bomba_actual) {
         interruptor_bomba_->turn_on();
         conteo_encendidos_++;
