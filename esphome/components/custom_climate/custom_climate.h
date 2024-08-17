@@ -23,18 +23,17 @@ class CustomClimate : public esphome::climate::Climate, public esphome::Componen
   void set_tiempo_homeassistant(esphome::time::RealTimeClock *tiempo_homeassistant) { tiempo_homeassistant_ = tiempo_homeassistant; }
   void set_factor_tiempo_activacion(float factor_tiempo_activacion) { factor_tiempo_activacion_ = factor_tiempo_activacion; }
   void set_temperatura_cerca(float temperatura_cerca) { temperatura_cerca_ = temperatura_cerca; }
+  void set_diferencia_media_number(esphome::number::Number *diferencia_media_number) { diferencia_media_number_ = diferencia_media_number; }
+  void set_diferencia_alta_number(esphome::number::Number *diferencia_alta_number) { diferencia_alta_number_ = diferencia_alta_number; }
+  void set_conteo_encendidos_sensor(esphome::sensor::Sensor *conteo_encendidos_sensor) { conteo_encendidos_sensor_ = conteo_encendidos_sensor; }
+  void set_tiempo_encendido_sensor(esphome::sensor::Sensor *tiempo_encendido_sensor) { tiempo_encendido_sensor_ = tiempo_encendido_sensor; }
+  void set_kwh_hoy_sensor(esphome::sensor::Sensor *kwh_hoy_sensor) { kwh_hoy_sensor_ = kwh_hoy_sensor; }
+  void set_kwh_total_sensor(esphome::sensor::Sensor *kwh_total_sensor) { kwh_total_sensor_ = kwh_total_sensor; }
 
   void setup() override;
   void loop() override;
   esphome::climate::ClimateTraits traits() override;
   void control(const esphome::climate::ClimateCall &call) override;
-
-  esphome::number::Number *get_diferencia_media_number() { return &diferencia_media_number_; }
-  esphome::number::Number *get_diferencia_alta_number() { return &diferencia_alta_number_; }
-  esphome::sensor::Sensor *get_conteo_encendidos_sensor() { return &conteo_encendidos_sensor_; }
-  esphome::sensor::Sensor *get_tiempo_encendido_sensor() { return &tiempo_encendido_sensor_; }
-  esphome::sensor::Sensor *get_kwh_hoy_sensor() { return &kwh_hoy_sensor_; }
-  esphome::sensor::Sensor *get_kwh_total_sensor() { return &kwh_total_sensor_; }
 
  protected:
   esphome::sensor::Sensor *sensor_temp_sol_;
@@ -50,13 +49,12 @@ class CustomClimate : public esphome::climate::Climate, public esphome::Componen
   esphome::time::RealTimeClock *tiempo_homeassistant_{nullptr};
   float factor_tiempo_activacion_{10.0};
   float temperatura_cerca_{1.0};
-
-  esphome::number::Number diferencia_media_number_;
-  esphome::number::Number diferencia_alta_number_;
-  esphome::sensor::Sensor conteo_encendidos_sensor_{"Conteo Encendidos"};
-  esphome::sensor::Sensor tiempo_encendido_sensor_{"Tiempo Encendido"};
-  esphome::sensor::Sensor kwh_hoy_sensor_{"kWh Hoy"};
-  esphome::sensor::Sensor kwh_total_sensor_{"kWh Total"};
+  esphome::number::Number *diferencia_media_number_{nullptr};
+  esphome::number::Number *diferencia_alta_number_{nullptr};
+  esphome::sensor::Sensor *conteo_encendidos_sensor_{nullptr};
+  esphome::sensor::Sensor *tiempo_encendido_sensor_{nullptr};
+  esphome::sensor::Sensor *kwh_hoy_sensor_{nullptr};
+  esphome::sensor::Sensor *kwh_total_sensor_{nullptr};
 
   unsigned long ultimo_tiempo_verificacion_{0};
   const unsigned long intervalo_segundos_{2};
