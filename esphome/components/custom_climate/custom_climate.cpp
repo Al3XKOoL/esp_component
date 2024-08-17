@@ -1,6 +1,4 @@
 #include "custom_climate.h"
-#include "esphome/core/log.h"
-#include "esphome/core/hal.h"
 
 namespace custom_climate {
 
@@ -16,7 +14,7 @@ void CustomClimate::loop() {
   if (current_time - last_check_time_ >= interval_seconds_ * 1000) {
     last_check_time_ = current_time;
 
-    ESPHOME_LOGD("Ejecutando loop()");
+    ESP_LOGD(TAG, "Ejecutando loop()");
 
     // Get current time
     int64_t tiempo_actual = 0;
@@ -30,9 +28,9 @@ void CustomClimate::loop() {
     if (espera_) {
       if (tiempo_actual >= tiempo_espera_fin_) {
         espera_ = false;
-        ESPHOME_LOGD("Reanudando verificaciones después de espera de 5 minutos.");
+        ESP_LOGD(TAG, "Reanudando verificaciones después de espera de 5 minutos.");
       } else {
-        ESPHOME_LOGD("En espera hasta %lld", tiempo_espera_fin_);
+        ESP_LOGD(TAG, "En espera hasta %lld", tiempo_espera_fin_);
         return;
       }
     }
@@ -44,22 +42,22 @@ void CustomClimate::loop() {
         pump_switch_->turn_on();
         conteo_encendidos_++;
         tiempo_inicio_ = tiempo_actual;
-        ESPHOME_LOGD("Bomba encendida debido a la temperatura adecuada");
+        ESP_LOGD(TAG, "Bomba encendida debido a la temperatura adecuada");
       } else {
-        ESPHOME_LOGD("Bomba ya está encendida");
+        ESP_LOGD(TAG, "Bomba ya está encendida");
       }
     } else {
       if (estado_bomba_actual) {
         pump_switch_->turn_off();
         int64_t tiempo_total_encendido = tiempo_actual - tiempo_inicio_;
         tiempo_encendida_ += tiempo_total_encendido;
-        ESPHOME_LOGD("Bomba apagada debido a temperatura inadecuada");
-        ESPHOME_LOGW("Tiempo total de funcionamiento de la bomba: %lld segundos", tiempo_total_encendido);
+        ESP_LOGD(TAG, "Bomba apagada debido a temperatura inadecuada");
+        ESP_LOGW(TAG, "Tiempo total de funcionamiento de la bomba: %lld segundos", tiempo_total_encendido);
         espera_ = true;
         tiempo_espera_fin_ = tiempo_actual + 300; // 5 minutes in seconds
         return;
       } else {
-        ESPHOME_LOGD("Bomba ya está apagada");
+        ESP_LOGD(TAG, "Bomba ya está apagada");
         return;
       }
     }
@@ -68,8 +66,8 @@ void CustomClimate::loop() {
       pump_switch_->turn_off();
       int64_t tiempo_total_encendido = tiempo_actual - tiempo_inicio_;
       tiempo_encendida_ += tiempo_total_encendido;
-      ESPHOME_LOGD("Bomba apagada debido a temperatura de salida insuficiente");
-      ESPHOME_LOGW("Tiempo total de funcionamiento de la bomba: %lld segundos", tiempo_total_encendido);
+      ESP_LOGD(TAG, "Bomba apagada debido a temperatura de salida insuficiente");
+      ESP_LOGW(TAG, "Tiempo total de funcionamiento de la bomba: %lld segundos", tiempo_total_encendido);
       espera_ = true;
       tiempo_espera_fin_ = tiempo_actual + 300; // 5 minutes in seconds
       return;
@@ -77,16 +75,16 @@ void CustomClimate::loop() {
 
     if (estado_bomba_actual) {
       int64_t tiempo_transcurrido = tiempo_actual - tiempo_inicio_;
-      ESPHOME_LOGW("Tiempo transcurrido de funcionamiento de la bomba: %02d:%02d:%02d",
+      ESP_LOGW(TAG, "Tiempo transcurrido de funcionamiento de la bomba: %02d:%02d:%02d",
                (int)(tiempo_transcurrido / 3600),
                (int)((tiempo_transcurrido % 3600) / 60),
                (int)(tiempo_transcurrido % 60));
     }
 
-    ESPHOME_LOGW("Diferencia Sol-Agua: %.2f°C", temp_sun_->state - temp_water_->state);
-    ESPHOME_LOGW("Diferencia Salida-Agua: %.2f°C", temp_output_->state - temp_water_->state);
-    ESPHOME_LOGW("Estado de la bomba: %d", pump_switch_->state);
-    ESPHOME_LOGD("Conteo de encendidos de la bomba: %d", conteo_encendidos_);
+    ESP_LOGW(TAG, "Diferencia Sol-Agua: %.2f°C", temp_sun_->state - temp_water_->state);
+    ESP_LOGW(TAG, "Diferencia Salida-Agua: %.2f°C", temp_output_->state - temp_water_->state);
+    ESP_LOGW(TAG, "Estado de la bomba: %d", pump_switch_->state);
+    ESP_LOGD(TAG, "Conteo de encendidos de la bomba: %d", conteo_encendidos_);
 
     this->publish_state();
   }
