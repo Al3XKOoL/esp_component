@@ -17,11 +17,19 @@ CONF_TIEMPO_HOMEASSISTANT = "tiempo_homeassistant"
 CONF_FACTOR_TIEMPO_ACTIVACION = "factor_tiempo_activacion"
 CONF_TEMPERATURA_CERCA = "temperatura_cerca"
 
-# Definir NUMBER_MODE_SLIDER
-NUMBER_MODE_SLIDER = 2
-
 custom_climate_ns = cg.esphome_ns.namespace('custom_climate')
 CustomClimate = custom_climate_ns.class_('CustomClimate', climate.Climate, cg.Component)
+
+# Definir los modos de número basados en number_traits.h
+NUMBER_MODE_AUTO = 0
+NUMBER_MODE_BOX = 1
+NUMBER_MODE_SLIDER = 2
+
+NUMBER_MODES = {
+    "auto": NUMBER_MODE_AUTO,
+    "box": NUMBER_MODE_BOX,
+    "slider": NUMBER_MODE_SLIDER,
+}
 
 CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend({
     cv.GenerateID(): cv.declare_id(CustomClimate),
@@ -71,36 +79,38 @@ async def to_code(config):
 
     # Registrar los nuevos números
     diferencia_media_number = await number.new_number(
-        number.number_schema(
-            min_value=0.1,
-            max_value=5.0,
-            step=0.1,
-            mode=NUMBER_MODE_SLIDER,
-        ).extend({
+        number.NumberSchema({
             cv.GenerateID(): cv.declare_id(number.Number),
-            cv.Optional(CONF_NAME): cv.string_strict,
-        }),
-        cg.StructInitializer(
-            number.Number,
-            ("name", "Diferencia Media"),
-        ),
+            cv.Optional(CONF_NAME, default="Diferencia Media"): cv.string_strict,
+            cv.Required(CONF_MIN_VALUE): cv.float_,
+            cv.Required(CONF_MAX_VALUE): cv.float_,
+            cv.Required(CONF_STEP): cv.float_,
+            cv.Optional(CONF_MODE, default="slider"): cv.enum(NUMBER_MODES),
+        }).extend(cv.COMPONENT_SCHEMA),
+        {
+            CONF_MIN_VALUE: 0.1,
+            CONF_MAX_VALUE: 5.0,
+            CONF_STEP: 0.1,
+            CONF_MODE: NUMBER_MODE_SLIDER,
+        },
     )
     cg.add(var.set_diferencia_media_number(diferencia_media_number))
 
     diferencia_alta_number = await number.new_number(
-        number.number_schema(
-            min_value=0.1,
-            max_value=5.0,
-            step=0.1,
-            mode=NUMBER_MODE_SLIDER,
-        ).extend({
+        number.NumberSchema({
             cv.GenerateID(): cv.declare_id(number.Number),
-            cv.Optional(CONF_NAME): cv.string_strict,
-        }),
-        cg.StructInitializer(
-            number.Number,
-            ("name", "Diferencia Alta"),
-        ),
+            cv.Optional(CONF_NAME, default="Diferencia Alta"): cv.string_strict,
+            cv.Required(CONF_MIN_VALUE): cv.float_,
+            cv.Required(CONF_MAX_VALUE): cv.float_,
+            cv.Required(CONF_STEP): cv.float_,
+            cv.Optional(CONF_MODE, default="slider"): cv.enum(NUMBER_MODES),
+        }).extend(cv.COMPONENT_SCHEMA),
+        {
+            CONF_MIN_VALUE: 0.1,
+            CONF_MAX_VALUE: 5.0,
+            CONF_STEP: 0.1,
+            CONF_MODE: NUMBER_MODE_SLIDER,
+        },
     )
     cg.add(var.set_diferencia_alta_number(diferencia_alta_number))
 
