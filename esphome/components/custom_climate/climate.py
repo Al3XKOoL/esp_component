@@ -72,7 +72,7 @@ async def to_code(config):
             min_value=0.1,
             max_value=5.0,
             step=0.1,
-            mode=number.NUMBER_MODE_SLIDER,
+            mode=number.2,
         ).extend({
             cv.GenerateID(): cv.declare_id(number.Number),
             cv.Optional(CONF_NAME): cv.string_strict,
@@ -89,7 +89,7 @@ async def to_code(config):
             min_value=0.1,
             max_value=5.0,
             step=0.1,
-            mode=number.NUMBER_MODE_SLIDER,
+            mode=number.2,
         ).extend({
             cv.GenerateID(): cv.declare_id(number.Number),
             cv.Optional(CONF_NAME): cv.string_strict,
