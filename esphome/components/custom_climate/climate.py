@@ -68,48 +68,30 @@ async def to_code(config):
 
     # Registrar los nuevos números
     diferencia_media_number = await number.new_number(
+        config[CONF_ID].id + "_diferencia_media",
         min_value=0.1,
         max_value=5.0,
         step=0.1,
-        name="Diferencia Media",
     )
     cg.add(var.set_diferencia_media_number(diferencia_media_number))
-    cg.add(diferencia_media_number.set_initial_value(config[CONF_DIFERENCIA_MEDIA]))
 
     diferencia_alta_number = await number.new_number(
+        config[CONF_ID].id + "_diferencia_alta",
         min_value=0.1,
         max_value=5.0,
         step=0.1,
-        name="Diferencia Alta",
     )
     cg.add(var.set_diferencia_alta_number(diferencia_alta_number))
-    cg.add(diferencia_alta_number.set_initial_value(config[CONF_DIFERENCIA_ALTA]))
 
     # Registrar los nuevos sensores
-    conteo_encendidos_sensor = await sensor.new_sensor(
-        unit_of_measurement="",
-        accuracy_decimals=0,
-        name="Conteo Encendidos",
-    )
+    conteo_encendidos_sensor = await sensor.new_sensor(config[CONF_ID].id + "_conteo_encendidos")
     cg.add(var.set_conteo_encendidos_sensor(conteo_encendidos_sensor))
 
-    tiempo_encendido_sensor = await sensor.new_sensor(
-        unit_of_measurement="s",
-        accuracy_decimals=0,
-        name="Tiempo Encendido",
-    )
+    tiempo_encendido_sensor = await sensor.new_sensor(config[CONF_ID].id + "_tiempo_encendido")
     cg.add(var.set_tiempo_encendido_sensor(tiempo_encendido_sensor))
 
-    kwh_hoy_sensor = await sensor.new_sensor(
-        unit_of_measurement="kWh",
-        accuracy_decimals=3,
-        name="kWh Hoy",
-    )
+    kwh_hoy_sensor = await sensor.new_sensor(config[CONF_ID].id + "_kwh_hoy")
     cg.add(var.set_kwh_hoy_sensor(kwh_hoy_sensor))
 
-    kwh_total_sensor = await sensor.new_sensor(
-        unit_of_measurement="kWh",
-        accuracy_decimals=3,
-        name="kWh Total",
-    )
+    kwh_total_sensor = await sensor.new_sensor(config[CONF_ID].id + "_kwh_total")
     cg.add(var.set_kwh_total_sensor(kwh_total_sensor))
