@@ -99,9 +99,9 @@ void CustomClimate::loop() {
       if (estado_bomba_actual) {
         int64_t tiempo_transcurrido = timestamp_actual - tiempo_inicio_;
         log_mensaje("WARN", "Tiempo transcurrido de funcionamiento de la bomba: %02d:%02d:%02d",
-                  (int)(tiempo_transcurrido / 3600),
-                  (int)((tiempo_transcurrido % 3600) / 60),
-                  (int)(tiempo_transcurrido % 60));
+                    (int)(tiempo_transcurrido / 3600),
+                    (int)((tiempo_transcurrido % 3600) / 60),
+                    (int)(tiempo_transcurrido % 60));
       }
 
       log_mensaje("WARN", "Diferencia Sol-Agua: %.2f°C", sensor_temp_sol_->state - sensor_temp_agua_->state);
@@ -152,8 +152,12 @@ void CustomClimate::control(const esphome::climate::ClimateCall &call) {
 }
 
 float CustomClimate::get_current_temperature() {
-  // Asumimos que la temperatura del agua es la temperatura actual
-  return sensor_temp_agua_->state;
+  if (sensor_temp_agua_ != nullptr && !isnan(sensor_temp_agua_->state)) {
+    return sensor_temp_agua_->state;
+  } else {
+    log_mensaje("ERROR", "El sensor de temperatura del agua no está disponible o es NaN.");
+    return NAN;  // Devuelve NaN si el sensor no está disponible o el estado es NaN
+  }
 }
 
 }  // namespace custom_climate
