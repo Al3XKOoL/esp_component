@@ -1,7 +1,7 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import climate, sensor, switch, time
-from esphome.const import CONF_ID
+from esphome.const import CONF_ID, CONF_RESTORE_STATE
 
 CONF_SENSOR_TEMP_SOL = "sensor_temp_sol"
 CONF_SENSOR_TEMP_AGUA = "sensor_temp_agua"
@@ -35,6 +35,7 @@ CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend({
     cv.Optional(CONF_TIEMPO_HOMEASSISTANT): cv.use_id(time.RealTimeClock),
     cv.Required(CONF_FACTOR_TIEMPO_ACTIVACION): cv.float_,
     cv.Required(CONF_TEMPERATURA_CERCA): cv.float_,
+    cv.Optional(CONF_RESTORE_STATE, default=False): cv.boolean,
 }).extend(cv.COMPONENT_SCHEMA)
 
 async def to_code(config):
@@ -64,4 +65,7 @@ async def to_code(config):
 
     if CONF_TIEMPO_HOMEASSISTANT in config:
         tiempo_homeassistant = await cg.get_variable(config[CONF_TIEMPO_HOMEASSISTANT])
-        cg.add(var.set_tiempo_homeassistant(tiempo_homeassistant))
+        cg.add(var.set_tiempo_homeassistant(tiempo_homeassistant)
+
+    if config[CONF_RESTORE_STATE]:
+        cg.add(var.set_restore_state(True))
