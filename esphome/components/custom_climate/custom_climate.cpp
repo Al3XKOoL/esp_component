@@ -1,7 +1,7 @@
 #include "custom_climate.h"
 #include "esphome/core/log.h"
 #include "esphome/components/climate/climate.h"
-#include "esphome/components/esp32/esp32_storage.h"
+#include "esphome/components/preferences/preferences.h"
 
 namespace custom_climate {
 
@@ -214,26 +214,16 @@ void CustomClimate::dump_config() {
 
 void CustomClimate::restore_state_from_flash() {
   // Implementar la restauración del estado desde la memoria flash
-  // Por ejemplo, leer valores desde un archivo de almacenamiento en flash
-  // Aquí se usa ESP32Storage como ejemplo
-  uint32_t target_temp;
-  uint32_t mode;
-  if (esphome::esp32::Esp32Storage::read("custom_climate_target_temperature", &target_temp, sizeof(target_temp))) {
-    this->target_temperature = *reinterpret_cast<float*>(&target_temp);
-  }
-  if (esphome::esp32::Esp32Storage::read("custom_climate_mode", &mode, sizeof(mode))) {
-    this->mode = static_cast<esphome::climate::ClimateMode>(mode);
-  }
+  // Usando preferencias en lugar de Esp32Storage
+  this->target_temperature = esphome::preferences::Preferences::instance().get_float("custom_climate_target_temperature", 37.0);
+  this->mode = static_cast<esphome::climate::ClimateMode>(esphome::preferences::Preferences::instance().get_int("custom_climate_mode", static_cast<int>(esphome::climate::CLIMATE_MODE_OFF)));
 }
 
 void CustomClimate::save_state_to_flash() {
   // Implementar la guardia del estado en la memoria flash
-  // Por ejemplo, guardar valores en un archivo de almacenamiento en flash
-  // Aquí se usa ESP32Storage como ejemplo
-  uint32_t target_temp = *reinterpret_cast<uint32_t*>(&this->target_temperature);
-  uint32_t mode = static_cast<uint32_t>(this->mode);
-  esphome::esp32::Esp32Storage::write("custom_climate_target_temperature", &target_temp, sizeof(target_temp));
-  esphome::esp32::Esp32Storage::write("custom_climate_mode", &mode, sizeof(mode));
+  // Usando preferencias en lugar de Esp32Storage
+  esphome::preferences::Preferences::instance().set_float("custom_climate_target_temperature", this->target_temperature);
+  esphome::preferences::Preferences::instance().set_int("custom_climate_mode", static_cast<int>(this->mode));
 }
 
 }  // namespace custom_climate
