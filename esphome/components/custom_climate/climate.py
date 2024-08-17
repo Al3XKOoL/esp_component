@@ -63,22 +63,18 @@ CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend({
     cv.Required(CONF_CONTEO_ENCENDIDOS): sensor.sensor_schema(
         unit_of_measurement="",
         accuracy_decimals=0,
-        device_class=None,
     ),
     cv.Required(CONF_TIEMPO_ENCENDIDO): sensor.sensor_schema(
         unit_of_measurement="s",
         accuracy_decimals=0,
-        device_class=None,
     ),
     cv.Required(CONF_KWH_HOY): sensor.sensor_schema(
         unit_of_measurement="kWh",
         accuracy_decimals=3,
-        device_class=None,
     ),
     cv.Required(CONF_KWH_TOTAL): sensor.sensor_schema(
         unit_of_measurement="kWh",
         accuracy_decimals=3,
-        device_class=None,
     ),
 }).extend(cv.COMPONENT_SCHEMA)
 
