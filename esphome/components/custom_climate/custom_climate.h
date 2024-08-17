@@ -57,7 +57,7 @@ class CustomClimate : public esphome::climate::Climate, public esphome::Componen
   int64_t tiempo_inicio_{0};
 
   void log_mensaje(const char* nivel, const char* formato, ...);
-  void control_bomba();
+  bool control_bomba();
   bool modo_cerca_temperatura_objetivo();
   void control_bomba_cerca_objetivo();
   void control_bomba_normal();
