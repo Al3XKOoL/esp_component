@@ -88,11 +88,10 @@ async def to_code(config):
         (CONF_DIFERENCIA_MEDIA_NUMBER, 'set_diferencia_media_number'),
         (CONF_DIFERENCIA_ALTA_NUMBER, 'set_diferencia_alta_number'),
     ]:
-        if conf in config:
-            value = config[conf]
-            if cv.is_config_id(value):
-                value = await cg.get_variable(value)
-            cg.add(getattr(var, setter)(value))
+async def to_code(config):
+    var = cg.new_Pvariable(config[CONF_ID])
+    await cg.register_component(var, config)
+    await climate.register_climate(var, config)
 
     for conf, setter in [
         (CONF_CONTEO_ENCENDIDOS, 'set_conteo_encendidos_sensor'),
