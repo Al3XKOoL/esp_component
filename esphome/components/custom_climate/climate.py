@@ -110,10 +110,22 @@ async def to_code(config):
         tiempo_homeassistant = await cg.get_variable(config[CONF_TIEMPO_HOMEASSISTANT])
         cg.add(var.set_tiempo_homeassistant(tiempo_homeassistant))
 
-    diferencia_media_number = await number.new_number(config[CONF_DIFERENCIA_MEDIA_NUMBER])
+    diferencia_media_conf = config[CONF_DIFERENCIA_MEDIA_NUMBER]
+    diferencia_media_number = await number.new_number(
+        min_value=diferencia_media_conf[CONF_MIN_VALUE],
+        max_value=diferencia_media_conf[CONF_MAX_VALUE],
+        step=diferencia_media_conf[CONF_STEP],
+        config=diferencia_media_conf,
+    )
     cg.add(var.set_diferencia_media_number(diferencia_media_number))
 
-    diferencia_alta_number = await number.new_number(config[CONF_DIFERENCIA_ALTA_NUMBER])
+    diferencia_alta_conf = config[CONF_DIFERENCIA_ALTA_NUMBER]
+    diferencia_alta_number = await number.new_number(
+        min_value=diferencia_alta_conf[CONF_MIN_VALUE],
+        max_value=diferencia_alta_conf[CONF_MAX_VALUE],
+        step=diferencia_alta_conf[CONF_STEP],
+        config=diferencia_alta_conf,
+    )
     cg.add(var.set_diferencia_alta_number(diferencia_alta_number))
 
     conteo_encendidos_sensor = await sensor.new_sensor(config[CONF_CONTEO_ENCENDIDOS])
