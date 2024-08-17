@@ -195,4 +195,11 @@ void CustomClimate::control(const esphome::climate::ClimateCall &call) {
     this->publish_state();
 }
 
-float CustomClimate::
+float CustomClimate::get_current_temperature() {
+    if (sensor_temp_agua_ != nullptr) {
+        return sensor_temp_agua_->state;
+    }
+    return NAN;
+}
+
+}  // namespace custom_climate
