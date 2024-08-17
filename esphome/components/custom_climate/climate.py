@@ -67,45 +67,51 @@ async def to_code(config):
         cg.add(var.set_tiempo_homeassistant(tiempo_homeassistant))
 
     # Registrar los nuevos números
-    diferencia_media_number = cg.new_Pvariable(config[CONF_ID].id + "_diferencia_media_number")
-    await number.register_number(
-        diferencia_media_number, 
-        {
-            "name": "Diferencia Media",
-            "min_value": 0.1,
-            "max_value": 5.0,
-            "step": 0.1,
-            "initial_value": config[CONF_DIFERENCIA_MEDIA],
-        }
+    diferencia_media_number = await number.new_number(
+        config[CONF_ID].id + "_diferencia_media_number",
+        min_value=0.1,
+        max_value=5.0,
+        step=0.1,
+        initial_value=config[CONF_DIFERENCIA_MEDIA],
+        name="Diferencia Media"
     )
     cg.add(var.set_diferencia_media_number(diferencia_media_number))
 
-    diferencia_alta_number = cg.new_Pvariable(config[CONF_ID].id + "_diferencia_alta_number")
-    await number.register_number(
-        diferencia_alta_number, 
-        {
-            "name": "Diferencia Alta",
-            "min_value": 0.1,
-            "max_value": 5.0,
-            "step": 0.1,
-            "initial_value": config[CONF_DIFERENCIA_ALTA],
-        }
+    diferencia_alta_number = await number.new_number(
+        config[CONF_ID].id + "_diferencia_alta_number",
+        min_value=0.1,
+        max_value=5.0,
+        step=0.1,
+        initial_value=config[CONF_DIFERENCIA_ALTA],
+        name="Diferencia Alta"
     )
     cg.add(var.set_diferencia_alta_number(diferencia_alta_number))
 
     # Registrar los nuevos sensores
-    conteo_encendidos_sensor = cg.new_Pvariable(config[CONF_ID].id + "_conteo_encendidos_sensor")
-    await sensor.register_sensor(conteo_encendidos_sensor, {"name": "Conteo Encendidos", "unit_of_measurement": ""})
+    conteo_encendidos_sensor = await sensor.new_sensor(
+        config[CONF_ID].id + "_conteo_encendidos_sensor",
+        name="Conteo Encendidos",
+        unit_of_measurement=""
+    )
     cg.add(var.set_conteo_encendidos_sensor(conteo_encendidos_sensor))
 
-    tiempo_encendido_sensor = cg.new_Pvariable(config[CONF_ID].id + "_tiempo_encendido_sensor")
-    await sensor.register_sensor(tiempo_encendido_sensor, {"name": "Tiempo Encendido", "unit_of_measurement": "s"})
+    tiempo_encendido_sensor = await sensor.new_sensor(
+        config[CONF_ID].id + "_tiempo_encendido_sensor",
+        name="Tiempo Encendido",
+        unit_of_measurement="s"
+    )
     cg.add(var.set_tiempo_encendido_sensor(tiempo_encendido_sensor))
 
-    kwh_hoy_sensor = cg.new_Pvariable(config[CONF_ID].id + "_kwh_hoy_sensor")
-    await sensor.register_sensor(kwh_hoy_sensor, {"name": "kWh Hoy", "unit_of_measurement": "kWh"})
+    kwh_hoy_sensor = await sensor.new_sensor(
+        config[CONF_ID].id + "_kwh_hoy_sensor",
+        name="kWh Hoy",
+        unit_of_measurement="kWh"
+    )
     cg.add(var.set_kwh_hoy_sensor(kwh_hoy_sensor))
 
-    kwh_total_sensor = cg.new_Pvariable(config[CONF_ID].id + "_kwh_total_sensor")
-    await sensor.register_sensor(kwh_total_sensor, {"name": "kWh Total", "unit_of_measurement": "kWh"})
+    kwh_total_sensor = await sensor.new_sensor(
+        config[CONF_ID].id + "_kwh_total_sensor",
+        name="kWh Total",
+        unit_of_measurement="kWh"
+    )
     cg.add(var.set_kwh_total_sensor(kwh_total_sensor))
