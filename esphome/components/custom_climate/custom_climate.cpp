@@ -1,7 +1,7 @@
 #include "custom_climate.h"
 #include "esphome/core/log.h"
 #include "esphome/components/climate/climate.h"
-#include "esphome/components/esp32/preferences.h"
+#include "esphome/components/esp32/local_storage.h"  // Línea actualizada
 
 namespace custom_climate {
 
@@ -213,17 +213,15 @@ void CustomClimate::dump_config() {
 }
 
 void CustomClimate::restore_state_from_flash() {
-  // Implementar la restauración del estado desde la memoria flash
-  // Usando preferencias en lugar de Esp32Storage
-  this->target_temperature = esphome::preferences::Preferences::instance().get_float("custom_climate_target_temperature", 37.0);
-  this->mode = static_cast<esphome::climate::ClimateMode>(esphome::preferences::Preferences::instance().get_int("custom_climate_mode", static_cast<int>(esphome::climate::CLIMATE_MODE_OFF)));
+  auto &storage = esphome::local_storage::LocalStorage::instance(); // Cambiado a LocalStorage
+  this->target_temperature = storage.get_float("custom_climate_target_temperature", 37.0);
+  this->mode = static_cast<esphome::climate::ClimateMode>(storage.get_int("custom_climate_mode", static_cast<int>(esphome::climate::CLIMATE_MODE_OFF)));
 }
 
 void CustomClimate::save_state_to_flash() {
-  // Implementar la guardia del estado en la memoria flash
-  // Usando preferencias en lugar de Esp32Storage
-  esphome::preferences::Preferences::instance().set_float("custom_climate_target_temperature", this->target_temperature);
-  esphome::preferences::Preferences::instance().set_int("custom_climate_mode", static_cast<int>(this->mode));
+  auto &storage = esphome::local_storage::LocalStorage::instance(); // Cambiado a LocalStorage
+  storage.set_float("custom_climate_target_temperature", this->target_temperature);
+  storage.set_int("custom_climate_mode", static_cast<int>(this->mode));
 }
 
 }  // namespace custom_climate
