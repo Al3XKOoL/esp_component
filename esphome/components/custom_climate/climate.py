@@ -1,215 +1,79 @@
-#include "custom_climate.h"
-#include <cstdarg>
-#include <cstdio>
-#include "esphome/core/log.h"
-#include "esphome/components/climate/climate.h"
+import esphome.codegen as cg
+import esphome.config_validation as cv
+from esphome.components import climate, sensor, switch, time
+from esphome.const import CONF_ID, CONF_RESTORE_FROM_FLASH
 
-namespace custom_climate {
+# Define constants for configuration options
+CONF_SENSOR_TEMP_SOL = "sensor_temp_sol"
+CONF_SENSOR_TEMP_AGUA = "sensor_temp_agua"
+CONF_SENSOR_TEMP_SALIDA = "sensor_temp_salida"
+CONF_DIFERENCIA_ALTA = "diferencia_alta"
+CONF_DIFERENCIA_MEDIA = "diferencia_media"
+CONF_TEMPERATURA_VISUAL_MINIMA = "temperatura_visual_minima"
+CONF_TEMPERATURA_VISUAL_MAXIMA = "temperatura_visual_maxima"
+CONF_POTENCIA_BOMBA = "potencia_bomba"
+CONF_INTERRUPTOR_BOMBA = "interruptor_bomba"
+CONF_TIEMPO_SNTP = "tiempo_sntp"
+CONF_TIEMPO_HOMEASSISTANT = "tiempo_homeassistant"
+CONF_FACTOR_TIEMPO_ACTIVACION = "factor_tiempo_activacion"
+CONF_TEMPERATURA_CERCA = "temperatura_cerca"
 
-using namespace esphome::climate;
+# Define a namespace for the custom climate component
+custom_climate_ns = cg.esphome_ns.namespace('custom_climate')
+CustomClimate = custom_climate_ns.class_('CustomClimate', climate.Climate, cg.Component)
 
-static const char *const TAG = "custom_climate";
+# Define the configuration schema for the custom climate component
+CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend({
+    cv.GenerateID(): cv.declare_id(CustomClimate),
+    cv.Required(CONF_SENSOR_TEMP_SOL): cv.use_id(sensor.Sensor),
+    cv.Required(CONF_SENSOR_TEMP_AGUA): cv.use_id(sensor.Sensor),
+    cv.Required(CONF_SENSOR_TEMP_SALIDA): cv.use_id(sensor.Sensor),
+    cv.Required(CONF_DIFERENCIA_ALTA): cv.float_,
+    cv.Required(CONF_DIFERENCIA_MEDIA): cv.float_,
+    cv.Required(CONF_TEMPERATURA_VISUAL_MINIMA): cv.float_,
+    cv.Required(CONF_TEMPERATURA_VISUAL_MAXIMA): cv.float_,
+    cv.Required(CONF_POTENCIA_BOMBA): cv.float_,
+    cv.Required(CONF_INTERRUPTOR_BOMBA): cv.use_id(switch.Switch),
+    cv.Required(CONF_TIEMPO_SNTP): cv.use_id(time.RealTimeClock),
+    cv.Required(CONF_TIEMPO_HOMEASSISTANT): cv.use_id(time.RealTimeClock),
+    cv.Optional(CONF_FACTOR_TIEMPO_ACTIVACION, default=10.0): cv.float_,
+    cv.Optional(CONF_TEMPERATURA_CERCA, default=1.0): cv.float_,
+    cv.Optional(CONF_RESTORE_FROM_FLASH, default=False): cv.boolean,
+}).extend(cv.COMPONENT_SCHEMA)
 
-void CustomClimate::log_mensaje(const char* nivel, const char* formato, ...) {
-    va_list args;
-    va_start(args, formato);
-    char buffer[256];
-    vsnprintf(buffer, sizeof(buffer), formato, args);
-    va_end(args);
-    esphome::ESP_LOGD(TAG, "\033[1;31m%s: %s\033[0m", nivel, buffer);  // Rojo para todos los niveles
-}
+# Generate code for the custom climate component
+async def to_code(config):
+    var = cg.new_Pvariable(config[CONF_ID])
+    await cg.register_component(var, config)
+    await climate.register_climate(var, config)
 
-void CustomClimate::setup() {
-    // Configuración inicial
-    this->mode = CLIMATE_MODE_OFF;
-    this->target_temperature = 37.0;
-    this->current_temperature = get_current_temperature();
+    sensor_temp_sol = await cg.get_variable(config[CONF_SENSOR_TEMP_SOL])
+    cg.add(var.set_sensor_temp_sol(sensor_temp_sol))
+    
+    sensor_temp_agua = await cg.get_variable(config[CONF_SENSOR_TEMP_AGUA])
+    cg.add(var.set_sensor_temp_agua(sensor_temp_agua))
 
-    // Restaurar el estado del dispositivo desde flash
-    if (auto restore = this->restore_state_()) {
-        if (restore->target_temperature.has_value()) {
-            this->target_temperature = restore->target_temperature.value();
-        }
-        if (restore->mode.has_value()) {
-            this->mode = restore->mode.value();
-        }
-    }
+    sensor_temp_salida = await cg.get_variable(config[CONF_SENSOR_TEMP_SALIDA])
+    cg.add(var.set_sensor_temp_salida(sensor_temp_salida))
 
-    this->publish_state();
-}
+    cg.add(var.set_diferencia_alta(config[CONF_DIFERENCIA_ALTA]))
+    cg.add(var.set_diferencia_media(config[CONF_DIFERENCIA_MEDIA]))
+    cg.add(var.set_temperatura_visual_minima(config[CONF_TEMPERATURA_VISUAL_MINIMA]))
+    cg.add(var.set_temperatura_visual_maxima(config[CONF_TEMPERATURA_VISUAL_MAXIMA]))
+    cg.add(var.set_potencia_bomba(config[CONF_POTENCIA_BOMBA]))
 
-void CustomClimate::loop() {
-    unsigned long tiempo_actual = millis();
+    interruptor_bomba = await cg.get_variable(config[CONF_INTERRUPTOR_BOMBA])
+    cg.add(var.set_interruptor_bomba(interruptor_bomba))
 
-    if (tiempo_actual - ultimo_tiempo_verificacion_ >= intervalo_segundos_ * 1000) {
-        ultimo_tiempo_verificacion_ = tiempo_actual;
+    tiempo_sntp = await cg.get_variable(config[CONF_TIEMPO_SNTP])
+    cg.add(var.set_tiempo_sntp(tiempo_sntp))
 
-        log_mensaje("WARN", "Ejecutando loop()");
+    tiempo_homeassistant = await cg.get_variable(config[CONF_TIEMPO_HOMEASSISTANT])
+    cg.add(var.set_tiempo_homeassistant(tiempo_homeassistant))
 
-        // Actualizar lecturas de todos los sensores
-        float temp_sol = sensor_temp_sol_->state;
-        float temp_agua = sensor_temp_agua_->state;
-        float temp_salida = sensor_temp_salida_->state;
+    cg.add(var.set_factor_tiempo_activacion(config[CONF_FACTOR_TIEMPO_ACTIVACION]))
+    cg.add(var.set_temperatura_cerca(config[CONF_TEMPERATURA_CERCA]))
 
-        // Actualizar la temperatura actual del climate (usando temp_agua)
-        if (!std::isnan(temp_agua)) {
-            this->current_temperature = temp_agua;
-        }
-
-        log_mensaje("WARN", "Temperaturas - Sol: %.2f, Agua: %.2f, Salida: %.2f", temp_sol, temp_agua, temp_salida);
-
-        // Solo realizar comprobaciones si el modo es HEAT
-        if (this->mode == CLIMATE_MODE_HEAT) {
-            // Obtener tiempo actual
-            int64_t timestamp_actual = 0;
-            if (tiempo_homeassistant_ != nullptr) {
-                timestamp_actual = tiempo_homeassistant_->now().timestamp;
-            }
-            if (timestamp_actual == 0 && tiempo_sntp_ != nullptr) {
-                timestamp_actual = tiempo_sntp_->now().timestamp;
-            }
-
-            if (espera_) {
-                if (timestamp_actual >= tiempo_espera_fin_) {
-                    espera_ = false;
-                    log_mensaje("WARN", "Reanudando verificaciones después de esperar");
-                } else {
-                    log_mensaje("WARN", "En espera hasta %lld", tiempo_espera_fin_);
-                    this->publish_state();
-                    return;
-                }
-            }
-
-            bool estado_bomba_actual = interruptor_bomba_->state;
-
-            if (temp_sol > (temp_agua + diferencia_alta_) && temp_agua < this->target_temperature) {
-                if (!estado_bomba_actual) {
-                    if (temp_agua >= (this->target_temperature - temperatura_cerca_)) {
-                        // Activar la nueva lógica solo cuando falten X grados para llegar a la temperatura deseada
-                        float diferencia_temp = temp_sol - temp_agua;
-                        int tiempo_activacion = static_cast<int>(diferencia_temp * factor_tiempo_activacion_);
-
-                        interruptor_bomba_->turn_on();
-                        conteo_encendidos_++;
-                        tiempo_inicio_ = timestamp_actual;
-                        log_mensaje("WARN", "Bomba encendida durante %d segundos debido a la diferencia de temperatura de %.2f grados", tiempo_activacion, diferencia_temp);
-
-                        espera_ = true;
-                        tiempo_espera_fin_ = timestamp_actual + tiempo_activacion;
-                        this->publish_state();
-                        return;
-                    } else {
-                        // Usar la lógica anterior cuando falten más de X grados para llegar a la temperatura deseada
-                        interruptor_bomba_->turn_on();
-                        conteo_encendidos_++;
-                        tiempo_inicio_ = timestamp_actual;
-                        log_mensaje("WARN", "Bomba encendida debido a la temperatura adecuada");
-                    }
-                } else {
-                    log_mensaje("WARN", "Bomba ya está encendida");
-                }
-            } else {
-                if (estado_bomba_actual) {
-                    interruptor_bomba_->turn_off();
-                    int64_t tiempo_total_encendido = timestamp_actual - tiempo_inicio_;
-                    tiempo_encendida_ += tiempo_total_encendido;
-                    log_mensaje("WARN", "Bomba apagada debido a temperatura inadecuada");
-                    log_mensaje("WARN", "Tiempo total de funcionamiento de la bomba: %lld segundos", tiempo_total_encendido);
-                    espera_ = true;
-                    tiempo_espera_fin_ = timestamp_actual + 300; // 5 minutos en segundos
-                    this->publish_state();
-                    return;
-                } else {
-                    log_mensaje("WARN", "Bomba ya está apagada");
-                    this->publish_state();
-                    return;
-                }
-            }
-
-            if (estado_bomba_actual && temp_salida < (temp_agua + 1)) {
-                interruptor_bomba_->turn_off();
-                int64_t tiempo_total_encendido = timestamp_actual - tiempo_inicio_;
-                tiempo_encendida_ += tiempo_total_encendido;
-                log_mensaje("WARN", "Bomba apagada debido a temperatura de salida insuficiente");
-                log_mensaje("WARN", "Tiempo total de funcionamiento de la bomba: %lld segundos", tiempo_total_encendido);
-                espera_ = true;
-                tiempo_espera_fin_ = timestamp_actual + 300; // 5 minutos en segundos
-                this->publish_state();
-                return;
-            }
-
-            if (estado_bomba_actual) {
-                int64_t tiempo_transcurrido = timestamp_actual - tiempo_inicio_;
-                log_mensaje("WARN", "Tiempo transcurrido de funcionamiento de la bomba: %02d:%02d:%02d",
-                            (int)(tiempo_transcurrido / 3600),
-                            (int)((tiempo_transcurrido % 3600) / 60),
-                            (int)(tiempo_transcurrido % 60));
-            }
-
-            log_mensaje("WARN", "Diferencia Sol-Agua: %.2f°C", temp_sol - temp_agua);
-            log_mensaje("WARN", "Diferencia Salida-Agua: %.2f°C", temp_salida - temp_agua);
-            log_mensaje("WARN", "Estado de la bomba: %d", estado_bomba_actual);
-            log_mensaje("WARN", "Conteo de encendidos de la bomba: %d", conteo_encendidos_);
-        } else {
-            // Si no está en modo HEAT, asegurarse de que la bomba esté apagada
-            if (interruptor_bomba_->state) {
-                interruptor_bomba_->turn_off();
-                log_mensaje("WARN", "Bomba apagada porque el modo HEAT está desactivado");
-            }
-        }
-
-        this->publish_state();
-    }
-}
-
-esphome::climate::ClimateTraits CustomClimate::traits() {
-    auto traits = esphome::climate::ClimateTraits();
-    traits.set_supports_current_temperature(true);
-    traits.set_visual_min_temperature(temperatura_visual_minima_);
-    traits.set_visual_max_temperature(temperatura_visual_maxima_);
-    traits.set_visual_temperature_step(0.1);
-    traits.add_supported_mode(CLIMATE_MODE_OFF);
-    traits.add_supported_mode(CLIMATE_MODE_HEAT);
-    return traits;
-}
-
-void CustomClimate::control(const esphome::climate::ClimateCall &call) {
-    if (call.get_mode().has_value()) {
-        auto new_mode = *call.get_mode();
-        if (new_mode != this->mode) {
-            this->mode = new_mode;
-            if (this->mode == CLIMATE_MODE_HEAT) {
-                // Cuando se enciende el modo HEAT, realiza cualquier configuración necesaria aquí.
-                this->publish_state();
-            }
-        }
-    }
-
-    if (call.get_target_temperature().has_value()) {
-        auto new_target_temp = *call.get_target_temperature();
-        if (new_target_temp != this->target_temperature) {
-            this->target_temperature = new_target_temp;
-            this->publish_state();
-        }
-    }
-}
-
-void CustomClimate::save_state() {
-    // Guarda el estado del dispositivo en el almacenamiento flash
-    auto state = esphome::climate::ClimateDeviceRestoreState();
-    state.target_temperature = this->target_temperature;
-    state.mode = this->mode;
-    this->store_state(state);
-}
-
-void CustomClimate::restore_state(const esphome::climate::ClimateDeviceRestoreState &state) {
-    // Restaura el estado del dispositivo desde el almacenamiento flash
-    if (state.target_temperature.has_value()) {
-        this->target_temperature = state.target_temperature.value();
-    }
-    if (state.mode.has_value()) {
-        this->mode = state.mode.value();
-    }
-}
-
-}  // namespace custom_climate
+    # Add support for restoring from flash
+    if config.get(CONF_RESTORE_FROM_FLASH):
+        cg.add(var.set_restore_from_flash(True))
