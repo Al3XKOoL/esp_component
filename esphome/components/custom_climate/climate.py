@@ -1,3 +1,4 @@
+
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components.template.number import TemplateNumber
@@ -106,6 +107,3 @@ async def to_code(config):
     ]:
         sensor_var = await sensor.new_sensor(config[conf])
         cg.add(getattr(var, setter)(sensor_var))
-
-    # Agregar inicialización de variables
-    cg.add(var.init_variables())
