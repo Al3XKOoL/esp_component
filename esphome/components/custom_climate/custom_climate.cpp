@@ -152,10 +152,8 @@ void CustomClimate::control(const esphome::climate::ClimateCall &call) {
 }
 
 float CustomClimate::get_current_temperature() {
-  ESP_LOGI(TAG, "get_current_temperature() llamada");
-  float temp = sensor_temp_agua_->state;
-  ESP_LOGI(TAG, "Temperatura actual: %.2f", temp);
-  return temp;
+  // Asumimos que la temperatura del agua es la temperatura actual
+  return sensor_temp_agua_->state;
 }
 
 }  // namespace custom_climate
