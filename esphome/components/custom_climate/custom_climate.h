@@ -29,20 +29,20 @@ class CustomClimate : public esphome::climate::Climate, public esphome::Componen
   float get_current_temperature();
   void dump_config() override;
 
-  // Add methods for restoring and saving state
+  // Métodos para restaurar y guardar el estado
   void restore_state_from_flash();
   void save_state_to_flash();
 
  protected:
-  esphome::sensor::Sensor *sensor_temp_sol_;
-  esphome::sensor::Sensor *sensor_temp_agua_;
-  esphome::sensor::Sensor *sensor_temp_salida_;
-  float diferencia_alta_;
-  float diferencia_media_;
-  float temperatura_visual_minima_;
-  float temperatura_visual_maxima_;
-  float potencia_bomba_;
-  esphome::switch_::Switch *interruptor_bomba_;
+  esphome::sensor::Sensor *sensor_temp_sol_{nullptr};
+  esphome::sensor::Sensor *sensor_temp_agua_{nullptr};
+  esphome::sensor::Sensor *sensor_temp_salida_{nullptr};
+  float diferencia_alta_{0.0};
+  float diferencia_media_{0.0};
+  float temperatura_visual_minima_{0.0};
+  float temperatura_visual_maxima_{0.0};
+  float potencia_bomba_{0.0};
+  esphome::switch_::Switch *interruptor_bomba_{nullptr};
   esphome::time::RealTimeClock *tiempo_sntp_{nullptr};
   esphome::time::RealTimeClock *tiempo_homeassistant_{nullptr};
   float factor_tiempo_activacion_{10.0};
