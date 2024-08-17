@@ -38,6 +38,10 @@ class CustomClimate : public climate::Climate, public Component {
   void control(const climate::ClimateCall &call) override;
   climate::ClimateTraits traits() override;
 
+private:
+  number::Number *diferencia_media_number_{nullptr};
+  number::Number *diferencia_alta_number_{nullptr};
+
  protected:
   sensor::Sensor *sensor_temp_sol_{nullptr};
   sensor::Sensor *sensor_temp_agua_{nullptr};
