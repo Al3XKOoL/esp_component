@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "esphome.h"
@@ -27,7 +26,6 @@ class CustomClimate : public esphome::climate::Climate, public esphome::Componen
   void loop() override;
   esphome::climate::ClimateTraits traits() override;
   void control(const esphome::climate::ClimateCall &call) override;
-  float get_current_temperature();
 
  protected:
   esphome::sensor::Sensor *sensor_temp_sol_;
@@ -51,6 +49,19 @@ class CustomClimate : public esphome::climate::Climate, public esphome::Componen
   int64_t tiempo_inicio_{0};
 
   void log_mensaje(const char* nivel, const char* formato, ...);
+  void control_bomba();
+  bool modo_cerca_temperatura_objetivo();
+  void control_bomba_cerca_objetivo();
+  void control_bomba_normal();
+  bool diferencia_temperatura_suficiente();
+  void encender_bomba();
+  void apagar_bomba();
+  void esperar_estabilizacion();
+  void activar_espera_proporcional();
+  void activar_espera_fija();
+  bool temperatura_alcanzada();
+  int64_t obtener_tiempo_actual();
+  float get_current_temperature();
 };
 
 }  // namespace custom_climate
