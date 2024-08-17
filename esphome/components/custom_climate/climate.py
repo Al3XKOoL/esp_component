@@ -1,7 +1,7 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import climate, sensor, switch, time
-from esphome.const import CONF_ID, CONF_RESTORE_STATE
+from esphome.const import CONF_ID
 
 CONF_SENSOR_TEMP_SOL = "sensor_temp_sol"
 CONF_SENSOR_TEMP_AGUA = "sensor_temp_agua"
@@ -31,11 +31,10 @@ CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend({
     cv.Required(CONF_TEMPERATURA_VISUAL_MAXIMA): cv.float_,
     cv.Required(CONF_POTENCIA_BOMBA): cv.float_,
     cv.Required(CONF_INTERRUPTOR_BOMBA): cv.use_id(switch.Switch),
-    cv.Optional(CONF_TIEMPO_SNTP): cv.use_id(time.RealTimeClock),
-    cv.Optional(CONF_TIEMPO_HOMEASSISTANT): cv.use_id(time.RealTimeClock),
-    cv.Required(CONF_FACTOR_TIEMPO_ACTIVACION): cv.float_,
-    cv.Required(CONF_TEMPERATURA_CERCA): cv.float_,
-    cv.Optional(CONF_RESTORE_STATE, default=False): cv.boolean,
+    cv.Required(CONF_TIEMPO_SNTP): cv.use_id(time.RealTimeClock),
+    cv.Required(CONF_TIEMPO_HOMEASSISTANT): cv.use_id(time.RealTimeClock),
+    cv.Optional(CONF_FACTOR_TIEMPO_ACTIVACION, default=10.0): cv.float_,
+    cv.Optional(CONF_TEMPERATURA_CERCA, default=1.0): cv.float_,
 }).extend(cv.COMPONENT_SCHEMA)
 
 async def to_code(config):
@@ -43,34 +42,29 @@ async def to_code(config):
     await cg.register_component(var, config)
     await climate.register_climate(var, config)
 
-    if config[CONF_RESTORE_STATE]:
-        cg.add(var.set_restore_state(True))
-    
     sensor_temp_sol = await cg.get_variable(config[CONF_SENSOR_TEMP_SOL])
     cg.add(var.set_sensor_temp_sol(sensor_temp_sol))
     
     sensor_temp_agua = await cg.get_variable(config[CONF_SENSOR_TEMP_AGUA])
     cg.add(var.set_sensor_temp_agua(sensor_temp_agua))
-    
+
     sensor_temp_salida = await cg.get_variable(config[CONF_SENSOR_TEMP_SALIDA])
     cg.add(var.set_sensor_temp_salida(sensor_temp_salida))
-    
+
     cg.add(var.set_diferencia_alta(config[CONF_DIFERENCIA_ALTA]))
     cg.add(var.set_diferencia_media(config[CONF_DIFERENCIA_MEDIA]))
     cg.add(var.set_temperatura_visual_minima(config[CONF_TEMPERATURA_VISUAL_MINIMA]))
     cg.add(var.set_temperatura_visual_maxima(config[CONF_TEMPERATURA_VISUAL_MAXIMA]))
     cg.add(var.set_potencia_bomba(config[CONF_POTENCIA_BOMBA]))
-    
+
     interruptor_bomba = await cg.get_variable(config[CONF_INTERRUPTOR_BOMBA])
     cg.add(var.set_interruptor_bomba(interruptor_bomba))
-    
+
+    tiempo_sntp = await cg.get_variable(config[CONF_TIEMPO_SNTP])
+    cg.add(var.set_tiempo_sntp(tiempo_sntp))
+
+    tiempo_homeassistant = await cg.get_variable(config[CONF_TIEMPO_HOMEASSISTANT])
+    cg.add(var.set_tiempo_homeassistant(tiempo_homeassistant))
+
     cg.add(var.set_factor_tiempo_activacion(config[CONF_FACTOR_TIEMPO_ACTIVACION]))
     cg.add(var.set_temperatura_cerca(config[CONF_TEMPERATURA_CERCA]))
-
-    if CONF_TIEMPO_SNTP in config:
-        tiempo_sntp = await cg.get_variable(config[CONF_TIEMPO_SNTP])
-        cg.add(var.set_tiempo_sntp(tiempo_sntp))
-
-    if CONF_TIEMPO_HOMEASSISTANT in config:
-        tiempo_homeassistant = await cg.get_variable(config[CONF_TIEMPO_HOMEASSISTANT])
-        cg.add(var.set_tiempo_homeassistant(tiempo_homeassistant))
