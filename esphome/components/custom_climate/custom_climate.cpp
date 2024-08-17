@@ -19,7 +19,7 @@ void CustomClimate::log_mensaje(const char* nivel, const char* formato, ...) {
     char buffer[256];
     vsnprintf(buffer, sizeof(buffer), formato, args);
     va_end(args);
-    esphome::ESP_LOGD(TAG, "%s: %s", nivel, buffer);
+    esphome::ESP_LOGD(TAG, "\033[1;31m%s: %s\033[0m", nivel, buffer);  // Rojo para todos los niveles
 }
 
 void CustomClimate::setup() {
