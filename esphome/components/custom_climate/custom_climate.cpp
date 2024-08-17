@@ -120,7 +120,7 @@ void CustomClimate::loop() {
 esphome::climate::ClimateTraits CustomClimate::traits() {
   auto traits = esphome::climate::ClimateTraits();
   traits.set_supports_current_temperature(true);
-  traits.set_supports_two_point_target_temperature(true);
+  traits.set_supports_target_temperature(true);
   traits.set_visual_min_temperature(temperatura_visual_minima_);
   traits.set_visual_max_temperature(temperatura_visual_maxima_);
   traits.set_visual_temperature_step(0.1);
