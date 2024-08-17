@@ -24,7 +24,7 @@ class CustomClimate : public esphome::climate::Climate, public esphome::Componen
   void loop() override;
   esphome::climate::ClimateTraits traits() override;
   void control(const esphome::climate::ClimateCall &call) override;
-  float get_current_temperature();  // Eliminado 'override'
+  float get_current_temperature();
 
  protected:
   esphome::sensor::Sensor *sensor_temp_sol_;
@@ -44,8 +44,6 @@ class CustomClimate : public esphome::climate::Climate, public esphome::Componen
   bool espera_{false};
   int64_t tiempo_espera_fin_{0};
   int64_t tiempo_inicio_{0};
-  int conteo_encendidos_{0};
-  int64_t tiempo_encendida_{0};
 
   void log_mensaje(const char* nivel, const char* formato, ...);
 };
