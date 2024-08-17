@@ -71,47 +71,34 @@ async def to_code(config):
     await cg.register_component(var, config)
     await climate.register_climate(var, config)
 
-    sensor_temp_sol = await cg.get_variable(config[CONF_SENSOR_TEMP_SOL])
-    cg.add(var.set_sensor_temp_sol(sensor_temp_sol))
-    sensor_temp_agua = await cg.get_variable(config[CONF_SENSOR_TEMP_AGUA])
-    cg.add(var.set_sensor_temp_agua(sensor_temp_agua))
-    sensor_temp_salida = await cg.get_variable(config[CONF_SENSOR_TEMP_SALIDA])
-    cg.add(var.set_sensor_temp_salida(sensor_temp_salida))
+    for conf, setter in [
+        (CONF_SENSOR_TEMP_SOL, 'set_sensor_temp_sol'),
+        (CONF_SENSOR_TEMP_AGUA, 'set_sensor_temp_agua'),
+        (CONF_SENSOR_TEMP_SALIDA, 'set_sensor_temp_salida'),
+        (CONF_DIFERENCIA_ALTA, 'set_diferencia_alta'),
+        (CONF_DIFERENCIA_MEDIA, 'set_diferencia_media'),
+        (CONF_TEMPERATURA_VISUAL_MINIMA, 'set_temperatura_visual_minima'),
+        (CONF_TEMPERATURA_VISUAL_MAXIMA, 'set_temperatura_visual_maxima'),
+        (CONF_POTENCIA_BOMBA, 'set_potencia_bomba'),
+        (CONF_INTERRUPTOR_BOMBA, 'set_interruptor_bomba'),
+        (CONF_FACTOR_TIEMPO_ACTIVACION, 'set_factor_tiempo_activacion'),
+        (CONF_TEMPERATURA_CERCA, 'set_temperatura_cerca'),
+        (CONF_TIEMPO_SNTP, 'set_tiempo_sntp'),
+        (CONF_TIEMPO_HOMEASSISTANT, 'set_tiempo_homeassistant'),
+        (CONF_DIFERENCIA_MEDIA_NUMBER, 'set_diferencia_media_number'),
+        (CONF_DIFERENCIA_ALTA_NUMBER, 'set_diferencia_alta_number'),
+    ]:
+        if conf in config:
+            value = config[conf]
+            if isinstance(value, cg.ID):
+                value = await cg.get_variable(value)
+            cg.add(getattr(var, setter)(value))
 
-    cg.add(var.set_diferencia_alta(config[CONF_DIFERENCIA_ALTA]))
-    cg.add(var.set_diferencia_media(config[CONF_DIFERENCIA_MEDIA]))
-    cg.add(var.set_temperatura_visual_minima(config[CONF_TEMPERATURA_VISUAL_MINIMA]))
-    cg.add(var.set_temperatura_visual_maxima(config[CONF_TEMPERATURA_VISUAL_MAXIMA]))
-    cg.add(var.set_potencia_bomba(config[CONF_POTENCIA_BOMBA]))
-
-    interruptor_bomba = await cg.get_variable(config[CONF_INTERRUPTOR_BOMBA])
-    cg.add(var.set_interruptor_bomba(interruptor_bomba))
-
-    cg.add(var.set_factor_tiempo_activacion(config[CONF_FACTOR_TIEMPO_ACTIVACION]))
-    cg.add(var.set_temperatura_cerca(config[CONF_TEMPERATURA_CERCA]))
-
-    if CONF_TIEMPO_SNTP in config:
-        tiempo_sntp = await cg.get_variable(config[CONF_TIEMPO_SNTP])
-        cg.add(var.set_tiempo_sntp(tiempo_sntp))
-
-    if CONF_TIEMPO_HOMEASSISTANT in config:
-        tiempo_homeassistant = await cg.get_variable(config[CONF_TIEMPO_HOMEASSISTANT])
-        cg.add(var.set_tiempo_homeassistant(tiempo_homeassistant))
-
-    diferencia_media = yield cg.get_variable(config['diferencia_media'])
-    cg.add(var.set_diferencia_media_number(diferencia_media))
-
-    diferencia_alta = yield cg.get_variable(config['diferencia_alta'])
-    cg.add(var.set_diferencia_alta_number(diferencia_alta))
-
-    conteo_encendidos_sensor = await sensor.new_sensor(config[CONF_CONTEO_ENCENDIDOS])
-    cg.add(var.set_conteo_encendidos_sensor(conteo_encendidos_sensor))
-
-    tiempo_encendido_sensor = await sensor.new_sensor(config[CONF_TIEMPO_ENCENDIDO])
-    cg.add(var.set_tiempo_encendido_sensor(tiempo_encendido_sensor))
-
-    kwh_hoy_sensor = await sensor.new_sensor(config[CONF_KWH_HOY])
-    cg.add(var.set_kwh_hoy_sensor(kwh_hoy_sensor))
-
-    kwh_total_sensor = await sensor.new_sensor(config[CONF_KWH_TOTAL])
-    cg.add(var.set_kwh_total_sensor(kwh_total_sensor))
+    for conf, setter in [
+        (CONF_CONTEO_ENCENDIDOS, 'set_conteo_encendidos_sensor'),
+        (CONF_TIEMPO_ENCENDIDO, 'set_tiempo_encendido_sensor'),
+        (CONF_KWH_HOY, 'set_kwh_hoy_sensor'),
+        (CONF_KWH_TOTAL, 'set_kwh_total_sensor'),
+    ]:
+        sensor_var = await sensor.new_sensor(config[conf])
+        cg.add(getattr(var, setter)(sensor_var))
