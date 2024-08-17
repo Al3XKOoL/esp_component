@@ -68,7 +68,7 @@ async def to_code(config):
 
     # Registrar los nuevos números
     diferencia_media_number = await number.new_number(
-        number.NumberSchema({
+        number.number_schema ({
             CONF_MIN_VALUE: 0.1,
             CONF_MAX_VALUE: 5.0,
             CONF_STEP: 0.1,
@@ -79,7 +79,7 @@ async def to_code(config):
     )
 
     diferencia_alta_number = await number.new_number(
-        number.NumberSchema({
+        number.number_schema ({
             CONF_MIN_VALUE: 0.1,
             CONF_MAX_VALUE: 5.0,
             CONF_STEP: 0.1,
@@ -91,7 +91,7 @@ async def to_code(config):
 
     # Registrar los nuevos sensores
     conteo_encendidos_sensor = await sensor.new_sensor(
-        sensor.SensorSchema({
+        sensor.sensor_schema ({
             CONF_UNIT_OF_MEASUREMENT: "",
             CONF_ACCURACY_DECIMALS: 0,
             CONF_NAME: "Conteo Encendidos",
@@ -100,7 +100,7 @@ async def to_code(config):
     )
 
     tiempo_encendido_sensor = await sensor.new_sensor(
-        sensor.SensorSchema({
+        sensor.sensor_schema ({
             CONF_UNIT_OF_MEASUREMENT: "s",
             CONF_ACCURACY_DECIMALS: 0,
             CONF_NAME: "Tiempo Encendido",
@@ -109,7 +109,7 @@ async def to_code(config):
     )
 
     kwh_hoy_sensor = await sensor.new_sensor(
-        sensor.SensorSchema({
+        sensor.sensor_schema ({
             CONF_UNIT_OF_MEASUREMENT: "kWh",
             CONF_ACCURACY_DECIMALS: 3,
             CONF_NAME: "kWh Hoy",
@@ -118,7 +118,7 @@ async def to_code(config):
     )
 
     kwh_total_sensor = await sensor.new_sensor(
-        sensor.SensorSchema({
+        sensor.sensor_schema ({
             CONF_UNIT_OF_MEASUREMENT: "kWh",
             CONF_ACCURACY_DECIMALS: 3,
             CONF_NAME: "kWh Total",
