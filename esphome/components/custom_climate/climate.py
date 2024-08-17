@@ -46,7 +46,6 @@ CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend({
     cv.Optional(CONF_TIEMPO_HOMEASSISTANT): cv.use_id(time.RealTimeClock),
     cv.Required(CONF_FACTOR_TIEMPO_ACTIVACION): cv.float_,
     cv.Required(CONF_TEMPERATURA_CERCA): cv.float_,
-    cv.Required(CONF_DIFERENCIA_MEDIA_NUMBER): number.NUMBER_SCHEMA.extend({
     cv.Required('diferencia_media'): cv.use_id(TemplateNumber),
     cv.Required('diferencia_alta'): cv.use_id(TemplateNumber),
     cv.Required(CONF_CONTEO_ENCENDIDOS): sensor.sensor_schema(
