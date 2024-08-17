@@ -32,7 +32,7 @@ CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend({
     cv.Required(CONF_POTENCIA_BOMBA): cv.float_,
     cv.Required(CONF_INTERRUPTOR_BOMBA): cv.use_id(switch.Switch),
     cv.Optional(CONF_TIEMPO_SNTP): cv.use_id(time.RealTimeClock),
-    cv.Optional(CONF_TIEMPO _HOMEASSISTANT): cv.use_id(time.RealTimeClock),
+    cv.Optional(CONF_TIEMPO_HOMEASSISTANT): cv.use_id(time.RealTimeClock),
     cv.Required(CONF_FACTOR_TIEMPO_ACTIVACION): cv.float_,
     cv.Required(CONF_TEMPERATURA_CERCA): cv.float_,
 }).extend(cv.COMPONENT_SCHEMA)
