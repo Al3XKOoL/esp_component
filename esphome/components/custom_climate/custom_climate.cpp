@@ -1,7 +1,7 @@
 #include "custom_climate.h"
 #include "esphome/core/log.h"
 #include "esphome/components/climate/climate.h"
-#include "esphome/components/preferences/preferences.h"
+#include "esphome/components/esp32/preferences.h"
 
 namespace custom_climate {
 
