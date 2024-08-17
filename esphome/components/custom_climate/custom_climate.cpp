@@ -20,7 +20,10 @@ void CustomClimate::log_mensaje(const char* nivel, const char* formato, ...) {
 }
 
 void CustomClimate::setup() {
-  // Inicialización si es necesaria
+  // Inicialización
+  this->mode = CLIMATE_MODE_OFF;  // Inicialmente en modo OFF
+  this->target_temperature = 37.0;  // Temperatura objetivo inicial, ajusta según sea necesario
+  this->publish_state();
 }
 
 void CustomClimate::loop() {
@@ -121,6 +124,8 @@ esphome::climate::ClimateTraits CustomClimate::traits() {
   traits.set_visual_min_temperature(temperatura_visual_minima_);
   traits.set_visual_max_temperature(temperatura_visual_maxima_);
   traits.set_visual_temperature_step(0.1);
+  traits.add_supported_mode(CLIMATE_MODE_OFF);
+  traits.add_supported_mode(CLIMATE_MODE_HEAT);
   return traits;
 }
 
@@ -129,10 +134,12 @@ void CustomClimate::control(const esphome::climate::ClimateCall &call) {
     auto new_mode = *call.get_mode();
     if (new_mode != this->mode) {
       this->mode = new_mode;
-      if (this->mode != CLIMATE_MODE_HEAT) {
-        // Si cambiamos a un modo que no es HEAT, apagamos la bomba
+      if (this->mode == CLIMATE_MODE_OFF) {
+        // Si cambiamos a modo OFF, apagamos la bomba
         interruptor_bomba_->turn_off();
-        log_mensaje("DEBUG", "Bomba apagada debido a cambio de modo");
+        log_mensaje("DEBUG", "Bomba apagada debido a cambio a modo OFF");
+      } else if (this->mode == CLIMATE_MODE_HEAT) {
+        log_mensaje("DEBUG", "Modo HEAT activado");
       }
     }
   }
@@ -140,6 +147,11 @@ void CustomClimate::control(const esphome::climate::ClimateCall &call) {
     this->target_temperature = *call.get_target_temperature();
   }
   this->publish_state();
+}
+
+float CustomClimate::get_current_temperature() {
+  // Asumimos que la temperatura del agua es la temperatura actual
+  return sensor_temp_agua_->state;
 }
 
 }  // namespace custom_climate
