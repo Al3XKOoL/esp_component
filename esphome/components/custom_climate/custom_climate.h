@@ -46,7 +46,8 @@ class CustomClimate : public esphome::climate::Climate, public esphome::Componen
   float temperatura_cerca_{1.0};
   bool restore_state_{false};
 
-  ClimateDeviceRestoreState restore_state();
+  esphome::optional<esphome::climate::ClimateDeviceRestoreState> restore_state();  // Ajuste para el método de restauración
+
   unsigned long ultimo_tiempo_verificacion_{0};
   const unsigned long intervalo_segundos_{2};
   bool espera_{false};
