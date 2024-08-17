@@ -30,15 +30,12 @@ void CustomClimate::setup() {
 
   // Restaurar el estado guardado si se habilitó la opción
   if (restore_state_) {
-    auto restored_state = this->restore_state_;
-    if (restored_state.has_value()) {
-      auto restore = restored_state.value();
-      if (restore.mode.has_value()) {
-        this->mode = *restore.mode;
-      }
-      if (restore.target_temperature.has_value()) {
-        this->target_temperature = *restore.target_temperature;
-      }
+    auto restore = this->restore_state;
+    if (restore.mode != CLIMATE_MODE_OFF) {
+      this->mode = restore.mode;
+    }
+    if (!std::isnan(restore.target_temperature)) {
+      this->target_temperature = restore.target_temperature;
     }
   }
 
