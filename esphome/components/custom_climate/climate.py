@@ -72,7 +72,10 @@ async def to_code(config):
             min_value=0.1,
             max_value=5.0,
             step=0.1,
-        ).extend(cv.COMPONENT_SCHEMA),
+        ).extend({
+            cv.GenerateID(): cv.declare_id(number.Number),
+            cv.Optional(CONF_NAME): cv.string_strict,
+        }),
         cg.StructInitializer(
             number.Number,
             ("name", "Diferencia Media"),
@@ -85,7 +88,10 @@ async def to_code(config):
             min_value=0.1,
             max_value=5.0,
             step=0.1,
-        ).extend(cv.COMPONENT_SCHEMA),
+        ).extend({
+            cv.GenerateID(): cv.declare_id(number.Number),
+            cv.Optional(CONF_NAME): cv.string_strict,
+        }),
         cg.StructInitializer(
             number.Number,
             ("name", "Diferencia Alta"),
@@ -95,7 +101,10 @@ async def to_code(config):
 
     # Registrar los nuevos sensores
     conteo_encendidos_sensor = await sensor.new_sensor(
-        sensor.sensor_schema().extend(cv.COMPONENT_SCHEMA),
+        sensor.sensor_schema().extend({
+            cv.GenerateID(): cv.declare_id(sensor.Sensor),
+            cv.Optional(CONF_NAME): cv.string_strict,
+        }),
         cg.StructInitializer(
             sensor.Sensor,
             ("name", "Conteo Encendidos"),
@@ -104,7 +113,11 @@ async def to_code(config):
     cg.add(var.set_conteo_encendidos_sensor(conteo_encendidos_sensor))
 
     tiempo_encendido_sensor = await sensor.new_sensor(
-        sensor.sensor_schema().extend(cv.COMPONENT_SCHEMA),
+        sensor.sensor_schema().extend({
+            cv.GenerateID(): cv.declare_id(sensor.Sensor),
+            cv.Optional(CONF_NAME): cv.string_strict,
+            cv.Optional(CONF_UNIT_OF_MEASUREMENT): cv.string_strict,
+        }),
         cg.StructInitializer(
             sensor.Sensor,
             ("name", "Tiempo Encendido"),
@@ -114,7 +127,12 @@ async def to_code(config):
     cg.add(var.set_tiempo_encendido_sensor(tiempo_encendido_sensor))
 
     kwh_hoy_sensor = await sensor.new_sensor(
-        sensor.sensor_schema().extend(cv.COMPONENT_SCHEMA),
+        sensor.sensor_schema().extend({
+            cv.GenerateID(): cv.declare_id(sensor.Sensor),
+            cv.Optional(CONF_NAME): cv.string_strict,
+            cv.Optional(CONF_UNIT_OF_MEASUREMENT): cv.string_strict,
+            cv.Optional(CONF_ACCURACY_DECIMALS): cv.int_,
+        }),
         cg.StructInitializer(
             sensor.Sensor,
             ("name", "kWh Hoy"),
@@ -125,7 +143,12 @@ async def to_code(config):
     cg.add(var.set_kwh_hoy_sensor(kwh_hoy_sensor))
 
     kwh_total_sensor = await sensor.new_sensor(
-        sensor.sensor_schema().extend(cv.COMPONENT_SCHEMA),
+        sensor.sensor_schema().extend({
+            cv.GenerateID(): cv.declare_id(sensor.Sensor),
+            cv.Optional(CONF_NAME): cv.string_strict,
+            cv.Optional(CONF_UNIT_OF_MEASUREMENT): cv.string_strict,
+            cv.Optional(CONF_ACCURACY_DECIMALS): cv.int_,
+        }),
         cg.StructInitializer(
             sensor.Sensor,
             ("name", "kWh Total"),
