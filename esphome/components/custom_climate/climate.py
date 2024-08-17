@@ -66,7 +66,7 @@ async def to_code(config):
         tiempo_homeassistant = await cg.get_variable(config[CONF_TIEMPO_HOMEASSISTANT])
         cg.add(var.set_tiempo_homeassistant(tiempo_homeassistant))
 
-# Registrar los nuevos números
+    # Registrar los nuevos números
     diferencia_media_number = await number.new_number(
         min_value=0.1,
         max_value=5.0,
@@ -90,11 +90,6 @@ async def to_code(config):
         })
     )
     cg.add(var.set_diferencia_alta_number(diferencia_alta_number))
-
-
-
-
-
 
     # Registrar los nuevos sensores
     conteo_encendidos_sensor = await sensor.new_sensor(sensor.sensor_schema({
