@@ -42,21 +42,28 @@ async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
     await climate.register_climate(var, config)
+
     if config[CONF_RESTORE_STATE]:
         cg.add(var.set_restore_state(True))
+    
     sensor_temp_sol = await cg.get_variable(config[CONF_SENSOR_TEMP_SOL])
     cg.add(var.set_sensor_temp_sol(sensor_temp_sol))
+    
     sensor_temp_agua = await cg.get_variable(config[CONF_SENSOR_TEMP_AGUA])
     cg.add(var.set_sensor_temp_agua(sensor_temp_agua))
+    
     sensor_temp_salida = await cg.get_variable(config[CONF_SENSOR_TEMP_SALIDA])
     cg.add(var.set_sensor_temp_salida(sensor_temp_salida))
+    
     cg.add(var.set_diferencia_alta(config[CONF_DIFERENCIA_ALTA]))
     cg.add(var.set_diferencia_media(config[CONF_DIFERENCIA_MEDIA]))
     cg.add(var.set_temperatura_visual_minima(config[CONF_TEMPERATURA_VISUAL_MINIMA]))
     cg.add(var.set_temperatura_visual_maxima(config[CONF_TEMPERATURA_VISUAL_MAXIMA]))
     cg.add(var.set_potencia_bomba(config[CONF_POTENCIA_BOMBA]))
+    
     interruptor_bomba = await cg.get_variable(config[CONF_INTERRUPTOR_BOMBA])
     cg.add(var.set_interruptor_bomba(interruptor_bomba))
+    
     cg.add(var.set_factor_tiempo_activacion(config[CONF_FACTOR_TIEMPO_ACTIVACION]))
     cg.add(var.set_temperatura_cerca(config[CONF_TEMPERATURA_CERCA]))
 
