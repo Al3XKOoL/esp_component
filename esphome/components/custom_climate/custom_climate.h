@@ -26,8 +26,8 @@ class CustomClimate : public climate::Climate, public Component {
   void set_factor_tiempo_activacion(float factor) { factor_tiempo_activacion_ = factor; }
   void set_temperatura_cerca(float temp) { temperatura_cerca_ = temp; }
   
-  void set_diferencia_media_number(number::NumberCall *number) { diferencia_media_number_ = number; }
-  void set_diferencia_alta_number(number::NumberCall *number) { diferencia_alta_number_ = number; }
+  void set_diferencia_media_number(number::Number *number) { diferencia_media_number_ = number; }
+  void set_diferencia_alta_number(number::Number *number) { diferencia_alta_number_ = number; }
 
   void set_conteo_encendidos_sensor(sensor::Sensor *sensor) { conteo_encendidos_sensor_ = sensor; }
   void set_tiempo_encendido_sensor(sensor::Sensor *sensor) { tiempo_encendido_sensor_ = sensor; }
@@ -54,8 +54,9 @@ class CustomClimate : public climate::Climate, public Component {
   float factor_tiempo_activacion_{0};
   float temperatura_cerca_{0};
 
-  number::NumberCall *diferencia_media_number_{nullptr};
-  number::NumberCall *diferencia_alta_number_{nullptr};a_number_{nullptr};
+  number::Number *diferencia_media_number_{nullptr};
+  number::Number *diferencia_alta_number_{nullptr};
+
   sensor::Sensor *conteo_encendidos_sensor_{nullptr};
   sensor::Sensor *tiempo_encendido_sensor_{nullptr};
   sensor::Sensor *kwh_hoy_sensor_{nullptr};
