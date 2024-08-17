@@ -6,7 +6,7 @@
 
 namespace custom_climate {
 
-using namespace esphome::climate;  
+using namespace esphome::climate;
 
 static const char *const TAG = "custom_climate";
 
@@ -32,7 +32,7 @@ void CustomClimate::loop() {
     log_mensaje("DEBUG", "Ejecutando loop()");
 
     // Solo realizar comprobaciones si el modo es HEAT
-    if (this->mode == climate::CLIMATE_MODE_HEAT) {
+    if (this->mode == CLIMATE_MODE_HEAT) {
       // Obtener tiempo actual
       int64_t timestamp_actual = 0;
       if (tiempo_homeassistant_ != nullptr) {
@@ -129,7 +129,7 @@ void CustomClimate::control(const esphome::climate::ClimateCall &call) {
     auto new_mode = *call.get_mode();
     if (new_mode != this->mode) {
       this->mode = new_mode;
-      if (this->mode != climate::CLIMATE_MODE_HEAT) {
+      if (this->mode != CLIMATE_MODE_HEAT) {
         // Si cambiamos a un modo que no es HEAT, apagamos la bomba
         interruptor_bomba_->turn_off();
         log_mensaje("DEBUG", "Bomba apagada debido a cambio de modo");
