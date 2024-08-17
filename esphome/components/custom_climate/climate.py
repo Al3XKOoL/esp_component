@@ -91,19 +91,19 @@ async def to_code(config):
 
     diferencia_media_conf = config[CONF_DIFERENCIA_MEDIA_NUMBER]
     diferencia_media_number = await number.new_number(
-        diferencia_media_conf[CONF_MIN_VALUE],
-        diferencia_media_conf[CONF_MAX_VALUE],
-        diferencia_media_conf[CONF_STEP],
-        diferencia_media_conf,
+        min_value=diferencia_media_conf[CONF_MIN_VALUE],
+        max_value=diferencia_media_conf[CONF_MAX_VALUE],
+        step=diferencia_media_conf[CONF_STEP],
+        config=diferencia_media_conf,
     )
     cg.add(var.set_diferencia_media_number(diferencia_media_number))
 
     diferencia_alta_conf = config[CONF_DIFERENCIA_ALTA_NUMBER]
     diferencia_alta_number = await number.new_number(
-        diferencia_alta_conf[CONF_MIN_VALUE],
-        diferencia_alta_conf[CONF_MAX_VALUE],
-        diferencia_alta_conf[CONF_STEP],
-        diferencia_alta_conf,
+        min_value=diferencia_alta_conf[CONF_MIN_VALUE],
+        max_value=diferencia_alta_conf[CONF_MAX_VALUE],
+        step=diferencia_alta_conf[CONF_STEP],
+        config=diferencia_alta_conf,
     )
     cg.add(var.set_diferencia_alta_number(diferencia_alta_number))
 
