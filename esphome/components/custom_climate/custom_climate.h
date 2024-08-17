@@ -44,9 +44,7 @@ class CustomClimate : public esphome::climate::Climate, public esphome::Componen
   esphome::time::RealTimeClock *tiempo_homeassistant_{nullptr};
   float factor_tiempo_activacion_{10.0};
   float temperatura_cerca_{1.0};
-  bool restore_state_{false};
-
-  esphome::optional<esphome::climate::ClimateDeviceRestoreState> restore_state();  // Ajuste para el método de restauración
+  bool restore_state_{false};  // Es un bool, no usa has_value() ni value()
 
   unsigned long ultimo_tiempo_verificacion_{0};
   const unsigned long intervalo_segundos_{2};
