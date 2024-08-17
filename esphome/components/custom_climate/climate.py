@@ -67,6 +67,13 @@ async def to_code(config):
         cg.add(var.set_tiempo_homeassistant(tiempo_homeassistant))
 
     # Registrar los nuevos números
+    number_schema = number.number_schema({
+        cv.GenerateID(): cv.declare_id(number.Number),
+        cv.Optional(CONF_NAME, default="Diferencia Media"): cv.string,
+        cv.Optional(CONF_MODE, default="slider"): cv.enum(number.NUMBER_MODES, lower=True),
+    })
+    print("Number Schema:", number_schema)
+
     diferencia_media_number = await number.new_number(
         min_value=0.1,
         max_value=5.0,
