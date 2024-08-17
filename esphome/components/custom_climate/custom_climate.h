@@ -1,61 +1,64 @@
 #pragma once
 
-#include "esphome.h"
+#include "esphome/core/component.h"
 #include "esphome/components/climate/climate.h"
-#include "esphome/components/time/real_time_clock.h"
 #include "esphome/components/sensor/sensor.h"
+#include "esphome/components/switch/switch.h"
+#include "esphome/components/time/real_time_clock.h"
 #include "esphome/components/number/number.h"
-#include "esphome/components/number/number_traits.h"
 
+namespace esphome {
 namespace custom_climate {
 
-class CustomClimate : public esphome::climate::Climate, public esphome::Component {
+class CustomClimate : public climate::Climate, public Component {
  public:
-  void set_sensor_temp_sol(esphome::sensor::Sensor *sensor_temp_sol) { sensor_temp_sol_ = sensor_temp_sol; }
-  void set_sensor_temp_agua(esphome::sensor::Sensor *sensor_temp_agua) { sensor_temp_agua_ = sensor_temp_agua; }
-  void set_sensor_temp_salida(esphome::sensor::Sensor *sensor_temp_salida) { sensor_temp_salida_ = sensor_temp_salida; }
-  void set_diferencia_alta(float diferencia_alta) { diferencia_alta_ = diferencia_alta; }
-  void set_diferencia_media(float diferencia_media) { diferencia_media_ = diferencia_media; }
-  void set_temperatura_visual_minima(float temperatura_visual_minima) { temperatura_visual_minima_ = temperatura_visual_minima; }
-  void set_temperatura_visual_maxima(float temperatura_visual_maxima) { temperatura_visual_maxima_ = temperatura_visual_maxima; }
-  void set_potencia_bomba(float potencia_bomba) { potencia_bomba_ = potencia_bomba; }
-  void set_interruptor_bomba(esphome::switch_::Switch *interruptor_bomba) { interruptor_bomba_ = interruptor_bomba; }
-  void set_tiempo_sntp(esphome::time::RealTimeClock *tiempo_sntp) { tiempo_sntp_ = tiempo_sntp; }
-  void set_tiempo_homeassistant(esphome::time::RealTimeClock *tiempo_homeassistant) { tiempo_homeassistant_ = tiempo_homeassistant; }
-  void set_factor_tiempo_activacion(float factor_tiempo_activacion) { factor_tiempo_activacion_ = factor_tiempo_activacion; }
-  void set_temperatura_cerca(float temperatura_cerca) { temperatura_cerca_ = temperatura_cerca; }
-  void set_diferencia_media_number(esphome::number::Number *diferencia_media_number) { diferencia_media_number_ = diferencia_media_number; }
-  void set_diferencia_alta_number(esphome::number::Number *diferencia_alta_number) { diferencia_alta_number_ = diferencia_alta_number; }
-  void set_conteo_encendidos_sensor(esphome::sensor::Sensor *conteo_encendidos_sensor) { conteo_encendidos_sensor_ = conteo_encendidos_sensor; }
-  void set_tiempo_encendido_sensor(esphome::sensor::Sensor *tiempo_encendido_sensor) { tiempo_encendido_sensor_ = tiempo_encendido_sensor; }
-  void set_kwh_hoy_sensor(esphome::sensor::Sensor *kwh_hoy_sensor) { kwh_hoy_sensor_ = kwh_hoy_sensor; }
-  void set_kwh_total_sensor(esphome::sensor::Sensor *kwh_total_sensor) { kwh_total_sensor_ = kwh_total_sensor; }
+  void set_sensor_temp_sol(sensor::Sensor *sensor) { sensor_temp_sol_ = sensor; }
+  void set_sensor_temp_agua(sensor::Sensor *sensor) { sensor_temp_agua_ = sensor; }
+  void set_sensor_temp_salida(sensor::Sensor *sensor) { sensor_temp_salida_ = sensor; }
+  void set_diferencia_alta(float diferencia) { diferencia_alta_ = diferencia; }
+  void set_diferencia_media(float diferencia) { diferencia_media_ = diferencia; }
+  void set_temperatura_visual_minima(float temp) { temperatura_visual_minima_ = temp; }
+  void set_temperatura_visual_maxima(float temp) { temperatura_visual_maxima_ = temp; }
+  void set_potencia_bomba(float potencia) { potencia_bomba_ = potencia; }
+  void set_interruptor_bomba(switch_::Switch *interruptor) { interruptor_bomba_ = interruptor; }
+  void set_tiempo_sntp(time::RealTimeClock *tiempo) { tiempo_sntp_ = tiempo; }
+  void set_tiempo_homeassistant(time::RealTimeClock *tiempo) { tiempo_homeassistant_ = tiempo; }
+  void set_factor_tiempo_activacion(float factor) { factor_tiempo_activacion_ = factor; }
+  void set_temperatura_cerca(float temp) { temperatura_cerca_ = temp; }
+  
+  void set_diferencia_media_number(number::Number *number) { diferencia_media_number_ = number; }
+  void set_diferencia_alta_number(number::Number *number) { diferencia_alta_number_ = number; }
+  void set_conteo_encendidos_sensor(sensor::Sensor *sensor) { conteo_encendidos_sensor_ = sensor; }
+  void set_tiempo_encendido_sensor(sensor::Sensor *sensor) { tiempo_encendido_sensor_ = sensor; }
+  void set_kwh_hoy_sensor(sensor::Sensor *sensor) { kwh_hoy_sensor_ = sensor; }
+  void set_kwh_total_sensor(sensor::Sensor *sensor) { kwh_total_sensor_ = sensor; }
 
   void setup() override;
   void loop() override;
-  esphome::climate::ClimateTraits traits() override;
-  void control(const esphome::climate::ClimateCall &call) override;
+  void control(const climate::ClimateCall &call) override;
+  climate::ClimateTraits traits() override;
 
  protected:
-  esphome::sensor::Sensor *sensor_temp_sol_;
-  esphome::sensor::Sensor *sensor_temp_agua_;
-  esphome::sensor::Sensor *sensor_temp_salida_;
-  float diferencia_alta_;
-  float diferencia_media_;
-  float temperatura_visual_minima_;
-  float temperatura_visual_maxima_;
-  float potencia_bomba_;
-  esphome::switch_::Switch *interruptor_bomba_;
-  esphome::time::RealTimeClock *tiempo_sntp_{nullptr};
-  esphome::time::RealTimeClock *tiempo_homeassistant_{nullptr};
-  float factor_tiempo_activacion_{10.0};
-  float temperatura_cerca_{1.0};
-  esphome::number::Number *diferencia_media_number_{nullptr};
-  esphome::number::Number *diferencia_alta_number_{nullptr};
-  esphome::sensor::Sensor *conteo_encendidos_sensor_{nullptr};
-  esphome::sensor::Sensor *tiempo_encendido_sensor_{nullptr};
-  esphome::sensor::Sensor *kwh_hoy_sensor_{nullptr};
-  esphome::sensor::Sensor *kwh_total_sensor_{nullptr};
+  sensor::Sensor *sensor_temp_sol_{nullptr};
+  sensor::Sensor *sensor_temp_agua_{nullptr};
+  sensor::Sensor *sensor_temp_salida_{nullptr};
+  float diferencia_alta_{0};
+  float diferencia_media_{0};
+  float temperatura_visual_minima_{0};
+  float temperatura_visual_maxima_{0};
+  float potencia_bomba_{0};
+  switch_::Switch *interruptor_bomba_{nullptr};
+  time::RealTimeClock *tiempo_sntp_{nullptr};
+  time::RealTimeClock *tiempo_homeassistant_{nullptr};
+  float factor_tiempo_activacion_{0};
+  float temperatura_cerca_{0};
+
+  number::Number *diferencia_media_number_{nullptr};
+  number::Number *diferencia_alta_number_{nullptr};
+  sensor::Sensor *conteo_encendidos_sensor_{nullptr};
+  sensor::Sensor *tiempo_encendido_sensor_{nullptr};
+  sensor::Sensor *kwh_hoy_sensor_{nullptr};
+  sensor::Sensor *kwh_total_sensor_{nullptr};
 
   unsigned long ultimo_tiempo_verificacion_{0};
   const unsigned long intervalo_segundos_{2};
