@@ -5,7 +5,7 @@
 #include "esphome/components/sensor/sensor.h"
 #include "esphome/components/switch/switch.h"
 #include "esphome/components/time/real_time_clock.h"
-#include "esphome/components/number/number.h"
+#include "esphome/components/template/number/template_number.h"
 
 namespace esphome {
 namespace custom_climate {
@@ -26,8 +26,8 @@ class CustomClimate : public climate::Climate, public Component {
   void set_factor_tiempo_activacion(float factor) { factor_tiempo_activacion_ = factor; }
   void set_temperatura_cerca(float temp) { temperatura_cerca_ = temp; }
   
-  void set_diferencia_media_number(number::Number *number) { diferencia_media_number_ = number; }
-  void set_diferencia_alta_number(number::Number *number) { diferencia_alta_number_ = number; }
+  void set_diferencia_media_number(template_::TemplateNumber *number) { diferencia_media_number_ = number; }
+  void set_diferencia_alta_number(template_::TemplateNumber *number) { diferencia_alta_number_ = number; }
 
   void set_conteo_encendidos_sensor(sensor::Sensor *sensor) { conteo_encendidos_sensor_ = sensor; }
   void set_tiempo_encendido_sensor(sensor::Sensor *sensor) { tiempo_encendido_sensor_ = sensor; }
@@ -54,8 +54,8 @@ class CustomClimate : public climate::Climate, public Component {
   float factor_tiempo_activacion_{0};
   float temperatura_cerca_{0};
 
-  number::Number *diferencia_media_number_{nullptr};
-  number::Number *diferencia_alta_number_{nullptr};
+  template_::TemplateNumber *diferencia_media_number_{nullptr};
+  template_::TemplateNumber *diferencia_alta_number_{nullptr};
 
   sensor::Sensor *conteo_encendidos_sensor_{nullptr};
   sensor::Sensor *tiempo_encendido_sensor_{nullptr};
