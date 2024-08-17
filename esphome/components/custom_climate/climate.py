@@ -71,7 +71,7 @@ async def to_code(config):
         min_value=0.1,
         max_value=5.0,
         step=0.1,
-        number.NumberSchema({
+        number_schema=number.number_schema({
             cv.GenerateID(): cv.declare_id(number.Number),
             cv.Optional(CONF_NAME, default="Diferencia Media"): cv.string,
             cv.Optional(CONF_MODE, default="slider"): cv.enum(number.NUMBER_MODES, lower=True),
@@ -83,7 +83,7 @@ async def to_code(config):
         min_value=0.1,
         max_value=5.0,
         step=0.1,
-        number.NumberSchema({
+        number_schema=number.number_schema({
             cv.GenerateID(): cv.declare_id(number.Number),
             cv.Optional(CONF_NAME, default="Diferencia Alta"): cv.string,
             cv.Optional(CONF_MODE, default="slider"): cv.enum(number.NUMBER_MODES, lower=True),
