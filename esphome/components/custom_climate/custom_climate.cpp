@@ -31,7 +31,7 @@ void CustomClimate::setup() {
   // Restaurar el estado del dispositivo si `restore_state_` está habilitado
   if (restore_state_) {
     // Acceder al estado restaurado
-    auto restore = this->restore_state();
+    auto restore = this->restore_state_();
     if (restore.has_value()) {
       // Restaurar el modo
       this->mode = restore->mode;
