@@ -1,7 +1,7 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import climate, sensor, switch, time, number
-from esphome.const import CONF_ID, CONF_MIN_VALUE, CONF_MAX_VALUE, CONF_STEP, CONF_INITIAL_VALUE, CONF_NAME, CONF_UNIT_OF_MEASUREMENT, CONF_ACCURACY_DECIMALS
+from esphome.const import CONF_ID, CONF_MIN_VALUE, CONF_MAX_VALUE, CONF_STEP, CONF_NAME, CONF_UNIT_OF_MEASUREMENT, CONF_ACCURACY_DECIMALS
 
 CONF_SENSOR_TEMP_SOL = "sensor_temp_sol"
 CONF_SENSOR_TEMP_AGUA = "sensor_temp_agua"
@@ -71,19 +71,19 @@ async def to_code(config):
         min_value=0.1,
         max_value=5.0,
         step=0.1,
-        initial_value=config[CONF_DIFERENCIA_MEDIA],
         name="Diferencia Media",
     )
     cg.add(var.set_diferencia_media_number(diferencia_media_number))
+    cg.add(diferencia_media_number.set_initial_value(config[CONF_DIFERENCIA_MEDIA]))
 
     diferencia_alta_number = await number.new_number(
         min_value=0.1,
         max_value=5.0,
         step=0.1,
-        initial_value=config[CONF_DIFERENCIA_ALTA],
         name="Diferencia Alta",
     )
     cg.add(var.set_diferencia_alta_number(diferencia_alta_number))
+    cg.add(diferencia_alta_number.set_initial_value(config[CONF_DIFERENCIA_ALTA]))
 
     # Registrar los nuevos sensores
     conteo_encendidos_sensor = await sensor.new_sensor(
