@@ -20,11 +20,9 @@ CONF_TIEMPO_SNTP = "tiempo_sntp"
 CONF_TIEMPO_HOMEASSISTANT = "tiempo_homeassistant"
 CONF_FACTOR_TIEMPO_ACTIVACION = "factor_tiempo_activacion"
 CONF_TEMPERATURA_CERCA = "temperatura_cerca"
-(CONF_DIFERENCIA_MEDIA_NUMBER, 'set_diferencia_media_number'),
-(CONF_DIFERENCIA_ALTA_NUMBER, 'set_diferencia_alta_number'),
-
 CONF_DIFERENCIA_MEDIA_NUMBER = "diferencia_media_number"
 CONF_DIFERENCIA_ALTA_NUMBER = "diferencia_alta_number"
+
 CONF_CONTEO_ENCENDIDOS = "conteo_encendidos"
 CONF_TIEMPO_ENCENDIDO = "tiempo_encendido"
 CONF_KWH_HOY = "kwh_hoy"
@@ -47,9 +45,9 @@ CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend({
     cv.Optional(CONF_TIEMPO_SNTP): cv.use_id(time.RealTimeClock),
     cv.Optional(CONF_TIEMPO_HOMEASSISTANT): cv.use_id(time.RealTimeClock),
     cv.Required(CONF_FACTOR_TIEMPO_ACTIVACION): cv.float_,
-    cv.Required(CONF_TEMPERATURA_CERCA): cv.float_,
-    cv.Required(CONF_DIFERENCIA_MEDIA_NUMBER): cv.use_id(number.Number),
-    cv.Required(CONF_DIFERENCIA_ALTA_NUMBER): cv.use_id(number.Number),
+    cv.Optional(CONF_TEMPERATURA_CERCA): cv.float_,
+    cv.Optional(CONF_DIFERENCIA_MEDIA_NUMBER): cv.use_id(number.Number),
+    cv.Optional(CONF_DIFERENCIA_ALTA_NUMBER): cv.use_id(number.Number),
     cv.Required(CONF_CONTEO_ENCENDIDOS): sensor.sensor_schema(
         unit_of_measurement="",
         accuracy_decimals=0,
