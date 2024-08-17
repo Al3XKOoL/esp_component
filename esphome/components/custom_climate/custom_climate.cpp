@@ -10,6 +10,9 @@ using namespace esphome::climate;
 
 static const char *const TAG = "custom_climate";
 
+int conteo_encendidos_{0};
+int64_t tiempo_encendida_{0};
+
 void CustomClimate::log_mensaje(const char* nivel, const char* formato, ...) {
     va_list args;
     va_start(args, formato);
@@ -22,7 +25,7 @@ void CustomClimate::log_mensaje(const char* nivel, const char* formato, ...) {
 void CustomClimate::setup() {
   // Inicialización
   this->mode = CLIMATE_MODE_OFF;  // Inicialmente en modo OFF
-  this->target_temperature = id(temperatura_maxima).state;  // Temperatura objetivo inicial
+  this->target_temperature = 37.0;  // Temperatura objetivo inicial, ajusta según sea necesario
   this->publish_state();
 }
 
@@ -60,7 +63,7 @@ void CustomClimate::loop() {
       if (sensor_temp_sol_->state > (sensor_temp_agua_->state + diferencia_alta_) && sensor_temp_agua_->state < this->target_temperature) {
         if (!estado_bomba_actual) {
           interruptor_bomba_->turn_on();
-          id(conteo_encendidos) += 1;
+          conteo_encendidos_++;
           tiempo_inicio_ = timestamp_actual;
           log_mensaje("DEBUG", "Bomba encendida debido a la temperatura adecuada");
         } else {
@@ -70,7 +73,7 @@ void CustomClimate::loop() {
         if (estado_bomba_actual) {
           interruptor_bomba_->turn_off();
           int64_t tiempo_total_encendido = timestamp_actual - tiempo_inicio_;
-          id(tiempo_encendida) += tiempo_total_encendido;
+          tiempo_encendida_ += tiempo_total_encendido;
           log_mensaje("DEBUG", "Bomba apagada debido a temperatura inadecuada");
           log_mensaje("WARN", "Tiempo total de funcionamiento de la bomba: %lld segundos", tiempo_total_encendido);
           espera_ = true;
@@ -85,7 +88,7 @@ void CustomClimate::loop() {
       if (estado_bomba_actual && sensor_temp_salida_->state < (sensor_temp_agua_->state + 1)) {
         interruptor_bomba_->turn_off();
         int64_t tiempo_total_encendido = timestamp_actual - tiempo_inicio_;
-        id(tiempo_encendida) += tiempo_total_encendido;
+        tiempo_encendida_ += tiempo_total_encendido;
         log_mensaje("DEBUG", "Bomba apagada debido a temperatura de salida insuficiente");
         log_mensaje("WARN", "Tiempo total de funcionamiento de la bomba: %lld segundos", tiempo_total_encendido);
         espera_ = true;
@@ -104,7 +107,7 @@ void CustomClimate::loop() {
       log_mensaje("WARN", "Diferencia Sol-Agua: %.2f°C", sensor_temp_sol_->state - sensor_temp_agua_->state);
       log_mensaje("WARN", "Diferencia Salida-Agua: %.2f°C", sensor_temp_salida_->state - sensor_temp_agua_->state);
       log_mensaje("WARN", "Estado de la bomba: %d", interruptor_bomba_->state);
-      log_mensaje("DEBUG", "Conteo de encendidos de la bomba: %d", id(conteo_encendidos));
+      log_mensaje("DEBUG", "Conteo de encendidos de la bomba: %d", conteo_encendidos_);
     } else {
       // Si no está en modo HEAT, asegurarse de que la bomba esté apagada
       if (interruptor_bomba_->state) {
@@ -120,7 +123,6 @@ void CustomClimate::loop() {
 esphome::climate::ClimateTraits CustomClimate::traits() {
   auto traits = esphome::climate::ClimateTraits();
   traits.set_supports_current_temperature(true);
-  traits.set_supports_target_temperature(true);
   traits.set_visual_min_temperature(temperatura_visual_minima_);
   traits.set_visual_max_temperature(temperatura_visual_maxima_);
   traits.set_visual_temperature_step(0.1);
