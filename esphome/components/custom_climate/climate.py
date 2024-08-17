@@ -71,7 +71,6 @@ async def to_code(config):
         min_value=0.1,
         max_value=5.0,
         step=0.1,
-        name="Diferencia Media",
         mode="slider"
     )
     cg.add(var.set_diferencia_media_number(diferencia_media_number))
@@ -80,7 +79,6 @@ async def to_code(config):
         min_value=0.1,
         max_value=5.0,
         step=0.1,
-        name="Diferencia Alta",
         mode="slider"
     )
     cg.add(var.set_diferencia_alta_number(diferencia_alta_number))
