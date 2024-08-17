@@ -26,6 +26,7 @@ void CustomClimate::setup() {
   // Inicialización
   this->mode = CLIMATE_MODE_OFF;  // Inicialmente en modo OFF
   this->target_temperature = 37.0;  // Temperatura objetivo inicial, ajusta según sea necesario
+  this->current_temperature = get_current_temperature();  // Inicializar la temperatura actual
   this->publish_state();
 }
 
@@ -36,6 +37,12 @@ void CustomClimate::loop() {
     ultimo_tiempo_verificacion_ = tiempo_actual;
 
     log_mensaje("DEBUG", "Ejecutando loop()");
+
+    // Actualizar la temperatura actual
+    float temp_actual = get_current_temperature();
+    if (!std::isnan(temp_actual)) {
+      this->current_temperature = temp_actual;
+    }
 
     // Solo realizar comprobaciones si el modo es HEAT
     if (this->mode == CLIMATE_MODE_HEAT) {
@@ -54,6 +61,7 @@ void CustomClimate::loop() {
           log_mensaje("DEBUG", "Reanudando verificaciones después de espera de 5 minutos.");
         } else {
           log_mensaje("DEBUG", "En espera hasta %lld", tiempo_espera_fin_);
+          this->publish_state();
           return;
         }
       }
@@ -78,9 +86,11 @@ void CustomClimate::loop() {
           log_mensaje("WARN", "Tiempo total de funcionamiento de la bomba: %lld segundos", tiempo_total_encendido);
           espera_ = true;
           tiempo_espera_fin_ = timestamp_actual + 300; // 5 minutos en segundos
+          this->publish_state();
           return;
         } else {
           log_mensaje("DEBUG", "Bomba ya está apagada");
+          this->publish_state();
           return;
         }
       }
@@ -93,6 +103,7 @@ void CustomClimate::loop() {
         log_mensaje("WARN", "Tiempo total de funcionamiento de la bomba: %lld segundos", tiempo_total_encendido);
         espera_ = true;
         tiempo_espera_fin_ = timestamp_actual + 300; // 5 minutos en segundos
+        this->publish_state();
         return;
       }
 
