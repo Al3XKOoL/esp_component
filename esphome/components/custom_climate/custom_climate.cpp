@@ -27,13 +27,14 @@ void CustomClimate::setup() {
   this->target_temperature = 37.0;
   this->current_temperature = get_current_temperature();
   if (restore_state_) {
-    auto restore = this->restore_state_;
-    if (restore) {
-      if (restore.mode.has_value()) {
-        this->mode = *restore.mode;
+    auto restore = esphome::climate::ClimateDeviceRestoreState::from_restore_data(this->get_restore_data());
+    if (restore.has_value()) {
+      auto restored = restore.value();
+      if (restored.mode.has_value()) {
+        this->mode = *restored.mode;
       }
-      if (restore.target_temperature.has_value()) {
-        this->target_temperature = *restore.target_temperature;
+      if (restored.target_temperature.has_value()) {
+        this->target_temperature = *restored.target_temperature;
       }
     }
   }
