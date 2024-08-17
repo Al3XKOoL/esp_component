@@ -25,6 +25,24 @@ void CustomClimate::setup() {
   this->target_temperature = 37.0;
   this->current_temperature = get_current_temperature();
 
+  if (diferencia_media_number_ != nullptr) {
+    diferencia_media_number_->add_on_state_callback([this](float value) {
+      this->diferencia_media_ = value;
+      log_mensaje("INFO", "Diferencia media actualizada a %.1f", value);
+    });
+  }
+
+  if (diferencia_alta_number_ != nullptr) {
+    diferencia_alta_number_->add_on_state_callback([this](float value) {
+      this->diferencia_alta_ = value;
+      log_mensaje("INFO", "Diferencia alta actualizada a %.1f", value);
+    });
+  }
+
+  this->publish_state();
+  log_mensaje("INFO", "Setup completado");
+}
+
   diferencia_media_number_.set_name("Diferencia Media");
   diferencia_media_number_.set_min_value(0.1f);
   diferencia_media_number_.set_max_value(5.0f);
