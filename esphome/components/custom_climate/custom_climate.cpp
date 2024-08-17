@@ -31,10 +31,8 @@ void CustomClimate::setup() {
 
 void CustomClimate::loop() {
   unsigned long tiempo_actual = millis();
-
   if (tiempo_actual - ultimo_tiempo_verificacion_ >= intervalo_segundos_ * 1000) {
     ultimo_tiempo_verificacion_ = tiempo_actual;
-
     log_mensaje("WARN", "Ejecutando loop()");
 
     // Actualizar lecturas de todos los sensores
@@ -85,6 +83,9 @@ void CustomClimate::loop() {
             tiempo_inicio_ = timestamp_actual;
             log_mensaje("WARN", "Bomba encendida durante %d segundos debido a la diferencia de temperatura de %.2f grados", tiempo_activacion, diferencia_temp);
             
+            // Agregar delay de 15 segundos
+            delay(15000);
+            
             espera_ = true;
             tiempo_espera_fin_ = timestamp_actual + tiempo_activacion;
             this->publish_state();
@@ -95,6 +96,9 @@ void CustomClimate::loop() {
             conteo_encendidos_++;
             tiempo_inicio_ = timestamp_actual;
             log_mensaje("WARN", "Bomba encendida debido a la temperatura adecuada");
+            
+            // Agregar delay de 15 segundos
+            delay(15000);
           }
         } else {
           log_mensaje("WARN", "Bomba ya está encendida");
@@ -107,7 +111,7 @@ void CustomClimate::loop() {
           log_mensaje("WARN", "Bomba apagada debido a temperatura inadecuada");
           log_mensaje("WARN", "Tiempo total de funcionamiento de la bomba: %lld segundos", tiempo_total_encendido);
           espera_ = true;
-          tiempo_espera_fin_ = timestamp_actual + 300; // 5 minutos en segundos
+          tiempo_espera_fin_ = timestamp_actual + 180; // 3 minutos en segundos
           this->publish_state();
           return;
         } else {
@@ -124,7 +128,7 @@ void CustomClimate::loop() {
         log_mensaje("WARN", "Bomba apagada debido a temperatura de salida insuficiente");
         log_mensaje("WARN", "Tiempo total de funcionamiento de la bomba: %lld segundos", tiempo_total_encendido);
         espera_ = true;
-        tiempo_espera_fin_ = timestamp_actual + 300; // 5 minutos en segundos
+        tiempo_espera_fin_ = timestamp_actual + 180; // 3 minutos en segundos
         this->publish_state();
         return;
       }
