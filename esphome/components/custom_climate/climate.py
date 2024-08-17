@@ -1,7 +1,10 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import climate, sensor, switch, time, number
-from esphome.const import CONF_ID, CONF_MIN_VALUE, CONF_MAX_VALUE, CONF_STEP, CONF_NAME, CONF_UNIT_OF_MEASUREMENT, CONF_ACCURACY_DECIMALS, CONF_MODE
+from esphome.const import (
+    CONF_ID, CONF_MIN_VALUE, CONF_MAX_VALUE, CONF_STEP, CONF_NAME, 
+    CONF_UNIT_OF_MEASUREMENT, CONF_ACCURACY_DECIMALS, CONF_MODE
+)
 
 CONF_SENSOR_TEMP_SOL = "sensor_temp_sol"
 CONF_SENSOR_TEMP_AGUA = "sensor_temp_agua"
@@ -48,13 +51,16 @@ async def to_code(config):
     cg.add(var.set_sensor_temp_agua(sensor_temp_agua))
     sensor_temp_salida = await cg.get_variable(config[CONF_SENSOR_TEMP_SALIDA])
     cg.add(var.set_sensor_temp_salida(sensor_temp_salida))
+
     cg.add(var.set_diferencia_alta(config[CONF_DIFERENCIA_ALTA]))
     cg.add(var.set_diferencia_media(config[CONF_DIFERENCIA_MEDIA]))
     cg.add(var.set_temperatura_visual_minima(config[CONF_TEMPERATURA_VISUAL_MINIMA]))
     cg.add(var.set_temperatura_visual_maxima(config[CONF_TEMPERATURA_VISUAL_MAXIMA]))
     cg.add(var.set_potencia_bomba(config[CONF_POTENCIA_BOMBA]))
+
     interruptor_bomba = await cg.get_variable(config[CONF_INTERRUPTOR_BOMBA])
     cg.add(var.set_interruptor_bomba(interruptor_bomba))
+
     cg.add(var.set_factor_tiempo_activacion(config[CONF_FACTOR_TIEMPO_ACTIVACION]))
     cg.add(var.set_temperatura_cerca(config[CONF_TEMPERATURA_CERCA]))
 
@@ -67,34 +73,31 @@ async def to_code(config):
         cg.add(var.set_tiempo_homeassistant(tiempo_homeassistant))
 
     # Registrar los nuevos números
-    number_schema = number.number_schema({
+    diferencia_media_schema = number.NUMBER_SCHEMA.extend({
         cv.GenerateID(): cv.declare_id(number.Number),
         cv.Optional(CONF_NAME, default="Diferencia Media"): cv.string,
         cv.Optional(CONF_MODE, default="slider"): cv.enum(number.NUMBER_MODES, lower=True),
     })
-    print("Number Schema:", number_schema)
 
     diferencia_media_number = await number.new_number(
         min_value=0.1,
         max_value=5.0,
         step=0.1,
-        config=number.number_schema({
-            cv.GenerateID(): cv.declare_id(number.Number),
-            cv.Optional(CONF_NAME, default="Diferencia Media"): cv.string,
-            cv.Optional(CONF_MODE, default="slider"): cv.enum(number.NUMBER_MODES, lower=True),
-        })
+        config=diferencia_media_schema
     )
     cg.add(var.set_diferencia_media_number(diferencia_media_number))
+
+    diferencia_alta_schema = number.NUMBER_SCHEMA.extend({
+        cv.GenerateID(): cv.declare_id(number.Number),
+        cv.Optional(CONF_NAME, default="Diferencia Alta"): cv.string,
+        cv.Optional(CONF_MODE, default="slider"): cv.enum(number.NUMBER_MODES, lower=True),
+    })
 
     diferencia_alta_number = await number.new_number(
         min_value=0.1,
         max_value=5.0,
         step=0.1,
-        config=number.number_schema({
-            cv.GenerateID(): cv.declare_id(number.Number),
-            cv.Optional(CONF_NAME, default="Diferencia Alta"): cv.string,
-            cv.Optional(CONF_MODE, default="slider"): cv.enum(number.NUMBER_MODES, lower=True),
-        })
+        config=diferencia_alta_schema
     )
     cg.add(var.set_diferencia_alta_number(diferencia_alta_number))
 
