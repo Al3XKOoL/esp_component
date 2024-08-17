@@ -221,6 +221,12 @@ int64_t CustomClimate::obtener_tiempo_actual() {
   return millis() / 1000;  // Fallback a millis si no hay fuente de tiempo real
 }
 
-esphome::climate::ClimateTraits CustomClimate::traits() {
-  auto traits = esphome::climate::ClimateTraits();
-  traits.set_supports_current_temperature(
+climate::ClimateTraits CustomClimate::traits() {
+  auto traits = climate::ClimateTraits();
+  traits.set_supports_current_temperature(true);
+  // Configurar otras características según sea necesario
+  return traits;
+}
+
+}  // namespace custom_climate
+}  // namespace esphome
