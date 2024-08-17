@@ -10,16 +10,13 @@ using namespace esphome::climate;
 
 static const char *const TAG = "custom_climate";
 
-int conteo_encendidos_{0};
-int64_t tiempo_encendida_{0};
-
 void CustomClimate::log_mensaje(const char* nivel, const char* formato, ...) {
     va_list args;
     va_start(args, formato);
     char buffer[256];
     vsnprintf(buffer, sizeof(buffer), formato, args);
     va_end(args);
-    esphome::ESP_LOGD(TAG, "\033[1;31m%s: %s\033[0m", nivel, buffer);  // Rojo para todos los niveles
+    esphome::ESP_LOGD(TAG, "\033[1;31m%s: %s\033[0m", nivel, buffer);
 }
 
 void CustomClimate::setup() {
@@ -35,126 +32,115 @@ void CustomClimate::loop() {
     ultimo_tiempo_verificacion_ = tiempo_actual;
     log_mensaje("WARN", "Ejecutando loop()");
 
-    // Actualizar lecturas de todos los sensores
-    float temp_sol = sensor_temp_sol_->state;
-    float temp_agua = sensor_temp_agua_->state;
-    float temp_salida = sensor_temp_salida_->state;
-
-    // Actualizar la temperatura actual del climate (usando temp_agua)
-    if (!std::isnan(temp_agua)) {
-      this->current_temperature = temp_agua;
+    if (!std::isnan(sensor_temp_agua_->state)) {
+      this->current_temperature = sensor_temp_agua_->state;
     }
 
-    log_mensaje("WARN", "Temperaturas - Sol: %.2f, Agua: %.2f, Salida: %.2f", temp_sol, temp_agua, temp_salida);
+    log_mensaje("WARN", "Temperaturas - Sol: %.2f, Agua: %.2f, Salida: %.2f", 
+                sensor_temp_sol_->state, sensor_temp_agua_->state, sensor_temp_salida_->state);
 
-    // Solo realizar comprobaciones si el modo es HEAT
     if (this->mode == CLIMATE_MODE_HEAT) {
-      // Obtener tiempo actual
-      int64_t timestamp_actual = 0;
-      if (tiempo_homeassistant_ != nullptr) {
-        timestamp_actual = tiempo_homeassistant_->now().timestamp;
-      }
-      if (timestamp_actual == 0 && tiempo_sntp_ != nullptr) {
-        timestamp_actual = tiempo_sntp_->now().timestamp;
-      }
-
-      if (espera_) {
-        if (timestamp_actual >= tiempo_espera_fin_) {
-          espera_ = false;
-          log_mensaje("WARN", "Reanudando verificaciones después de espera");
-        } else {
-          log_mensaje("WARN", "En espera hasta %lld", tiempo_espera_fin_);
-          this->publish_state();
-          return;
-        }
-      }
-
-      bool estado_bomba_actual = interruptor_bomba_->state;
-
-      if (temp_sol > (temp_agua + diferencia_alta_) && temp_agua < this->target_temperature) {
-        if (!estado_bomba_actual) {
-          if (temp_agua >= (this->target_temperature - temperatura_cerca_)) {
-            // Activar la nueva lógica solo cuando falten X grados para llegar a la temperatura deseada
-            float diferencia_temp = temp_sol - temp_agua;
-            int tiempo_activacion = static_cast<int>(diferencia_temp * factor_tiempo_activacion_);
-            
-            interruptor_bomba_->turn_on();
-            conteo_encendidos_++;
-            tiempo_inicio_ = timestamp_actual;
-            log_mensaje("WARN", "Bomba encendida durante %d segundos debido a la diferencia de temperatura de %.2f grados", tiempo_activacion, diferencia_temp);
-            
-            // Agregar delay de 15 segundos
-            delay(15000);
-            
-            espera_ = true;
-            tiempo_espera_fin_ = timestamp_actual + tiempo_activacion;
-            this->publish_state();
-            return;
-          } else {
-            // Usar la lógica anterior cuando falten más de X grados para llegar a la temperatura deseada
-            interruptor_bomba_->turn_on();
-            conteo_encendidos_++;
-            tiempo_inicio_ = timestamp_actual;
-            log_mensaje("WARN", "Bomba encendida debido a la temperatura adecuada");
-            
-            // Agregar delay de 15 segundos
-            delay(15000);
-          }
-        } else {
-          log_mensaje("WARN", "Bomba ya está encendida");
-        }
-      } else {
-        if (estado_bomba_actual) {
-          interruptor_bomba_->turn_off();
-          int64_t tiempo_total_encendido = timestamp_actual - tiempo_inicio_;
-          tiempo_encendida_ += tiempo_total_encendido;
-          log_mensaje("WARN", "Bomba apagada debido a temperatura inadecuada");
-          log_mensaje("WARN", "Tiempo total de funcionamiento de la bomba: %lld segundos", tiempo_total_encendido);
-          espera_ = true;
-          tiempo_espera_fin_ = timestamp_actual + 180; // 3 minutos en segundos
-          this->publish_state();
-          return;
-        } else {
-          log_mensaje("WARN", "Bomba ya está apagada");
-          this->publish_state();
-          return;
-        }
-      }
-
-      if (estado_bomba_actual && temp_salida < (temp_agua + 1)) {
-        interruptor_bomba_->turn_off();
-        int64_t tiempo_total_encendido = timestamp_actual - tiempo_inicio_;
-        tiempo_encendida_ += tiempo_total_encendido;
-        log_mensaje("WARN", "Bomba apagada debido a temperatura de salida insuficiente");
-        log_mensaje("WARN", "Tiempo total de funcionamiento de la bomba: %lld segundos", tiempo_total_encendido);
-        espera_ = true;
-        tiempo_espera_fin_ = timestamp_actual + 180; // 3 minutos en segundos
-        this->publish_state();
-        return;
-      }
-
-      if (estado_bomba_actual) {
-        int64_t tiempo_transcurrido = timestamp_actual - tiempo_inicio_;
-        log_mensaje("WARN", "Tiempo transcurrido de funcionamiento de la bomba: %02d:%02d:%02d",
-                    (int)(tiempo_transcurrido / 3600),
-                    (int)((tiempo_transcurrido % 3600) / 60),
-                    (int)(tiempo_transcurrido % 60));
-      }
-
-      log_mensaje("WARN", "Diferencia Sol-Agua: %.2f°C", temp_sol - temp_agua);
-      log_mensaje("WARN", "Diferencia Salida-Agua: %.2f°C", temp_salida - temp_agua);
-      log_mensaje("WARN", "Estado de la bomba: %d", estado_bomba_actual);
-      log_mensaje("WARN", "Conteo de encendidos de la bomba: %d", conteo_encendidos_);
+      control_bomba();
     } else {
-      // Si no está en modo HEAT, asegurarse de que la bomba esté apagada
       if (interruptor_bomba_->state) {
-        interruptor_bomba_->turn_off();
+        apagar_bomba();
         log_mensaje("WARN", "Bomba apagada porque el modo HEAT está desactivado");
       }
     }
 
     this->publish_state();
   }
+}
+
+void CustomClimate::control_bomba() {
+  if (espera_) {
+    if (obtener_tiempo_actual() >= tiempo_espera_fin_) {
+      espera_ = false;
+      log_mensaje("WARN", "Reanudando verificaciones después de espera");
+    } else {
+      log_mensaje("WARN", "En espera hasta %lld", tiempo_espera_fin_);
+      return;
+    }
+  }
+
+  if (modo_cerca_temperatura_objetivo()) {
+    control_bomba_cerca_objetivo();
+  } else {
+    control_bomba_normal();
+  }
+}
+
+bool CustomClimate::modo_cerca_temperatura_objetivo() {
+  return (this->current_temperature >= (this->target_temperature - temperatura_cerca_));
+}
+
+void CustomClimate::control_bomba_cerca_objetivo() {
+  if (!interruptor_bomba_->state && diferencia_temperatura_suficiente()) {
+    encender_bomba();
+    esperar_estabilizacion();
+    activar_espera_proporcional();
+  } else if (interruptor_bomba_->state) {
+    if (temperatura_alcanzada()) {
+      apagar_bomba();
+    }
+  }
+}
+
+void CustomClimate::control_bomba_normal() {
+  if (!interruptor_bomba_->state && diferencia_temperatura_suficiente()) {
+    encender_bomba();
+    esperar_estabilizacion();
+  } else if (interruptor_bomba_->state && !diferencia_temperatura_suficiente()) {
+    apagar_bomba();
+    activar_espera_fija();
+  }
+}
+
+bool CustomClimate::diferencia_temperatura_suficiente() {
+  return (sensor_temp_sol_->state > (this->current_temperature + diferencia_alta_));
+}
+
+void CustomClimate::encender_bomba() {
+  interruptor_bomba_->turn_on();
+  log_mensaje("WARN", "Bomba encendida");
+}
+
+void CustomClimate::apagar_bomba() {
+  interruptor_bomba_->turn_off();
+  log_mensaje("WARN", "Bomba apagada");
+}
+
+void CustomClimate::esperar_estabilizacion() {
+  log_mensaje("WARN", "Esperando 15 segundos para estabilización");
+  delay(15000);  // 15 segundos
+}
+
+void CustomClimate::activar_espera_proporcional() {
+  float diferencia_temp = sensor_temp_sol_->state - this->current_temperature;
+  int tiempo_activacion = static_cast<int>(diferencia_temp * factor_tiempo_activacion_);
+  espera_ = true;
+  tiempo_espera_fin_ = obtener_tiempo_actual() + tiempo_activacion;
+  log_mensaje("WARN", "Activada espera proporcional por %d segundos", tiempo_activacion);
+}
+
+void CustomClimate::activar_espera_fija() {
+  espera_ = true;
+  tiempo_espera_fin_ = obtener_tiempo_actual() + 180;  // 3 minutos
+  log_mensaje("WARN", "Activada espera fija por 3 minutos");
+}
+
+bool CustomClimate::temperatura_alcanzada() {
+  return (this->current_temperature >= this->target_temperature);
+}
+
+int64_t CustomClimate::obtener_tiempo_actual() {
+  if (tiempo_homeassistant_ != nullptr) {
+    return tiempo_homeassistant_->now().timestamp;
+  }
+  if (tiempo_sntp_ != nullptr) {
+    return tiempo_sntp_->now().timestamp;
+  }
+  return millis() / 1000;  // Fallback a millis si no hay fuente de tiempo real
 }
 
 esphome::climate::ClimateTraits CustomClimate::traits() {
@@ -174,7 +160,7 @@ void CustomClimate::control(const esphome::climate::ClimateCall &call) {
     if (new_mode != this->mode) {
       this->mode = new_mode;
       if (this->mode == CLIMATE_MODE_OFF) {
-        interruptor_bomba_->turn_off();
+        apagar_bomba();
         log_mensaje("WARN", "Bomba apagada debido a cambio a modo OFF");
       } else if (this->mode == CLIMATE_MODE_HEAT) {
         log_mensaje("WARN", "Modo HEAT activado");
