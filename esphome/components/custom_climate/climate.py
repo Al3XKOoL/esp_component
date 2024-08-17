@@ -14,6 +14,7 @@ CONF_POTENCIA_BOMBA = "potencia_bomba"
 CONF_INTERRUPTOR_BOMBA = "interruptor_bomba"
 CONF_TIEMPO_SNTP = "tiempo_sntp"
 CONF_TIEMPO_HOMEASSISTANT = "tiempo_homeassistant"
+CONF_FACTOR_TIEMPO_ACTIVACION = "factor_tiempo_activacion"
 
 custom_climate_ns = cg.esphome_ns.namespace('custom_climate')
 CustomClimate = custom_climate_ns.class_('CustomClimate', climate.Climate, cg.Component)
@@ -31,6 +32,7 @@ CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend({
     cv.Required(CONF_INTERRUPTOR_BOMBA): cv.use_id(switch.Switch),
     cv.Optional(CONF_TIEMPO_SNTP): cv.use_id(time.RealTimeClock),
     cv.Optional(CONF_TIEMPO_HOMEASSISTANT): cv.use_id(time.RealTimeClock),
+    cv.Required(CONF_FACTOR_TIEMPO_ACTIVACION): cv.float_,
 }).extend(cv.COMPONENT_SCHEMA)
 
 async def to_code(config):
@@ -51,6 +53,7 @@ async def to_code(config):
     cg.add(var.set_potencia_bomba(config[CONF_POTENCIA_BOMBA]))
     interruptor_bomba = await cg.get_variable(config[CONF_INTERRUPTOR_BOMBA])
     cg.add(var.set_interruptor_bomba(interruptor_bomba))
+    cg.add(var.set_factor_tiempo_activacion(config[CONF_FACTOR_TIEMPO_ACTIVACION]))
 
     if CONF_TIEMPO_SNTP in config:
         tiempo_sntp = await cg.get_variable(config[CONF_TIEMPO_SNTP])
