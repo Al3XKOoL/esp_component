@@ -40,6 +40,9 @@ async def to_code(config):
     await cg.register_component(var, config)
     await climate.register_climate(var, config)
     
+    cg.add_define("USE_CUSTOM_CLIMATE")
+    cg.add_global(cg.RawExpression("#include \"esphome/core/log.h\""))
+    
     temp_sun = await cg.get_variable(config[CONF_TEMP_SUN])
     cg.add(var.set_temp_sun(temp_sun))
     temp_water = await cg.get_variable(config[CONF_TEMP_WATER])
