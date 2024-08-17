@@ -5,6 +5,7 @@
 #include "esphome/components/time/real_time_clock.h"
 #include "esphome/components/sensor/sensor.h"
 #include "esphome/components/number/number.h"
+#include "esphome/components/number/number_traits.h"
 
 namespace custom_climate {
 
