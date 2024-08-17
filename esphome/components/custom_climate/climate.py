@@ -1,7 +1,7 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import climate, sensor, switch, time, number
-from esphome.const import CONF_ID, CONF_MIN_VALUE, CONF_MAX_VALUE, CONF_STEP, CONF_NAME, CONF_UNIT_OF_MEASUREMENT, CONF_ACCURACY_DECIMALS
+from esphome.const import CONF_ID, CONF_MIN_VALUE, CONF_MAX_VALUE, CONF_STEP, CONF_NAME, CONF_UNIT_OF_MEASUREMENT, CONF_ACCURACY_DECIMALS, CONF_MODE
 
 CONF_SENSOR_TEMP_SOL = "sensor_temp_sol"
 CONF_SENSOR_TEMP_AGUA = "sensor_temp_agua"
@@ -68,10 +68,11 @@ async def to_code(config):
 
     # Registrar los nuevos números
     diferencia_media_number = await number.new_number(
-        number.number_schema(
+        number.NumberSchema(
             min_value=0.1,
             max_value=5.0,
             step=0.1,
+            mode=number.NUMBER_MODE_SLIDER,
         ).extend({
             cv.GenerateID(): cv.declare_id(number.Number),
             cv.Optional(CONF_NAME): cv.string_strict,
@@ -84,10 +85,11 @@ async def to_code(config):
     cg.add(var.set_diferencia_media_number(diferencia_media_number))
 
     diferencia_alta_number = await number.new_number(
-        number.number_schema(
+        number.NumberSchema(
             min_value=0.1,
             max_value=5.0,
             step=0.1,
+            mode=number.NUMBER_MODE_SLIDER,
         ).extend({
             cv.GenerateID(): cv.declare_id(number.Number),
             cv.Optional(CONF_NAME): cv.string_strict,
@@ -101,7 +103,7 @@ async def to_code(config):
 
     # Registrar los nuevos sensores
     conteo_encendidos_sensor = await sensor.new_sensor(
-        sensor.sensor_schema().extend({
+        sensor.SensorSchema().extend({
             cv.GenerateID(): cv.declare_id(sensor.Sensor),
             cv.Optional(CONF_NAME): cv.string_strict,
         }),
@@ -113,7 +115,7 @@ async def to_code(config):
     cg.add(var.set_conteo_encendidos_sensor(conteo_encendidos_sensor))
 
     tiempo_encendido_sensor = await sensor.new_sensor(
-        sensor.sensor_schema().extend({
+        sensor.SensorSchema().extend({
             cv.GenerateID(): cv.declare_id(sensor.Sensor),
             cv.Optional(CONF_NAME): cv.string_strict,
             cv.Optional(CONF_UNIT_OF_MEASUREMENT): cv.string_strict,
@@ -127,7 +129,7 @@ async def to_code(config):
     cg.add(var.set_tiempo_encendido_sensor(tiempo_encendido_sensor))
 
     kwh_hoy_sensor = await sensor.new_sensor(
-        sensor.sensor_schema().extend({
+        sensor.SensorSchema().extend({
             cv.GenerateID(): cv.declare_id(sensor.Sensor),
             cv.Optional(CONF_NAME): cv.string_strict,
             cv.Optional(CONF_UNIT_OF_MEASUREMENT): cv.string_strict,
@@ -143,7 +145,7 @@ async def to_code(config):
     cg.add(var.set_kwh_hoy_sensor(kwh_hoy_sensor))
 
     kwh_total_sensor = await sensor.new_sensor(
-        sensor.sensor_schema().extend({
+        sensor.SensorSchema().extend({
             cv.GenerateID(): cv.declare_id(sensor.Sensor),
             cv.Optional(CONF_NAME): cv.string_strict,
             cv.Optional(CONF_UNIT_OF_MEASUREMENT): cv.string_strict,
