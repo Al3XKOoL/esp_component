@@ -28,10 +28,19 @@ void CustomClimate::setup() {
   this->target_temperature = 37.0;
   this->current_temperature = get_current_temperature();
 
-  // Restaurar la temperatura objetivo desde el complemento ClimateDeviceRestoreState
-  auto restore = this->restore_state();
-  if (restore.has_value() && restore->target_temperature.has_value()) {
-    this->target_temperature = *restore->target_temperature;
+  // Restaurar el estado del dispositivo si `restore_state_` está habilitado
+  if (restore_state_) {
+    // Acceder al estado restaurado
+    auto restore = this->get_restore_state();
+    if (restore.has_value()) {
+      // Restaurar el modo
+      this->mode = restore->mode;
+
+      // Restaurar la temperatura, si está definida
+      if (!std::isnan(restore->target_temperature)) {
+        this->target_temperature = restore->target_temperature;
+      }
+    }
   }
 
   // Publicar el estado actualizado
