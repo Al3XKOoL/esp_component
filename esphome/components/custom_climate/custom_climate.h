@@ -3,6 +3,7 @@
 #include "esphome.h"
 #include "esphome/components/climate/climate.h"
 #include "esphome/components/time/real_time_clock.h"
+#include "esphome/components/number/number.h"
 
 namespace custom_climate {
 
@@ -21,6 +22,9 @@ class CustomClimate : public esphome::climate::Climate, public esphome::Componen
   void set_tiempo_homeassistant(esphome::time::RealTimeClock *tiempo_homeassistant) { tiempo_homeassistant_ = tiempo_homeassistant; }
   void set_factor_tiempo_activacion(float factor_tiempo_activacion) { factor_tiempo_activacion_ = factor_tiempo_activacion; }
   void set_temperatura_cerca(float temperatura_cerca) { temperatura_cerca_ = temperatura_cerca; }
+  void set_tiempo_encendida(int64_t *tiempo_encendida) { tiempo_encendida_ = tiempo_encendida; }
+  void set_conteo_encendidos(int *conteo_encendidos) { conteo_encendidos_ = conteo_encendidos; }
+  void set_temperatura_diferencia_number(esphome::number::Number *temperatura_diferencia_number) { temperatura_diferencia_number_ = temperatura_diferencia_number; }
 
   void setup() override;
   void loop() override;
@@ -41,6 +45,10 @@ class CustomClimate : public esphome::climate::Climate, public esphome::Componen
   esphome::time::RealTimeClock *tiempo_homeassistant_{nullptr};
   float factor_tiempo_activacion_{10.0};
   float temperatura_cerca_{1.0};
+  int64_t *tiempo_encendida_{nullptr};
+  int *conteo_encendidos_{nullptr};
+  esphome::number::Number *temperatura_diferencia_number_{nullptr};
+  float temperatura_diferencia_{2.0f};
 
   unsigned long ultimo_tiempo_verificacion_{0};
   const unsigned long intervalo_segundos_{2};
