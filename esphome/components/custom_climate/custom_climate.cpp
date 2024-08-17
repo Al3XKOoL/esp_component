@@ -152,11 +152,11 @@ void CustomClimate::control(const esphome::climate::ClimateCall &call) {
 }
 
 float CustomClimate::get_current_temperature() {
-  if (sensor_temp_agua_ != nullptr && !isnan(sensor_temp_agua_->state)) {
+  if (sensor_temp_agua_ != nullptr) {
     return sensor_temp_agua_->state;
   } else {
-    log_mensaje("ERROR", "El sensor de temperatura del agua no está disponible o es NaN.");
-    return NAN;  // Devuelve NaN si el sensor no está disponible o el estado es NaN
+    log_mensaje("ERROR", "El sensor de temperatura del agua no está disponible.");
+    return NAN;
   }
 }
 
