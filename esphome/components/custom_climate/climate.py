@@ -68,60 +68,48 @@ async def to_code(config):
 
     # Registrar los nuevos números
     diferencia_media_number = await number.new_number(
-        number.number_schema ({
-            CONF_MIN_VALUE: 0.1,
-            CONF_MAX_VALUE: 5.0,
-            CONF_STEP: 0.1,
-            CONF_INITIAL_VALUE: config[CONF_DIFERENCIA_MEDIA],
-            CONF_NAME: "Diferencia Media",
-        }),
-        var.set_diferencia_media_number,
+        min_value=0.1,
+        max_value=5.0,
+        step=0.1,
+        initial_value=config[CONF_DIFERENCIA_MEDIA],
+        name="Diferencia Media",
     )
+    cg.add(var.set_diferencia_media_number(diferencia_media_number))
 
     diferencia_alta_number = await number.new_number(
-        number.number_schema ({
-            CONF_MIN_VALUE: 0.1,
-            CONF_MAX_VALUE: 5.0,
-            CONF_STEP: 0.1,
-            CONF_INITIAL_VALUE: config[CONF_DIFERENCIA_ALTA],
-            CONF_NAME: "Diferencia Alta",
-        }),
-        var.set_diferencia_alta_number,
+        min_value=0.1,
+        max_value=5.0,
+        step=0.1,
+        initial_value=config[CONF_DIFERENCIA_ALTA],
+        name="Diferencia Alta",
     )
+    cg.add(var.set_diferencia_alta_number(diferencia_alta_number))
 
     # Registrar los nuevos sensores
     conteo_encendidos_sensor = await sensor.new_sensor(
-        sensor.sensor_schema ({
-            CONF_UNIT_OF_MEASUREMENT: "",
-            CONF_ACCURACY_DECIMALS: 0,
-            CONF_NAME: "Conteo Encendidos",
-        }),
-        var.set_conteo_encendidos_sensor
+        unit_of_measurement="",
+        accuracy_decimals=0,
+        name="Conteo Encendidos",
     )
+    cg.add(var.set_conteo_encendidos_sensor(conteo_encendidos_sensor))
 
     tiempo_encendido_sensor = await sensor.new_sensor(
-        sensor.sensor_schema ({
-            CONF_UNIT_OF_MEASUREMENT: "s",
-            CONF_ACCURACY_DECIMALS: 0,
-            CONF_NAME: "Tiempo Encendido",
-        }),
-        var.set_tiempo_encendido_sensor
+        unit_of_measurement="s",
+        accuracy_decimals=0,
+        name="Tiempo Encendido",
     )
+    cg.add(var.set_tiempo_encendido_sensor(tiempo_encendido_sensor))
 
     kwh_hoy_sensor = await sensor.new_sensor(
-        sensor.sensor_schema ({
-            CONF_UNIT_OF_MEASUREMENT: "kWh",
-            CONF_ACCURACY_DECIMALS: 3,
-            CONF_NAME: "kWh Hoy",
-        }),
-        var.set_kwh_hoy_sensor
+        unit_of_measurement="kWh",
+        accuracy_decimals=3,
+        name="kWh Hoy",
     )
+    cg.add(var.set_kwh_hoy_sensor(kwh_hoy_sensor))
 
     kwh_total_sensor = await sensor.new_sensor(
-        sensor.sensor_schema ({
-            CONF_UNIT_OF_MEASUREMENT: "kWh",
-            CONF_ACCURACY_DECIMALS: 3,
-            CONF_NAME: "kWh Total",
-        }),
-        var.set_kwh_total_sensor
+        unit_of_measurement="kWh",
+        accuracy_decimals=3,
+        name="kWh Total",
     )
+    cg.add(var.set_kwh_total_sensor(kwh_total_sensor))
