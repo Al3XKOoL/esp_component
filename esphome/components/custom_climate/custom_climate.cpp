@@ -23,6 +23,9 @@ void CustomClimate::log_mensaje(const char* nivel, const char* formato, ...) {
 }
 
 void CustomClimate::setup() {
+  if (restore_state_) {
+    restore_target_temperature();
+  }
   this->mode = CLIMATE_MODE_OFF;
   this->target_temperature = 37.0;
   this->current_temperature = get_current_temperature();
