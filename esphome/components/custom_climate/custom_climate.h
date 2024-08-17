@@ -29,6 +29,10 @@ class CustomClimate : public esphome::climate::Climate, public esphome::Componen
   float get_current_temperature();
   void dump_config() override;
 
+  // Add methods for restoring and saving state
+  void restore_state_from_flash();
+  void save_state_to_flash();
+
  protected:
   esphome::sensor::Sensor *sensor_temp_sol_;
   esphome::sensor::Sensor *sensor_temp_agua_;
@@ -49,10 +53,6 @@ class CustomClimate : public esphome::climate::Climate, public esphome::Componen
   bool espera_{false};
   int64_t tiempo_espera_fin_{0};
   int64_t tiempo_inicio_{0};
-
-  // Métodos para guardar y restaurar el estado
-  void save_state() override;
-  void restore_state(const esphome::climate::ClimateDeviceRestoreState &state) override;
 
   void log_mensaje(const char* nivel, const char* formato, ...);
 };
