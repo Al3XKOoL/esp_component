@@ -68,30 +68,69 @@ async def to_code(config):
 
     # Registrar los nuevos números
     diferencia_media_number = await number.new_number(
-        config[CONF_ID].id + "_diferencia_media",
-        min_value=0.1,
-        max_value=5.0,
-        step=0.1,
+        number.number_schema(
+            min_value=0.1,
+            max_value=5.0,
+            step=0.1,
+        ).extend(cv.COMPONENT_SCHEMA),
+        cg.StructInitializer(
+            number.Number,
+            ("name", "Diferencia Media"),
+        ),
     )
     cg.add(var.set_diferencia_media_number(diferencia_media_number))
 
     diferencia_alta_number = await number.new_number(
-        config[CONF_ID].id + "_diferencia_alta",
-        min_value=0.1,
-        max_value=5.0,
-        step=0.1,
+        number.number_schema(
+            min_value=0.1,
+            max_value=5.0,
+            step=0.1,
+        ).extend(cv.COMPONENT_SCHEMA),
+        cg.StructInitializer(
+            number.Number,
+            ("name", "Diferencia Alta"),
+        ),
     )
     cg.add(var.set_diferencia_alta_number(diferencia_alta_number))
 
     # Registrar los nuevos sensores
-    conteo_encendidos_sensor = await sensor.new_sensor(config[CONF_ID].id + "_conteo_encendidos")
+    conteo_encendidos_sensor = await sensor.new_sensor(
+        sensor.sensor_schema().extend(cv.COMPONENT_SCHEMA),
+        cg.StructInitializer(
+            sensor.Sensor,
+            ("name", "Conteo Encendidos"),
+        ),
+    )
     cg.add(var.set_conteo_encendidos_sensor(conteo_encendidos_sensor))
 
-    tiempo_encendido_sensor = await sensor.new_sensor(config[CONF_ID].id + "_tiempo_encendido")
+    tiempo_encendido_sensor = await sensor.new_sensor(
+        sensor.sensor_schema().extend(cv.COMPONENT_SCHEMA),
+        cg.StructInitializer(
+            sensor.Sensor,
+            ("name", "Tiempo Encendido"),
+            ("unit_of_measurement", "s"),
+        ),
+    )
     cg.add(var.set_tiempo_encendido_sensor(tiempo_encendido_sensor))
 
-    kwh_hoy_sensor = await sensor.new_sensor(config[CONF_ID].id + "_kwh_hoy")
+    kwh_hoy_sensor = await sensor.new_sensor(
+        sensor.sensor_schema().extend(cv.COMPONENT_SCHEMA),
+        cg.StructInitializer(
+            sensor.Sensor,
+            ("name", "kWh Hoy"),
+            ("unit_of_measurement", "kWh"),
+            ("accuracy_decimals", 3),
+        ),
+    )
     cg.add(var.set_kwh_hoy_sensor(kwh_hoy_sensor))
 
-    kwh_total_sensor = await sensor.new_sensor(config[CONF_ID].id + "_kwh_total")
+    kwh_total_sensor = await sensor.new_sensor(
+        sensor.sensor_schema().extend(cv.COMPONENT_SCHEMA),
+        cg.StructInitializer(
+            sensor.Sensor,
+            ("name", "kWh Total"),
+            ("unit_of_measurement", "kWh"),
+            ("accuracy_decimals", 3),
+        ),
+    )
     cg.add(var.set_kwh_total_sensor(kwh_total_sensor))
