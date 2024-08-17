@@ -20,17 +20,6 @@ CONF_TEMPERATURA_CERCA = "temperatura_cerca"
 custom_climate_ns = cg.esphome_ns.namespace('custom_climate')
 CustomClimate = custom_climate_ns.class_('CustomClimate', climate.Climate, cg.Component)
 
-# Definir los modos de número basados en number_traits.h
-NUMBER_MODE_AUTO = 0
-NUMBER_MODE_BOX = 1
-NUMBER_MODE_SLIDER = 2
-
-NUMBER_MODES = {
-    "auto": NUMBER_MODE_AUTO,
-    "box": NUMBER_MODE_BOX,
-    "slider": NUMBER_MODE_SLIDER,
-}
-
 CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend({
     cv.GenerateID(): cv.declare_id(CustomClimate),
     cv.Required(CONF_SENSOR_TEMP_SOL): cv.use_id(sensor.Sensor),
@@ -79,96 +68,45 @@ async def to_code(config):
 
     # Registrar los nuevos números
     diferencia_media_number = await number.new_number(
-        number.number_schema({
-            cv.GenerateID(): cv.declare_id(number.Number),
-            cv.Optional(CONF_NAME, default="Diferencia Media"): cv.string_strict,
-            cv.Required(CONF_MIN_VALUE): cv.float_,
-            cv.Required(CONF_MAX_VALUE): cv.float_,
-            cv.Required(CONF_STEP): cv.float_,
-            cv.Optional(CONF_MODE, default="slider"): cv.enum(NUMBER_MODES),
-        }).extend(cv.COMPONENT_SCHEMA),
-        {
-            CONF_MIN_VALUE: 0.1,
-            CONF_MAX_VALUE: 5.0,
-            CONF_STEP: 0.1,
-            CONF_MODE: NUMBER_MODE_SLIDER,
-        },
+        min_value=0.1,
+        max_value=5.0,
+        step=0.1,
+        name="Diferencia Media",
+        mode="slider"
     )
     cg.add(var.set_diferencia_media_number(diferencia_media_number))
 
     diferencia_alta_number = await number.new_number(
-        number.number_schema({
-            cv.GenerateID(): cv.declare_id(number.Number),
-            cv.Optional(CONF_NAME, default="Diferencia Alta"): cv.string_strict,
-            cv.Required(CONF_MIN_VALUE): cv.float_,
-            cv.Required(CONF_MAX_VALUE): cv.float_,
-            cv.Required(CONF_STEP): cv.float_,
-            cv.Optional(CONF_MODE, default="slider"): cv.enum(NUMBER_MODES),
-        }).extend(cv.COMPONENT_SCHEMA),
-        {
-            CONF_MIN_VALUE: 0.1,
-            CONF_MAX_VALUE: 5.0,
-            CONF_STEP: 0.1,
-            CONF_MODE: NUMBER_MODE_SLIDER,
-        },
+        min_value=0.1,
+        max_value=5.0,
+        step=0.1,
+        name="Diferencia Alta",
+        mode="slider"
     )
     cg.add(var.set_diferencia_alta_number(diferencia_alta_number))
 
     # Registrar los nuevos sensores
     conteo_encendidos_sensor = await sensor.new_sensor(
-        sensor.sensor_schema().extend({
-            cv.GenerateID(): cv.declare_id(sensor.Sensor),
-            cv.Optional(CONF_NAME): cv.string_strict,
-        }),
-        cg.StructInitializer(
-            sensor.Sensor,
-            ("name", "Conteo Encendidos"),
-        ),
+        name="Conteo Encendidos"
     )
     cg.add(var.set_conteo_encendidos_sensor(conteo_encendidos_sensor))
 
     tiempo_encendido_sensor = await sensor.new_sensor(
-        sensor.sensor_schema().extend({
-            cv.GenerateID(): cv.declare_id(sensor.Sensor),
-            cv.Optional(CONF_NAME): cv.string_strict,
-            cv.Optional(CONF_UNIT_OF_MEASUREMENT): cv.string_strict,
-        }),
-        cg.StructInitializer(
-            sensor.Sensor,
-            ("name", "Tiempo Encendido"),
-            ("unit_of_measurement", "s"),
-        ),
+        name="Tiempo Encendido",
+        unit_of_measurement="s"
     )
     cg.add(var.set_tiempo_encendido_sensor(tiempo_encendido_sensor))
 
     kwh_hoy_sensor = await sensor.new_sensor(
-        sensor.sensor_schema().extend({
-            cv.GenerateID(): cv.declare_id(sensor.Sensor),
-            cv.Optional(CONF_NAME): cv.string_strict,
-            cv.Optional(CONF_UNIT_OF_MEASUREMENT): cv.string_strict,
-            cv.Optional(CONF_ACCURACY_DECIMALS): cv.int_,
-        }),
-        cg.StructInitializer(
-            sensor.Sensor,
-            ("name", "kWh Hoy"),
-            ("unit_of_measurement", "kWh"),
-            ("accuracy_decimals", 3),
-        ),
+        name="kWh Hoy",
+        unit_of_measurement="kWh",
+        accuracy_decimals=3
     )
     cg.add(var.set_kwh_hoy_sensor(kwh_hoy_sensor))
 
     kwh_total_sensor = await sensor.new_sensor(
-        sensor.sensor_schema().extend({
-            cv.GenerateID(): cv.declare_id(sensor.Sensor),
-            cv.Optional(CONF_NAME): cv.string_strict,
-            cv.Optional(CONF_UNIT_OF_MEASUREMENT): cv.string_strict,
-            cv.Optional(CONF_ACCURACY_DECIMALS): cv.int_,
-        }),
-        cg.StructInitializer(
-            sensor.Sensor,
-            ("name", "kWh Total"),
-            ("unit_of_measurement", "kWh"),
-            ("accuracy_decimals", 3),
-        ),
+        name="kWh Total",
+        unit_of_measurement="kWh",
+        accuracy_decimals=3
     )
     cg.add(var.set_kwh_total_sensor(kwh_total_sensor))
