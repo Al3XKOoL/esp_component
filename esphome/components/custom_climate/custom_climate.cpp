@@ -194,7 +194,7 @@ float CustomClimate::get_current_temperature() {
 
 void CustomClimate::dump_config() {
   LOG_CLIMATE("", "Custom Climate", this);
-  ESP_LOGCONFIG(TAG, "  Target Temperature: %.1f", this->target_temperature);
+  log_mensaje("WARN","  Target Temperature: %.1f"), this->target_temperature);
 }
 
 }  // namespace custom_climate
