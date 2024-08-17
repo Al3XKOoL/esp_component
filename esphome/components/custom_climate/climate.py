@@ -1,6 +1,6 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.components import climate, sensor, switch
+from esphome.components import climate, sensor, switch, time
 from esphome.const import CONF_ID
 
 CONF_TEMP_SUN = "temp_sun"
@@ -13,6 +13,8 @@ CONF_VISUAL_MIN_TEMP = "visual_min_temp"
 CONF_VISUAL_MAX_TEMP = "visual_max_temp"
 CONF_PUMP_POWER = "pump_power"
 CONF_PUMP_SWITCH = "pump_switch"
+CONF_SNTP_TIME = "sntp_time"
+CONF_HOMEASSISTANT_TIME = "homeassistant_time"
 
 custom_climate_ns = cg.esphome_ns.namespace('custom_climate')
 CustomClimate = custom_climate_ns.class_('CustomClimate', climate.Climate, cg.Component)
@@ -29,6 +31,8 @@ CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend({
     cv.Required(CONF_VISUAL_MAX_TEMP): cv.float_,
     cv.Required(CONF_PUMP_POWER): cv.float_,
     cv.Required(CONF_PUMP_SWITCH): cv.use_id(switch.Switch),
+    cv.Optional(CONF_SNTP_TIME): cv.use_id(time.RealTimeClock),
+    cv.Optional(CONF_HOMEASSISTANT_TIME): cv.use_id(time.RealTimeClock),
 }).extend(cv.COMPONENT_SCHEMA)
 
 async def to_code(config):
@@ -50,3 +54,11 @@ async def to_code(config):
     cg.add(var.set_pump_power(config[CONF_PUMP_POWER]))
     pump_switch = await cg.get_variable(config[CONF_PUMP_SWITCH])
     cg.add(var.set_pump_switch(pump_switch))
+
+    if CONF_SNTP_TIME in config:
+        sntp_time = await cg.get_variable(config[CONF_SNTP_TIME])
+        cg.add(var.set_sntp_time(sntp_time))
+
+    if CONF_HOMEASSISTANT_TIME in config:
+        homeassistant_time = await cg.get_variable(config[CONF_HOMEASSISTANT_TIME])
+        cg.add(var.set_homeassistant_time(homeassistant_time))
