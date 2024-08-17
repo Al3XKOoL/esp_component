@@ -40,7 +40,7 @@ class CustomClimate : public esphome::climate::Climate, public esphome::Componen
   esphome::time::RealTimeClock *tiempo_homeassistant_{nullptr};
 
   unsigned long ultimo_tiempo_verificacion_{0};
-  const unsigned long intervalo_segundos_{30};
+  const unsigned long intervalo_segundos_{2};
   bool espera_{false};
   int64_t tiempo_espera_fin_{0};
   int64_t tiempo_inicio_{0};
