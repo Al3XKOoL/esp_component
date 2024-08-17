@@ -68,36 +68,26 @@ async def to_code(config):
 
     # Registrar los nuevos números
     diferencia_media_number = await number.new_number(
-        number.number_schema({
+        min_value=0.1,
+        max_value=5.0,
+        step=0.1,
+        number.NumberSchema({
             cv.GenerateID(): cv.declare_id(number.Number),
             cv.Optional(CONF_NAME, default="Diferencia Media"): cv.string,
-            cv.Required(CONF_MIN_VALUE): cv.float_,
-            cv.Required(CONF_MAX_VALUE): cv.float_,
-            cv.Required(CONF_STEP): cv.float_,
             cv.Optional(CONF_MODE, default="slider"): cv.enum(number.NUMBER_MODES, lower=True),
         }),
-        {
-            CONF_MIN_VALUE: 0.1,
-            CONF_MAX_VALUE: 5.0,
-            CONF_STEP: 0.1,
-        }
     )
     cg.add(var.set_diferencia_media_number(diferencia_media_number))
 
     diferencia_alta_number = await number.new_number(
-        number.number_schema({
+        min_value=0.1,
+        max_value=5.0,
+        step=0.1,
+        number.NumberSchema({
             cv.GenerateID(): cv.declare_id(number.Number),
             cv.Optional(CONF_NAME, default="Diferencia Alta"): cv.string,
-            cv.Required(CONF_MIN_VALUE): cv.float_,
-            cv.Required(CONF_MAX_VALUE): cv.float_,
-            cv.Required(CONF_STEP): cv.float_,
             cv.Optional(CONF_MODE, default="slider"): cv.enum(number.NUMBER_MODES, lower=True),
         }),
-        {
-            CONF_MIN_VALUE: 0.1,
-            CONF_MAX_VALUE: 5.0,
-            CONF_STEP: 0.1,
-        }
     )
     cg.add(var.set_diferencia_alta_number(diferencia_alta_number))
 
