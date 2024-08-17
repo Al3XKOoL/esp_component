@@ -22,7 +22,7 @@ void CustomClimate::log_mensaje(const char* nivel, const char* formato, ...) {
 void CustomClimate::setup() {
   // Inicialización
   this->mode = CLIMATE_MODE_OFF;  // Inicialmente en modo OFF
-  this->target_temperature = 37.0;  // Temperatura objetivo inicial, ajusta según sea necesario
+  this->target_temperature = id(temperatura_maxima).state;  // Temperatura objetivo inicial
   this->publish_state();
 }
 
@@ -60,7 +60,7 @@ void CustomClimate::loop() {
       if (sensor_temp_sol_->state > (sensor_temp_agua_->state + diferencia_alta_) && sensor_temp_agua_->state < this->target_temperature) {
         if (!estado_bomba_actual) {
           interruptor_bomba_->turn_on();
-          conteo_encendidos_++;
+          id(conteo_encendidos) += 1;
           tiempo_inicio_ = timestamp_actual;
           log_mensaje("DEBUG", "Bomba encendida debido a la temperatura adecuada");
         } else {
@@ -70,7 +70,7 @@ void CustomClimate::loop() {
         if (estado_bomba_actual) {
           interruptor_bomba_->turn_off();
           int64_t tiempo_total_encendido = timestamp_actual - tiempo_inicio_;
-          tiempo_encendida_ += tiempo_total_encendido;
+          id(tiempo_encendida) += tiempo_total_encendido;
           log_mensaje("DEBUG", "Bomba apagada debido a temperatura inadecuada");
           log_mensaje("WARN", "Tiempo total de funcionamiento de la bomba: %lld segundos", tiempo_total_encendido);
           espera_ = true;
@@ -85,7 +85,7 @@ void CustomClimate::loop() {
       if (estado_bomba_actual && sensor_temp_salida_->state < (sensor_temp_agua_->state + 1)) {
         interruptor_bomba_->turn_off();
         int64_t tiempo_total_encendido = timestamp_actual - tiempo_inicio_;
-        tiempo_encendida_ += tiempo_total_encendido;
+        id(tiempo_encendida) += tiempo_total_encendido;
         log_mensaje("DEBUG", "Bomba apagada debido a temperatura de salida insuficiente");
         log_mensaje("WARN", "Tiempo total de funcionamiento de la bomba: %lld segundos", tiempo_total_encendido);
         espera_ = true;
@@ -96,15 +96,15 @@ void CustomClimate::loop() {
       if (estado_bomba_actual) {
         int64_t tiempo_transcurrido = timestamp_actual - tiempo_inicio_;
         log_mensaje("WARN", "Tiempo transcurrido de funcionamiento de la bomba: %02d:%02d:%02d",
-                 (int)(tiempo_transcurrido / 3600),
-                 (int)((tiempo_transcurrido % 3600) / 60),
-                 (int)(tiempo_transcurrido % 60));
+                  (int)(tiempo_transcurrido / 3600),
+                  (int)((tiempo_transcurrido % 3600) / 60),
+                  (int)(tiempo_transcurrido % 60));
       }
 
       log_mensaje("WARN", "Diferencia Sol-Agua: %.2f°C", sensor_temp_sol_->state - sensor_temp_agua_->state);
       log_mensaje("WARN", "Diferencia Salida-Agua: %.2f°C", sensor_temp_salida_->state - sensor_temp_agua_->state);
       log_mensaje("WARN", "Estado de la bomba: %d", interruptor_bomba_->state);
-      log_mensaje("DEBUG", "Conteo de encendidos de la bomba: %d", conteo_encendidos_);
+      log_mensaje("DEBUG", "Conteo de encendidos de la bomba: %d", id(conteo_encendidos));
     } else {
       // Si no está en modo HEAT, asegurarse de que la bomba esté apagada
       if (interruptor_bomba_->state) {
