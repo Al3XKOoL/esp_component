@@ -23,12 +23,12 @@ void CustomClimate::log_mensaje(const char* nivel, const char* formato, ...) {
 }
 
 void CustomClimate::setup() {
-  if (restore_state_) {
-    restore_target_temperature();
-  }
   this->mode = CLIMATE_MODE_OFF;
   this->target_temperature = 37.0;
   this->current_temperature = get_current_temperature();
+  if (restore_state_) {
+    restore_target_temperature();
+  }
   this->publish_state();
 }
 
@@ -198,6 +198,18 @@ float CustomClimate::get_current_temperature() {
 void CustomClimate::dump_config() {
   LOG_CLIMATE("", "Custom Climate", this);
   esphome::esp_log_printf_(ESPHOME_LOG_LEVEL_CONFIG, TAG, __LINE__, ESPHOME_LOG_FORMAT("  Target Temperature: %.1f"), this->target_temperature);
+}
+
+void CustomClimate::restore_target_temperature() {
+  if (this->restore_state_.has_value()) {
+    auto restore = this->restore_state_.value();
+    if (restore.mode.has_value()) {
+      this->mode = *restore.mode;
+    }
+    if (restore.target_temperature.has_value()) {
+      this->target_temperature = *restore.target_temperature;
+    }
+  }
 }
 
 }  // namespace custom_climate
