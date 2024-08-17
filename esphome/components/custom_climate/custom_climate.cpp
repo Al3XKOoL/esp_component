@@ -152,10 +152,11 @@ void CustomClimate::control(const esphome::climate::ClimateCall &call) {
 }
 
 float CustomClimate::get_current_temperature() {
-  if (sensor_temp_agua_ != nullptr) {
+  if (sensor_temp_agua_ != nullptr && !std::isnan(sensor_temp_agua_->state)) {
+    log_mensaje("DEBUG", "Temperatura actual: %.2f", sensor_temp_agua_->state);
     return sensor_temp_agua_->state;
   } else {
-    log_mensaje("ERROR", "El sensor de temperatura del agua no está disponible.");
+    log_mensaje("ERROR", "El sensor de temperatura del agua no está disponible o devuelve NaN.");
     return NAN;
   }
 }
