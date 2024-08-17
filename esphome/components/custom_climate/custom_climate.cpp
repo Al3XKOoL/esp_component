@@ -22,20 +22,24 @@ void CustomClimate::log_mensaje(const char* nivel, const char* formato, ...) {
     esphome::ESP_LOGD(TAG, "\033[1;31m%s: %s\033[0m", nivel, buffer);  // Rojo para todos los niveles
 }
 
+ClimateDeviceRestoreState CustomClimate::restore_state() {
+  ClimateDeviceRestoreState state{};
+  state.mode = this->mode;
+  state.target_temperature = this->target_temperature;
+  return state;
+}
+
 void CustomClimate::setup() {
   this->mode = CLIMATE_MODE_OFF;
   this->target_temperature = 37.0;
   this->current_temperature = get_current_temperature();
   if (restore_state_) {
-    auto restore = this->restore_state();
-    if (restore.has_value()) {
-      auto restored = restore.value();
-      if (restored.mode.has_value()) {
-        this->mode = *restored.mode;
-      }
-      if (restored.target_temperature.has_value()) {
-        this->target_temperature = *restored.target_temperature;
-      }
+    auto restored = this->restore_state();
+    if (restored.mode.has_value()) {
+      this->mode = *restored.mode;
+    }
+    if (restored.target_temperature.has_value()) {
+      this->target_temperature = *restored.target_temperature;
     }
   }
   this->publish_state();
