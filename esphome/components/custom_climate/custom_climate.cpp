@@ -23,10 +23,9 @@ void CustomClimate::log_mensaje(const char* nivel, const char* formato, ...) {
 }
 
 void CustomClimate::setup() {
-  // Inicialización
-  this->mode = CLIMATE_MODE_OFF;  // Inicialmente en modo OFF
-  this->target_temperature = 37.0;  // Temperatura objetivo inicial, ajusta según sea necesario
-  this->current_temperature = get_current_temperature();  // Inicializar la temperatura actual
+  this->mode = CLIMATE_MODE_OFF;
+  this->target_temperature = 37.0;
+  this->current_temperature = get_current_temperature();
   this->publish_state();
 }
 
@@ -38,11 +37,17 @@ void CustomClimate::loop() {
 
     log_mensaje("DEBUG", "Ejecutando loop()");
 
-    // Actualizar la temperatura actual
-    float temp_actual = get_current_temperature();
-    if (!std::isnan(temp_actual)) {
-      this->current_temperature = temp_actual;
+    // Actualizar lecturas de todos los sensores
+    float temp_sol = sensor_temp_sol_->state;
+    float temp_agua = sensor_temp_agua_->state;
+    float temp_salida = sensor_temp_salida_->state;
+
+    // Actualizar la temperatura actual del climate (usando temp_agua)
+    if (!std::isnan(temp_agua)) {
+      this->current_temperature = temp_agua;
     }
+
+    log_mensaje("DEBUG", "Temperaturas - Sol: %.2f, Agua: %.2f, Salida: %.2f", temp_sol, temp_agua, temp_salida);
 
     // Solo realizar comprobaciones si el modo es HEAT
     if (this->mode == CLIMATE_MODE_HEAT) {
@@ -68,7 +73,7 @@ void CustomClimate::loop() {
 
       bool estado_bomba_actual = interruptor_bomba_->state;
 
-      if (sensor_temp_sol_->state > (sensor_temp_agua_->state + diferencia_alta_) && sensor_temp_agua_->state < this->target_temperature) {
+      if (temp_sol > (temp_agua + diferencia_alta_) && temp_agua < this->target_temperature) {
         if (!estado_bomba_actual) {
           interruptor_bomba_->turn_on();
           conteo_encendidos_++;
@@ -95,7 +100,7 @@ void CustomClimate::loop() {
         }
       }
 
-      if (estado_bomba_actual && sensor_temp_salida_->state < (sensor_temp_agua_->state + 1)) {
+      if (estado_bomba_actual && temp_salida < (temp_agua + 1)) {
         interruptor_bomba_->turn_off();
         int64_t tiempo_total_encendido = timestamp_actual - tiempo_inicio_;
         tiempo_encendida_ += tiempo_total_encendido;
@@ -115,9 +120,9 @@ void CustomClimate::loop() {
                     (int)(tiempo_transcurrido % 60));
       }
 
-      log_mensaje("WARN", "Diferencia Sol-Agua: %.2f°C", sensor_temp_sol_->state - sensor_temp_agua_->state);
-      log_mensaje("WARN", "Diferencia Salida-Agua: %.2f°C", sensor_temp_salida_->state - sensor_temp_agua_->state);
-      log_mensaje("WARN", "Estado de la bomba: %d", interruptor_bomba_->state);
+      log_mensaje("WARN", "Diferencia Sol-Agua: %.2f°C", temp_sol - temp_agua);
+      log_mensaje("WARN", "Diferencia Salida-Agua: %.2f°C", temp_salida - temp_agua);
+      log_mensaje("WARN", "Estado de la bomba: %d", estado_bomba_actual);
       log_mensaje("DEBUG", "Conteo de encendidos de la bomba: %d", conteo_encendidos_);
     } else {
       // Si no está en modo HEAT, asegurarse de que la bomba esté apagada
@@ -148,7 +153,6 @@ void CustomClimate::control(const esphome::climate::ClimateCall &call) {
     if (new_mode != this->mode) {
       this->mode = new_mode;
       if (this->mode == CLIMATE_MODE_OFF) {
-        // Si cambiamos a modo OFF, apagamos la bomba
         interruptor_bomba_->turn_off();
         log_mensaje("DEBUG", "Bomba apagada debido a cambio a modo OFF");
       } else if (this->mode == CLIMATE_MODE_HEAT) {
@@ -164,7 +168,6 @@ void CustomClimate::control(const esphome::climate::ClimateCall &call) {
 
 float CustomClimate::get_current_temperature() {
   if (sensor_temp_agua_ != nullptr && !std::isnan(sensor_temp_agua_->state)) {
-    log_mensaje("DEBUG", "Temperatura actual: %.2f", sensor_temp_agua_->state);
     return sensor_temp_agua_->state;
   } else {
     log_mensaje("ERROR", "El sensor de temperatura del agua no está disponible o devuelve NaN.");
