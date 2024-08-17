@@ -90,7 +90,7 @@ async def to_code(config):
     ]:
         if conf in config:
             value = config[conf]
-            if isinstance(value, cg.ID):
+            if cv.is_config_id(value):
                 value = await cg.get_variable(value)
             cg.add(getattr(var, setter)(value))
 
