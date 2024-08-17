@@ -27,7 +27,16 @@ void CustomClimate::setup() {
   this->target_temperature = 37.0;
   this->current_temperature = get_current_temperature();
   if (restore_state_) {
-    restore_target_temperature();
+    auto restore = this->restore_state();
+    if (restore.has_value()) {
+      auto restored = restore.value();
+      if (restored.mode.has_value()) {
+        this->mode = *restored.mode;
+      }
+      if (restored.target_temperature.has_value()) {
+        this->target_temperature = *restored.target_temperature;
+      }
+    }
   }
   this->publish_state();
 }
@@ -196,20 +205,8 @@ float CustomClimate::get_current_temperature() {
 }
 
 void CustomClimate::dump_config() {
-  LOG_CLIMATE("", "Custom Climate", this);
+  log_mensaje("WARN", "Custom Climate:");
   log_mensaje("WARN", "  Target Temperature: %.1f", this->target_temperature);
-}
-
-void CustomClimate::restore_target_temperature() {
-  if (this->restore_state_.has_value()) {
-    auto restore = this->restore_state_.value();
-    if (restore.mode.has_value()) {
-      this->mode = *restore.mode;
-    }
-    if (restore.target_temperature.has_value()) {
-      this->target_temperature = *restore.target_temperature;
-    }
-  }
 }
 
 }  // namespace custom_climate
