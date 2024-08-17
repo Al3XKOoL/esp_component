@@ -28,12 +28,15 @@ void CustomClimate::setup() {
   this->current_temperature = get_current_temperature();
 
   if (restore_state_) {
-    auto restore = this->restore_state();
-    if (restore.mode.has_value()) {
-      this->mode = *restore.mode;
-    }
-    if (restore.target_temperature.has_value()) {
-      this->target_temperature = *restore.target_temperature;
+    auto restored = this->restore_state_;
+    if (restored.has_value()) {
+      auto restore = restored.value();
+      if (restore.mode.has_value()) {
+        this->mode = *restore.mode;
+      }
+      if (restore.target_temperature.has_value()) {
+        this->target_temperature = *restore.target_temperature;
+      }
     }
   }
 
