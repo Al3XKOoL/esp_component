@@ -35,6 +35,15 @@ void CustomClimate::loop() {
   if (tiempo_actual - this->ultimo_tiempo_verificacion_ >= this->intervalo_segundos_ * 1000) {
     this->ultimo_tiempo_verificacion_ = tiempo_actual;
 
+    // Actualizar la temperatura actual
+    float temp_actual = get_current_temperature();
+    if (!std::isnan(temp_actual)) {
+      this->current_temperature = temp_actual;
+    } else {
+      this->log_mensaje("ERROR", "La temperatura actual es NaN, revisa el sensor de temperatura de agua.");
+    }
+
+    // Continuar con el control de temperatura
     if (this->mode == climate::CLIMATE_MODE_HEAT) {
       this->log_mensaje("DEBUG", "Modo HEAT activo, iniciando control de bomba");
       this->control_bomba();
