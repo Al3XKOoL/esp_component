@@ -6,6 +6,7 @@
 #include "esphome/components/switch/switch.h"
 #include "esphome/components/time/real_time_clock.h"
 #include "esphome/components/template/number/template_number.h"
+#include "esphome/components/preferences/preferences.h"
 
 namespace esphome {
 namespace custom_climate {
@@ -33,6 +34,9 @@ class CustomClimate : public climate::Climate, public Component {
   void set_tiempo_encendido_sensor(sensor::Sensor *sensor) { tiempo_encendido_sensor_ = sensor; }
   void set_kwh_hoy_sensor(sensor::Sensor *sensor) { kwh_hoy_sensor_ = sensor; }
   void set_kwh_total_sensor(sensor::Sensor *sensor) { kwh_total_sensor_ = sensor; }
+
+  void save_preferences();
+  void load_preferences();
 
   void setup() override;
   void loop() override;
@@ -94,6 +98,8 @@ class CustomClimate : public climate::Climate, public Component {
     MODO_INTERMITENTE,
     ESPERA_APAGADO,
     VERIFICACION_TARGET
+
+  ESPPreferences preferences_;
   };
 
   Estado estado_actual_{COMPROBACION_INICIAL};
