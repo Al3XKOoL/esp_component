@@ -101,7 +101,8 @@ class CustomClimate : public climate::Climate, public Component {
 
   Estado estado_actual_{COMPROBACION_INICIAL};
 
-  ESPPreferences preferences_;
+  ESPPreferenceObject target_temp_pref_;
+  ESPPreferenceObject mode_pref_;
 
   void log_mensaje(const char* nivel, const char* formato, ...);
   void control_bomba();
