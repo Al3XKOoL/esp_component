@@ -139,9 +139,11 @@ void CustomClimate::control_bomba_cerca_objetivo() {
     this->encender_bomba();
     this->esperar_estabilizacion();
     this->activar_espera_proporcional();
+    this->action = climate::CLIMATE_ACTION_ON; // Actualizar la acción a "ON"
   } else if (this->interruptor_bomba_->state) {
     if (this->temperatura_alcanzada()) {
       this->apagar_bomba();
+      this->action = climate::CLIMATE_ACTION_OFF; // Actualizar la acción a "OFF"
     }
   }
 }
@@ -151,9 +153,11 @@ void CustomClimate::control_bomba_normal() {
   if (!this->interruptor_bomba_->state && this->diferencia_temperatura_suficiente()) {
     this->encender_bomba();
     this->esperar_estabilizacion();
+    this->action = climate::CLIMATE_ACTION_ON; // Actualizar la acción a "ON"
   } else if (this->interruptor_bomba_->state && !this->diferencia_temperatura_suficiente()) {
     this->apagar_bomba();
     this->activar_espera_fija();
+    this->action = climate::CLIMATE_ACTION_OFF; // Actualizar la acción a "OFF"
   }
 }
 
