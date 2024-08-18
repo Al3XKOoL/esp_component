@@ -73,7 +73,7 @@ void CustomClimate::loop() {
   }
 
   // Verificar si la estabilización ha terminado
-  if (this->estabilizando_ && (millis() - this->tiempo_estabilizacion_inicio_ >= 15000)) {
+  if (this->estabilizando_ && (millis() - this->tiempo_estabilizacion_inicio_ >= 10000)) {
     this->estabilizando_ = false;
     this->log_mensaje("DEBUG", "Estabilización completada");
   }
