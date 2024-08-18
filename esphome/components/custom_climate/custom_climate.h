@@ -66,9 +66,9 @@ class CustomClimate : public climate::Climate, public Component {
   unsigned long ultimo_tiempo_verificacion_inicial_{0};
   unsigned long ultimo_tiempo_verificacion_continua_{0};
   unsigned long tiempo_espera_{0};
-  const unsigned long intervalo_verificacion_inicial_{10000};  // 10 segundos
-  const unsigned long intervalo_verificacion_continua_{2000};  // 2 segundos
-  const unsigned long tiempo_espera_apagado_{300000};  // 5 minutos
+  const unsigned long intervalo_verificacion_inicial_{15000};  // 15 segundos
+  const unsigned long intervalo_verificacion_continua_{10000};  // 10 segundos
+  const unsigned long tiempo_espera_apagado_{120000};  // 2 minutos
   const unsigned long intervalo_verificacion_target_{60000};  // 60 segundos
 
   bool espera_{false};
