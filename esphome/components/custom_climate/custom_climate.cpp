@@ -29,7 +29,7 @@ void CustomClimate::setup() {
   }
 
   this->publish_state();
-  this->log_mensaje("INFO", "Setup completado");
+  ESP_LOGE(TAG, "Setup completado");
 }
 
 void CustomClimate::loop() {
@@ -42,7 +42,7 @@ void CustomClimate::loop() {
     if (!std::isnan(temp_actual)) {
       this->current_temperature = temp_actual;
     } else {
-      this->log_mensaje("ERROR", "La temperatura actual es NaN, revisa el sensor de temperatura de agua.");
+      ESP_LOGE(TAG, "La temperatura actual es NaN, revisa el sensor de temperatura de agua.");
     }
 
     if (this->mode == climate::CLIMATE_MODE_HEAT) {
@@ -72,6 +72,7 @@ void CustomClimate::loop() {
 }
 
 void CustomClimate::control_bomba() {
+  ESP_LOGE(TAG, "Estado actual: %d", this->estado_actual_);
   switch (this->estado_actual_) {
     case COMPROBACION_INICIAL:
       this->comprobacion_inicial();
@@ -99,9 +100,12 @@ void CustomClimate::comprobacion_inicial() {
     float temp_sol = this->sensor_temp_sol_->state;
     float temp_agua = this->get_current_temperature();
 
+    ESP_LOGE(TAG, "Comprobación inicial: Temp sol: %.2f, Temp agua: %.2f, Diferencia alta: %.2f", temp_sol, temp_agua, this->diferencia_alta_);
+
     if (temp_sol >= (temp_agua + this->diferencia_alta_) && temp_agua < this->target_temperature) {
       this->encender_bomba();
       this->estado_actual_ = COMPROBACION_CONTINUA;
+      ESP_LOGE(TAG, "Cambiando a comprobación continua");
     }
   }
 }
@@ -114,14 +118,18 @@ void CustomClimate::comprobacion_continua() {
     float temp_caliente = this->sensor_temp_salida_->state;
     float temp_agua = this->get_current_temperature();
 
+    ESP_LOGE(TAG, "Comprobación continua: Temp caliente: %.2f, Temp agua: %.2f, Diferencia media: %.2f", temp_caliente, temp_agua, this->diferencia_media_);
+
     if (temp_caliente >= (temp_agua + this->diferencia_media_) && temp_agua < this->target_temperature) {
       if (temp_agua >= (this->target_temperature - this->temperatura_cerca_)) {
         this->estado_actual_ = MODO_INTERMITENTE;
+        ESP_LOGE(TAG, "Cambiando a modo intermitente");
       }
     } else {
       this->apagar_bomba();
       this->tiempo_espera_ = tiempo_actual;
       this->estado_actual_ = ESPERA_APAGADO;
+      ESP_LOGE(TAG, "Cambiando a espera apagado");
     }
   }
 }
@@ -134,17 +142,22 @@ void CustomClimate::modo_intermitente() {
     float temp_caliente = this->sensor_temp_salida_->state;
     float temp_agua = this->get_current_temperature();
 
+    ESP_LOGE(TAG, "Modo intermitente: Temp caliente: %.2f, Temp agua: %.2f, Diferencia media: %.2f", temp_caliente, temp_agua, this->diferencia_media_);
+
     if (temp_caliente >= (temp_agua + this->diferencia_media_)) {
       if (!this->interruptor_bomba_->state) {
         this->encender_bomba();
+        ESP_LOGE(TAG, "Encendiendo bomba en modo intermitente");
       }
     } else {
       this->apagar_bomba();
+      ESP_LOGE(TAG, "Apagando bomba en modo intermitente");
     }
 
     if (temp_agua >= this->target_temperature) {
       this->apagar_bomba();
       this->estado_actual_ = VERIFICACION_TARGET;
+      ESP_LOGE(TAG, "Cambiando a verificación target");
     }
   }
 }
@@ -153,6 +166,7 @@ void CustomClimate::espera_apagado() {
   unsigned long tiempo_actual = millis();
   if (tiempo_actual - this->tiempo_espera_ >= this->tiempo_espera_apagado_) {
     this->estado_actual_ = COMPROBACION_INICIAL;
+    ESP_LOGE(TAG, "Fin de espera, cambiando a comprobación inicial");
   }
 }
 
@@ -162,14 +176,17 @@ void CustomClimate::verificacion_target() {
     this->ultimo_tiempo_verificacion_continua_ = tiempo_actual;
 
     float temp_agua = this->get_current_temperature();
+    ESP_LOGE(TAG, "Verificación target: Temp agua: %.2f, Target: %.2f", temp_agua, this->target_temperature);
+
     if (temp_agua < this->target_temperature) {
       this->estado_actual_ = COMPROBACION_INICIAL;
+      ESP_LOGE(TAG, "Temperatura por debajo del target, cambiando a comprobación inicial");
     }
   }
 }
 
 void CustomClimate::encender_bomba() {
-  this->log_mensaje("WARN", "Encendiendo bomba");
+  ESP_LOGE(TAG, "Encendiendo bomba");
   if (this->interruptor_bomba_ != nullptr) {
     this->interruptor_bomba_->turn_on();
     this->conteo_encendidos_++;
@@ -177,29 +194,31 @@ void CustomClimate::encender_bomba() {
     this->action = climate::CLIMATE_ACTION_HEATING;
     this->publish_state();
   } else {
-    this->log_mensaje("ERROR", "Interruptor de bomba no configurado");
+    ESP_LOGE(TAG, "Interruptor de bomba no configurado");
   }
 }
 
 void CustomClimate::apagar_bomba() {
-  this->log_mensaje("WARN", "Apagando bomba");
+  ESP_LOGE(TAG, "Apagando bomba");
   if (this->interruptor_bomba_ != nullptr) {
     this->interruptor_bomba_->turn_off();
     this->actualizar_consumo();
     this->action = climate::CLIMATE_ACTION_IDLE;
     this->publish_state();
   } else {
-    this->log_mensaje("ERROR", "Interruptor de bomba no configurado");
+    ESP_LOGE(TAG, "Interruptor de bomba no configurado");
   }
 }
 
 void CustomClimate::control(const climate::ClimateCall &call) {
   if (call.get_mode().has_value()) {
     this->mode = *call.get_mode();
+    ESP_LOGE(TAG, "Modo cambiado a: %d", this->mode);
     this->publish_state();
   }
   if (call.get_target_temperature().has_value()) {
     this->target_temperature = *call.get_target_temperature();
+    ESP_LOGE(TAG, "Temperatura objetivo cambiada a: %.2f", this->target_temperature);
     this->publish_state();
   }
 }
@@ -228,7 +247,7 @@ int64_t CustomClimate::obtener_tiempo_actual() {
 
 float CustomClimate::get_current_temperature() {
   if (this->sensor_temp_agua_ == nullptr) {
-    this->log_mensaje("ERROR", "Sensor de temperatura de agua no configurado");
+    ESP_LOGE(TAG, "Sensor de temperatura de agua no configurado");
     return NAN;
   }
   return this->sensor_temp_agua_->state;
@@ -242,6 +261,7 @@ void CustomClimate::actualizar_consumo() {
     float kwh = (this->potencia_bomba_ / 1000.0f) * (tiempo_encendido / 3600.0f);
     this->kwh_hoy_ += kwh;
     this->kwh_total_ += kwh;
+    ESP_LOGE(TAG, "Consumo actualizado: %.3f kWh hoy, %.3f kWh total", this->kwh_hoy_, this->kwh_total_);
   }
   this->tiempo_inicio_ = tiempo_actual;
 }
@@ -251,27 +271,7 @@ void CustomClimate::reset_consumo_diario() {
   if (tiempo_actual - this->ultimo_reset_diario_ >= 24 * 60 * 60) {
     this->kwh_hoy_ = 0.0f;
     this->ultimo_reset_diario_ = tiempo_actual;
-    this->log_mensaje("INFO", "Reseteo diario de consumo");
-  }
-}
-
-void CustomClimate::log_mensaje(const char* nivel, const char* formato, ...) {
-  va_list args;
-  va_start(args, formato);
-  char buffer[256];
-  vsnprintf(buffer, sizeof(buffer), formato, args);
-  va_end(args);
-
-  if (strcmp(nivel, "ERROR") == 0) {
-    ESP_LOGE(TAG, "%s", buffer);
-  } else if (strcmp(nivel, "WARN") == 0) {
-    ESP_LOGW(TAG, "%s", buffer);
-  } else if (strcmp(nivel, "INFO") == 0) {
-    ESP_LOGI(TAG, "%s", buffer);
-  } else if (strcmp(nivel, "DEBUG") == 0) {
-    ESP_LOGD(TAG, "%s", buffer);
-  } else if (strcmp(nivel, "VERBOSE") == 0) {
-    ESP_LOGV(TAG, "%s", buffer);
+    ESP_LOGE(TAG, "Reseteo diario de consumo");
   }
 }
 
