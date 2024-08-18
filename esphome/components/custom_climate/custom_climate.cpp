@@ -167,7 +167,7 @@ void CustomClimate::modo_intermitente() {
     float temp_caliente = this->sensor_temp_salida_->state;
     float temp_agua = this->get_current_temperature();
 
-    ESP_LOGI(TAG, "Modo intermitente: Temp caliente: %.2f, Temp agua: %.2f, Diferencia media: %.
+    ESP_LOGE(TAG, "Modo intermitente: Temp caliente: %.2f, Temp agua: %.2f, Diferencia media: %.2f", temp_caliente, temp_agua, this->diferencia_media_);
     ESP_LOGE(TAG, "Tiempo de espera para próxima verificación intermitente: %lu ms", this->intervalo_verificacion_continua_);
 
     if (temp_agua >= (this->target_temperature - this->temperatura_cerca_)) {
