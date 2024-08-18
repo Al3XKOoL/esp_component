@@ -304,3 +304,4 @@ void CustomClimate::reset_consumo_diario() {
 }
 
 }  // namespace custom_climate
+}  // namespace esphome
