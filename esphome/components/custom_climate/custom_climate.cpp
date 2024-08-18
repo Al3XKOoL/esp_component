@@ -158,11 +158,13 @@ void CustomClimate::control_bomba_normal() {
   if (!this->interruptor_bomba_->state && this->diferencia_temperatura_suficiente()) {
     this->encender_bomba();
     this->esperar_estabilizacion();
-    this->publish_action(climate::CLIMATE_ACTION_HEATING); // Actualizar la acción a "HEATING"
+    this->action = climate::CLIMATE_ACTION_HEATING; // Actualizar la acción a "HEATING"
+    this->publish_state();
   } else if (this->interruptor_bomba_->state && !this->diferencia_temperatura_suficiente()) {
     this->apagar_bomba();
     this->activar_espera_fija();
-    this->publish_action(climate::CLIMATE_ACTION_OFF); // Actualizar la acción a "OFF"
+    this->action = climate::CLIMATE_ACTION_OFF; // Actualizar la acción a "OFF"
+    this->publish_state();
   }
 }
 
