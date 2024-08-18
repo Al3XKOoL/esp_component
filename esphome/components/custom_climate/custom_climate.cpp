@@ -153,7 +153,10 @@ void CustomClimate::modo_intermitente() {
     ESP_LOGE(TAG, "Modo intermitente: Temp caliente: %.2f, Temp agua: %.2f, Diferencia media: %.2f", temp_caliente, temp_agua, this->diferencia_media_);
     ESP_LOGE(TAG, "Tiempo de espera para próxima verificación intermitente: %lu ms", this->intervalo_verificacion_continua_);
 
-    if (temp_caliente >= (temp_agua + this->diferencia_media_)) {
+    if (temp_agua >= (this->target_temperature - this->temperatura_cerca_)) {
+      this->apagar_bomba();
+      ESP_LOGE(TAG, "Temperatura cerca del objetivo, apagando bomba en modo intermitente");
+    } else if (temp_caliente >= (temp_agua + this->diferencia_media_)) {
       if (!this->interruptor_bomba_->state) {
         this->encender_bomba();
         ESP_LOGE(TAG, "Encendiendo bomba en modo intermitente");
