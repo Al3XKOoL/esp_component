@@ -141,21 +141,20 @@ bool CustomClimate::modo_cerca_temperatura_objetivo() {
 
 void CustomClimate::control_bomba_cerca_objetivo() {
   this->log_mensaje("DEBUG", "Control de bomba cerca del objetivo");
-  if (!this->interruptor_bomba_->state && this->diferencia_temperatura_suficiente()) {
+
+  if (this->interruptor_bomba_->state && this->temperatura_alcanzada()) {
+    this->apagar_bomba();
+    this->action = climate::CLIMATE_ACTION_OFF;
+    this->publish_state();
+  } else if (!this->interruptor_bomba_->state && this->diferencia_temperatura_suficiente()) {
     this->encender_bomba();
     this->esperar_estabilizacion();
     this->activar_espera_proporcional();
-    this->action = climate::CLIMATE_ACTION_IDLE; // Actualizar la acción a "IDLE"
+    this->action = climate::CLIMATE_ACTION_IDLE;
     this->publish_state();
-  } else if (this->interruptor_bomba_->state) {
-    if (this->temperatura_alcanzada()) {
-      this->apagar_bomba();
-      this->action = climate::CLIMATE_ACTION_OFF; // Actualizar la acción a "OFF"
-      this->publish_state();
-    } else {
-      this->action = climate::CLIMATE_ACTION_HEATING; // Actualizar la acción a "HEATING"
-      this->publish_state();
-    }
+  } else if (this->interruptor_bomba_->state && !this->temperatura_alcanzada()) {
+    this->action = climate::CLIMATE_ACTION_HEATING;
+    this->publish_state();
   }
 }
 
@@ -210,7 +209,13 @@ void CustomClimate::esperar_estabilizacion() {
 }
 
 void CustomClimate::activar_espera_proporcional() {
-  float diferencia_temp = this->sensor_temp_sol_->state - this->current_temperature;
+  float diferencia_temp = this->target_temperature - this->current_temperature;
+  if (diferencia_temp > this->temperatura_cerca_) {
+    // Si la diferencia de temperatura es mayor que temperatura_cerca, se activa el control normal
+    this->control_bomba_normal();
+    return;
+  }
+
   int tiempo_activacion = static_cast<int>(diferencia_temp * this->factor_tiempo_activacion_);
   this->espera_ = true;
   this->tiempo_espera_fin_ = this->obtener_tiempo_actual() + tiempo_activacion;
