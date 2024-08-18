@@ -133,20 +133,18 @@ bool CustomClimate::modo_cerca_temperatura_objetivo() {
   return (this->current_temperature >= (this->target_temperature - this->temperatura_cerca_));
 }
 
-void CustomClimate::control_bomba_cerca_objetivo() {
-  this->log_mensaje("DEBUG", "Control de bomba cerca del objetivo");
+void CustomClimate::control_bomba_normal() {
+  this->log_mensaje("DEBUG", "Control de bomba normal");
   if (!this->interruptor_bomba_->state && this->diferencia_temperatura_suficiente()) {
     this->encender_bomba();
     this->esperar_estabilizacion();
-    this->activar_espera_proporcional();
-    this->publish_action(climate::CLIMATE_ACTION_IDLE); // Actualizar la acción a "IDLE"
-  } else if (this->interruptor_bomba_->state) {
-    if (this->temperatura_alcanzada()) {
-      this->apagar_bomba();
-      this->publish_action(climate::CLIMATE_ACTION_OFF); // Actualizar la acción a "OFF"
-    } else {
-      this->publish_action(climate::CLIMATE_ACTION_HEATING); // Actualizar la acción a "HEATING"
-    }
+    this->action = climate::CLIMATE_ACTION_HEATING; // Actualizar la acción a "HEATING"
+    this->publish_state();
+  } else if (this->interruptor_bomba_->state && !this->diferencia_temperatura_suficiente()) {
+    this->apagar_bomba();
+    this->activar_espera_fija();
+    this->action = climate::CLIMATE_ACTION_OFF; // Actualizar la acción a "OFF"
+    this->publish_state();
   }
 }
 
