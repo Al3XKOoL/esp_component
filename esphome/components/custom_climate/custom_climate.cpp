@@ -111,7 +111,13 @@ bool CustomClimate::control_bomba() {
       this->log_mensaje("DEBUG", "Fin del tiempo de espera");
       this->espera_ = false;
     } else {
-      this->log_mensaje("DEBUG", "En espera hasta %lld (actual: %lld)", this->tiempo_espera_fin_, tiempo_actual);
+      int64_t tiempo_restante = this->tiempo_espera_fin_ - tiempo_actual;
+      String tiempo_espera_formateado = this->formatear_tiempo_espera(tiempo_restante);
+      time_t tiempo_actual_time_t = tiempo_actual;
+      struct tm *tiempo_actual_tm = localtime(&tiempo_actual_time_t);
+      char buffer_fecha[20];
+      strftime(buffer_fecha, sizeof(buffer_fecha), "%Y-%m-%d %H:%M:%S", tiempo_actual_tm);
+      this->log_mensaje("DEBUG", "En espera hasta %s (actual: %s)", tiempo_espera_formateado.c_str(), buffer_fecha);
       return true;
     }
   }
@@ -278,6 +284,14 @@ void CustomClimate::log_mensaje(const char* nivel, const char* formato, ...) {
   } else if (strcmp(nivel, "VERBOSE") == 0) {
     ESP_LOGV(TAG, "%s", buffer);
   }
+}
+
+String CustomClimate::formatear_tiempo_espera(int64_t segundos) {
+  int minutos = segundos / 60;
+  int segundos_restantes = segundos % 60;
+  char buffer[20];
+  snprintf(buffer, sizeof(buffer), "%02d:%02d", minutos, segundos_restantes);
+  return String(buffer);
 }
 
 }  // namespace custom_climate
