@@ -94,6 +94,7 @@ class CustomClimate : public climate::Climate, public Component {
   void actualizar_consumo();
   void reset_consumo_diario();
   String formatear_tiempo_espera(int64_t segundos);
+  float previous_target_temperature{0.0c};
 };
 
 }  // namespace custom_climate
