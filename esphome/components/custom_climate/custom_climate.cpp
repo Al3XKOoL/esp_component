@@ -84,15 +84,12 @@ void CustomClimate::control(const climate::ClimateCall &call) {
     climate::ClimateMode mode = call.get_mode().value();
     switch (mode) {
       case climate::CLIMATE_MODE_HEAT:
-        // Manejar el modo de calefacción
         this->mode = climate::CLIMATE_MODE_HEAT;
         break;
       case climate::CLIMATE_MODE_OFF:
-        // Manejar el modo de apagado
         this->mode = climate::CLIMATE_MODE_OFF;
         this->apagar_bomba();
         break;
-      // Manejar otros modos si es necesario
       default:
         break;
     }
@@ -101,8 +98,12 @@ void CustomClimate::control(const climate::ClimateCall &call) {
   if (call.get_target_temperature().has_value()) {
     this->target_temperature = call.get_target_temperature().value();
     this->publish_state();
+  } else if (this->mode == climate::CLIMATE_MODE_HEAT) {
+    // Actualizar la temperatura objetivo incluso si no ha cambiado
+    this->publish_state();
   }
 }
+
 
 climate::ClimateTraits CustomClimate::traits() {
   auto traits = climate::ClimateTraits();
@@ -160,10 +161,17 @@ void CustomClimate::control_bomba_cerca_objetivo() {
     // Detener la bomba durante el tiempo de espera proporcional
     if (this->interruptor_bomba_->state) {
       this->apagar_bomba();
-      this->action = climate::CLIMATE_ACTION_OFF;
-      this->publish_state();
     }
+    this->action = climate::CLIMATE_ACTION_IDLE;
+    this->publish_state();
     return;
+  }
+
+  if (this->target_temperature != this->previous_target_temperature) {
+    // La temperatura objetivo ha cambiado, reiniciar el control de la bomba
+    this->previous_target_temperature = this->target_temperature;
+    this->apagar_bomba();
+    this->espera_ = false;
   }
 
   if (this->interruptor_bomba_->state && this->temperatura_alcanzada()) {
