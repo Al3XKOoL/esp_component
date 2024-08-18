@@ -79,13 +79,24 @@ void CustomClimate::loop() {
   }
 }
 
-void CustomClimate::control(const climate::ClimateCall &call) {
+void CustomClimate::control(const climate::ClimateCall &call) override {
   if (call.get_mode().has_value()) {
-    this->mode = *call.get_mode();
-    this->publish_state();
+    climate::ClimateMode mode = call.get_mode().value();
+    switch (mode) {
+      case climate::CLIMATE_MODE_HEAT:
+        // Manejar el modo de calefacción
+        break;
+      case climate::CLIMATE_MODE_OFF:
+        // Manejar el modo de apagado
+        break;
+      // Manejar otros modos si es necesario
+      default:
+        break;
+    }
   }
+
   if (call.get_target_temperature().has_value()) {
-    this->target_temperature = *call.get_target_temperature();
+    this->target_temperature = call.get_target_temperature().value();
     this->publish_state();
   }
 }
