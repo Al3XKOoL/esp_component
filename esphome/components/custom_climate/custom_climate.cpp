@@ -9,6 +9,35 @@ namespace custom_climate {
 
 static const char *TAG = "custom_climate";
 
+void CustomClimate::save_preferences() {
+  float target_temp = this->target_temperature;
+  int mode = static_cast<int>(this->mode);
+  
+  this->target_temp_pref_.save(&target_temp);
+  this->mode_pref_.save(&mode);
+  
+  ESP_LOGI(TAG, "Preferencias guardadas: Temperatura objetivo = %.1f, Modo = %d", target_temp, mode);
+}
+
+void CustomClimate::load_preferences() {
+  float target_temp;
+  int mode;
+  
+  if (this->target_temp_pref_.load(&target_temp)) {
+    this->target_temperature = target_temp;
+  } else {
+    this->target_temperature = 37.0f;  // Valor por defecto
+  }
+  
+  if (this->mode_pref_.load(&mode)) {
+    this->mode = static_cast<climate::ClimateMode>(mode);
+  } else {
+    this->mode = climate::CLIMATE_MODE_OFF;  // Valor por defecto
+  }
+  
+  ESP_LOGI(TAG, "Preferencias cargadas: Temperatura objetivo = %.1f, Modo = %d", this->target_temperature, static_cast<int>(this->mode));
+}
+
 void CustomClimate::setup() {
   // Inicializar las preferencias
   this->target_temp_pref_ = global_preferences->make_preference<float>(this->get_object_id_hash() + 1);
