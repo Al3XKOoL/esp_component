@@ -71,8 +71,6 @@ class CustomClimate : public climate::Climate, public Component {
   const unsigned long tiempo_espera_apagado_{300000};  // 5 minutos
   const unsigned long intervalo_verificacion_target_{60000};  // 60 segundos
 
-  bool espera_{false};
-  int64_t tiempo_espera_fin_{0};
   int64_t tiempo_inicio_{0};
 
   int conteo_encendidos_{0};
@@ -80,9 +78,6 @@ class CustomClimate : public climate::Climate, public Component {
   float kwh_hoy_{0.0f};
   float kwh_total_{0.0f};
   int64_t ultimo_reset_diario_{0};
-
-  bool estabilizando_{false};
-  unsigned long tiempo_estabilizacion_inicio_{0};
 
   enum Estado {
     COMPROBACION_INICIAL,
@@ -94,7 +89,6 @@ class CustomClimate : public climate::Climate, public Component {
 
   Estado estado_actual_{COMPROBACION_INICIAL};
 
-  void log_mensaje(const char* nivel, const char* formato, ...);
   void control_bomba();
   void comprobacion_inicial();
   void comprobacion_continua();
