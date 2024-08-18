@@ -79,7 +79,7 @@ void CustomClimate::loop() {
   }
 }
 
-void CustomClimate::control(const climate::ClimateCall &call) override {
+void CustomClimate::control(const climate::ClimateCall &call) {
   if (call.get_mode().has_value()) {
     climate::ClimateMode mode = call.get_mode().value();
     switch (mode) {
