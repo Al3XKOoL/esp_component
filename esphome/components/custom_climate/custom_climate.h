@@ -6,7 +6,7 @@
 #include "esphome/components/switch/switch.h"
 #include "esphome/components/time/real_time_clock.h"
 #include "esphome/components/template/number/template_number.h"
-#include "esphome/components/esp32/preferences.h"
+#include "esphome/components/preferences/preferences.h"
 
 namespace esphome {
 namespace custom_climate {
@@ -35,13 +35,13 @@ class CustomClimate : public climate::Climate, public Component {
   void set_kwh_hoy_sensor(sensor::Sensor *sensor) { kwh_hoy_sensor_ = sensor; }
   void set_kwh_total_sensor(sensor::Sensor *sensor) { kwh_total_sensor_ = sensor; }
 
-  void save_preferences();
-  void load_preferences();
-
   void setup() override;
   void loop() override;
   void control(const climate::ClimateCall &call) override;
   climate::ClimateTraits traits() override;
+
+  void save_preferences();
+  void load_preferences();
 
  protected:
   sensor::Sensor *sensor_temp_sol_{nullptr};
@@ -70,8 +70,8 @@ class CustomClimate : public climate::Climate, public Component {
   unsigned long ultimo_tiempo_verificacion_inicial_{0};
   unsigned long ultimo_tiempo_verificacion_continua_{0};
   unsigned long tiempo_espera_{0};
-  const unsigned long intervalo_verificacion_inicial_{15000};  // 15 segundos
-  const unsigned long intervalo_verificacion_continua_{10000};  // 10 segundos
+  const unsigned long intervalo_verificacion_inicial_{10000};  // 10 segundos
+  const unsigned long intervalo_verificacion_continua_{2000};  // 2 segundos
   const unsigned long tiempo_espera_apagado_{120000};  // 2 minutos
   const unsigned long intervalo_verificacion_target_{60000};  // 60 segundos
 
@@ -88,7 +88,6 @@ class CustomClimate : public climate::Climate, public Component {
   bool estabilizando_{false};
   unsigned long tiempo_estabilizacion_inicio_{0};
 
-  // Nuevas declaraciones
   bool es_primera_comprobacion_continua_{true};
   unsigned long tiempo_inicio_comprobacion_continua_{0};
 
@@ -98,11 +97,11 @@ class CustomClimate : public climate::Climate, public Component {
     MODO_INTERMITENTE,
     ESPERA_APAGADO,
     VERIFICACION_TARGET
-
-  ESPPreferences preferences_;
   };
 
   Estado estado_actual_{COMPROBACION_INICIAL};
+
+  ESPPreferences preferences_;
 
   void log_mensaje(const char* nivel, const char* formato, ...);
   void control_bomba();
