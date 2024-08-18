@@ -6,7 +6,7 @@
 #include "esphome/components/switch/switch.h"
 #include "esphome/components/time/real_time_clock.h"
 #include "esphome/components/template/number/template_number.h"
-#include "esphome/components/preferences/preferences.h"
+#include "esphome/components/esp32/preferences.h"
 
 namespace esphome {
 namespace custom_climate {
