@@ -112,21 +112,30 @@ void CustomClimate::comprobacion_inicial() {
     if (temp_sol >= (temp_agua + this->diferencia_alta_) && temp_agua < this->target_temperature) {
       this->encender_bomba();
       this->estado_actual_ = COMPROBACION_CONTINUA;
-      ESP_LOGE(TAG, "Cambiando a comprobación continua");
+      this->es_primera_comprobacion_continua_ = true;
+      this->tiempo_inicio_comprobacion_continua_ = tiempo_actual;
+      ESP_LOGE(TAG, "Cambiando a comprobación continua (primera vez)");
     }
   }
 }
 
 void CustomClimate::comprobacion_continua() {
   unsigned long tiempo_actual = millis();
-  if (tiempo_actual - this->ultimo_tiempo_verificacion_continua_ >= this->intervalo_verificacion_continua_) {
+  unsigned long intervalo_verificacion = this->es_primera_comprobacion_continua_ ? 10000 : this->intervalo_verificacion_continua_;
+  
+  if (tiempo_actual - this->ultimo_tiempo_verificacion_continua_ >= intervalo_verificacion) {
     this->ultimo_tiempo_verificacion_continua_ = tiempo_actual;
+
+    if (this->es_primera_comprobacion_continua_ && (tiempo_actual - this->tiempo_inicio_comprobacion_continua_ >= 10000)) {
+      this->es_primera_comprobacion_continua_ = false;
+      ESP_LOGE(TAG, "Fin del periodo inicial de 10 segundos en comprobación continua");
+    }
 
     float temp_caliente = this->sensor_temp_salida_->state;
     float temp_agua = this->get_current_temperature();
 
     ESP_LOGE(TAG, "Comprobación continua: Temp caliente: %.2f, Temp agua: %.2f, Diferencia media: %.2f", temp_caliente, temp_agua, this->diferencia_media_);
-    ESP_LOGE(TAG, "Tiempo de espera para próxima comprobación continua: %lu ms", this->intervalo_verificacion_continua_);
+    ESP_LOGE(TAG, "Tiempo de espera para próxima comprobación continua: %lu ms", intervalo_verificacion);
 
     if (temp_caliente >= (temp_agua + this->diferencia_media_) && temp_agua < this->target_temperature) {
       if (temp_agua >= (this->target_temperature - this->temperatura_cerca_)) {
@@ -291,5 +300,4 @@ void CustomClimate::reset_consumo_diario() {
   }
 }
 
-}  // namespace custom_climate
-}  // namespace esphome
+}
