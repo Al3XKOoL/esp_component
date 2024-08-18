@@ -56,18 +56,24 @@ void CustomClimate::loop() {
 
     if (this->conteo_encendidos_sensor_ != nullptr) {
       this->conteo_encendidos_sensor_->publish_state(this->conteo_encendidos_);
+      ESP_LOGE(TAG, "Conteo Encendidos: %.2f", this->conteo_encendidos_);
     }
     if (this->tiempo_encendido_sensor_ != nullptr) {
       this->tiempo_encendido_sensor_->publish_state(this->tiempo_encendido_);
+      ESP_LOGE(TAG, "Tiempo Encendido: %.2f s", this->tiempo_encendido_);
     }
     if (this->kwh_hoy_sensor_ != nullptr) {
       this->kwh_hoy_sensor_->publish_state(this->kwh_hoy_);
+      ESP_LOGE(TAG, "kWh Hoy: %.3f kWh", this->kwh_hoy_);
     }
     if (this->kwh_total_sensor_ != nullptr) {
       this->kwh_total_sensor_->publish_state(this->kwh_total_);
+      ESP_LOGE(TAG, "kWh Total: %.3f kWh", this->kwh_total_);
     }
 
     this->publish_state();
+    ESP_LOGE(TAG, "Estado - Modo: %d, Acción: %d, Temp Actual: %.2f°C, Temp Objetivo: %.2f°C",
+             this->mode, this->action, this->current_temperature, this->target_temperature);
   }
 }
 
@@ -101,6 +107,7 @@ void CustomClimate::comprobacion_inicial() {
     float temp_agua = this->get_current_temperature();
 
     ESP_LOGE(TAG, "Comprobación inicial: Temp sol: %.2f, Temp agua: %.2f, Diferencia alta: %.2f", temp_sol, temp_agua, this->diferencia_alta_);
+    ESP_LOGE(TAG, "Tiempo de espera para próxima comprobación inicial: %lu ms", this->intervalo_verificacion_inicial_);
 
     if (temp_sol >= (temp_agua + this->diferencia_alta_) && temp_agua < this->target_temperature) {
       this->encender_bomba();
@@ -119,6 +126,7 @@ void CustomClimate::comprobacion_continua() {
     float temp_agua = this->get_current_temperature();
 
     ESP_LOGE(TAG, "Comprobación continua: Temp caliente: %.2f, Temp agua: %.2f, Diferencia media: %.2f", temp_caliente, temp_agua, this->diferencia_media_);
+    ESP_LOGE(TAG, "Tiempo de espera para próxima comprobación continua: %lu ms", this->intervalo_verificacion_continua_);
 
     if (temp_caliente >= (temp_agua + this->diferencia_media_) && temp_agua < this->target_temperature) {
       if (temp_agua >= (this->target_temperature - this->temperatura_cerca_)) {
@@ -143,6 +151,7 @@ void CustomClimate::modo_intermitente() {
     float temp_agua = this->get_current_temperature();
 
     ESP_LOGE(TAG, "Modo intermitente: Temp caliente: %.2f, Temp agua: %.2f, Diferencia media: %.2f", temp_caliente, temp_agua, this->diferencia_media_);
+    ESP_LOGE(TAG, "Tiempo de espera para próxima verificación intermitente: %lu ms", this->intervalo_verificacion_continua_);
 
     if (temp_caliente >= (temp_agua + this->diferencia_media_)) {
       if (!this->interruptor_bomba_->state) {
@@ -164,6 +173,9 @@ void CustomClimate::modo_intermitente() {
 
 void CustomClimate::espera_apagado() {
   unsigned long tiempo_actual = millis();
+  unsigned long tiempo_restante = this->tiempo_espera_apagado_ - (tiempo_actual - this->tiempo_espera_);
+  ESP_LOGE(TAG, "Espera apagado: Tiempo restante: %lu ms", tiempo_restante);
+  
   if (tiempo_actual - this->tiempo_espera_ >= this->tiempo_espera_apagado_) {
     this->estado_actual_ = COMPROBACION_INICIAL;
     ESP_LOGE(TAG, "Fin de espera, cambiando a comprobación inicial");
@@ -177,6 +189,7 @@ void CustomClimate::verificacion_target() {
 
     float temp_agua = this->get_current_temperature();
     ESP_LOGE(TAG, "Verificación target: Temp agua: %.2f, Target: %.2f", temp_agua, this->target_temperature);
+    ESP_LOGE(TAG, "Tiempo de espera para próxima verificación target: %lu ms", this->intervalo_verificacion_target_);
 
     if (temp_agua < this->target_temperature) {
       this->estado_actual_ = COMPROBACION_INICIAL;
