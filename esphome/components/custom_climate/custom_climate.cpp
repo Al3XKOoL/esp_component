@@ -9,10 +9,32 @@ namespace custom_climate {
 
 static const char *TAG = "custom_climate";
 
+void CustomClimate::save_preferences() {
+  preferences_.put_float("target_temp", this->target_temperature);
+  preferences_.put_int("mode", static_cast<int>(this->mode));
+  ESP_LOGI(TAG, "Preferencias guardadas: Temperatura objetivo = %.1f, Modo = %d", this->target_temperature, static_cast<int>(this->mode));
+}
+
+void CustomClimate::load_preferences() {
+  this->target_temperature = preferences_.get_float("target_temp", NAN);
+  this->mode = static_cast<climate::ClimateMode>(preferences_.get_int("mode", climate::CLIMATE_MODE_AUTO));
+  ESP_LOGI(TAG, "Preferencias cargadas: Temperatura objetivo = %.1f, Modo = %d", this->target_temperature, static_cast<int>(this->mode));
+}
+
 void CustomClimate::setup() {
-  this->mode = climate::CLIMATE_MODE_OFF;
+  // Cargar preferencias
+  this->load_preferences();
+
+  // Establecer la temperatura actual
   this->current_temperature = get_current_temperature();
-  this->target_temperature = 37.0;
+
+  // Solo establecer valores por defecto si no se cargaron de las preferencias
+  if (std::isnan(this->target_temperature)) {
+    this->target_temperature = 37.0;
+  }
+  if (this->mode == climate::CLIMATE_MODE_AUTO) {  // Asumiendo que AUTO no es un modo válido en tu caso
+    this->mode = climate::CLIMATE_MODE_OFF;
+  }
 
   if (this->diferencia_media_number_ != nullptr) {
     this->diferencia_media_ = this->diferencia_media_number_->state;
@@ -32,7 +54,7 @@ void CustomClimate::setup() {
   this->tiempo_inicio_comprobacion_continua_ = 0;
 
   this->publish_state();
-  ESP_LOGE(TAG, "Setup completado");
+  ESP_LOGI(TAG, "Setup completado. Modo: %d, Temperatura objetivo: %.1f", static_cast<int>(this->mode), this->target_temperature);
 }
 
 void CustomClimate::loop() {
@@ -241,11 +263,13 @@ void CustomClimate::apagar_bomba() {
 void CustomClimate::control(const climate::ClimateCall &call) {
   if (call.get_mode().has_value()) {
     this->mode = *call.get_mode();
+    this->save_preferences();
     ESP_LOGE(TAG, "Modo cambiado a: %d", this->mode);
     this->publish_state();
   }
   if (call.get_target_temperature().has_value()) {
     this->target_temperature = *call.get_target_temperature();
+    this->save_preferences();
     ESP_LOGE(TAG, "Temperatura objetivo cambiada a: %.2f", this->target_temperature);
     this->publish_state();
   }
