@@ -28,6 +28,9 @@ void CustomClimate::setup() {
     this->estado_actual_ = COMPROBACION_CONTINUA;
   }
 
+  this->es_primera_comprobacion_continua_ = true;
+  this->tiempo_inicio_comprobacion_continua_ = 0;
+
   this->publish_state();
   ESP_LOGE(TAG, "Setup completado");
 }
@@ -300,4 +303,4 @@ void CustomClimate::reset_consumo_diario() {
   }
 }
 
-}
+}  // namespace custom_climate
