@@ -38,7 +38,7 @@ void CustomClimate::setup() {
 void CustomClimate::loop() {
   unsigned long tiempo_actual = millis();
 
-  if (tiempo_actual - this->ultimo_tiempo_verificacion_ >= 2000) {
+  if (tiempo_actual - this->ultimo_tiempo_verificacion_ >= 10000) {
     this->ultimo_tiempo_verificacion_ = tiempo_actual;
 
     float temp_actual = get_current_temperature();
