@@ -11,10 +11,9 @@ static const char *TAG = "custom_climate";
 
 void CustomClimate::setup() {
   this->mode = climate::CLIMATE_MODE_OFF;
-  this->current_temperature = get_current_temperature();  // Inicializar la temperatura actual
-  this->target_temperature = 37.0;  // Temperatura objetivo predeterminada
+  this->current_temperature = get_current_temperature();
+  this->target_temperature = 37.0;
 
-  // Inicializar valores de los números
   if (this->diferencia_media_number_ != nullptr) {
     this->diferencia_media_ = this->diferencia_media_number_->state;
   }
@@ -22,12 +21,9 @@ void CustomClimate::setup() {
     this->diferencia_alta_ = this->diferencia_alta_number_->state;
   }
 
-  // Inicializar otros componentes y variables
   this->ultimo_tiempo_verificacion_ = millis();
   this->ultimo_reset_diario_ = this->obtener_tiempo_actual();
-
-  // Variables nuevas para manejar la estabilización
-  this->estado_estabilizacion_ = false;
+  this->tiempo_estabilizacion_ = 0;
 
   this->publish_state();
   this->log_mensaje("INFO", "Setup completado");
@@ -35,29 +31,18 @@ void CustomClimate::setup() {
 
 void CustomClimate::loop() {
   unsigned long tiempo_actual = millis();
-
-  if (this->estado_estabilizacion_) {
-    if (tiempo_actual - this->inicio_estabilizacion_ >= 15000) {  // Si han pasado 15 segundos
-      this->estado_estabilizacion_ = false;  // Finalizar el periodo de estabilización
-      this->log_mensaje("DEBUG", "Estabilización completada, continuando operación normal");
-    } else {
-      // Todavía en periodo de estabilización, no hacer nada más
-      return;
-    }
-  }
-
   if (tiempo_actual - this->ultimo_tiempo_verificacion_ >= this->intervalo_segundos_ * 1000) {
     this->ultimo_tiempo_verificacion_ = tiempo_actual;
 
-    this->log_mensaje("DEBUG", "Ejecutando loop()");
-
-    // Actualizar la temperatura actual
     float temp_actual = get_current_temperature();
     if (!std::isnan(temp_actual)) {
       this->current_temperature = temp_actual;
+    } else {
+      this->log_mensaje("ERROR", "La temperatura actual es NaN, revisa el sensor de temperatura de agua.");
     }
 
     if (this->mode == climate::CLIMATE_MODE_HEAT) {
+      this->log_mensaje("DEBUG", "Modo HEAT activo, iniciando control de bomba");
       this->control_bomba();
     } else {
       this->log_mensaje("DEBUG", "Modo no es HEAT, apagando bomba");
@@ -67,7 +52,6 @@ void CustomClimate::loop() {
     this->actualizar_consumo();
     this->reset_consumo_diario();
 
-    // Publicar estados de los sensores
     if (this->conteo_encendidos_sensor_ != nullptr) {
       this->conteo_encendidos_sensor_->publish_state(this->conteo_encendidos_);
     }
@@ -82,6 +66,13 @@ void CustomClimate::loop() {
     }
 
     this->publish_state();
+  }
+
+  // Manejo de la estabilización
+  if (this->tiempo_estabilizacion_ > 0 && millis() - this->tiempo_estabilizacion_ >= 15000) {
+    this->tiempo_estabilizacion_ = 0;
+    this->log_mensaje("DEBUG", "Estabilización completada");
+    this->post_estabilizacion();
   }
 }
 
@@ -141,11 +132,9 @@ bool CustomClimate::modo_cerca_temperatura_objetivo() {
 
 void CustomClimate::control_bomba_cerca_objetivo() {
   this->log_mensaje("DEBUG", "Control de bomba cerca del objetivo");
-
   if (!this->interruptor_bomba_->state && this->diferencia_temperatura_suficiente()) {
     this->encender_bomba();
-    this->inicio_estabilizacion_ = millis();  // Guardar el tiempo de inicio
-    this->estado_estabilizacion_ = true;  // Indicar que estamos en el periodo de estabilización
+    this->iniciar_estabilizacion();
   } else if (this->interruptor_bomba_->state) {
     if (this->temperatura_alcanzada()) {
       this->apagar_bomba();
@@ -157,8 +146,7 @@ void CustomClimate::control_bomba_normal() {
   this->log_mensaje("DEBUG", "Control de bomba normal");
   if (!this->interruptor_bomba_->state && this->diferencia_temperatura_suficiente()) {
     this->encender_bomba();
-    this->inicio_estabilizacion_ = millis();  // Guardar el tiempo de inicio
-    this->estado_estabilizacion_ = true;  // Indicar que estamos en el periodo de estabilización
+    this->iniciar_estabilizacion();
   } else if (this->interruptor_bomba_->state && !this->diferencia_temperatura_suficiente()) {
     this->apagar_bomba();
     this->activar_espera_fija();
@@ -194,8 +182,15 @@ void CustomClimate::apagar_bomba() {
   }
 }
 
-bool CustomClimate::temperatura_alcanzada() {
-  return (this->current_temperature >= this->target_temperature);
+void CustomClimate::iniciar_estabilizacion() {
+  this->log_mensaje("DEBUG", "Iniciando estabilización por 15 segundos");
+  this->tiempo_estabilizacion_ = millis();
+}
+
+void CustomClimate::post_estabilizacion() {
+  if (this->modo_cerca_temperatura_objetivo()) {
+    this->activar_espera_proporcional();
+  }
 }
 
 void CustomClimate::activar_espera_proporcional() {
@@ -209,31 +204,50 @@ void CustomClimate::activar_espera_proporcional() {
 void CustomClimate::activar_espera_fija() {
   this->espera_ = true;
   this->tiempo_espera_fin_ = this->obtener_tiempo_actual() + 180;  // 3 minutos
-  this->log_mensaje("DEBUG", "Activada espera fija por 180 segundos");
+  this->log_mensaje("DEBUG", "Activada espera fija por 3 minutos");
+}
+
+bool CustomClimate::temperatura_alcanzada() {
+  return (this->current_temperature >= this->target_temperature);
+}
+
+int64_t CustomClimate::obtener_tiempo_actual() {
+  if (this->tiempo_homeassistant_ != nullptr && this->tiempo_homeassistant_->now().is_valid()) {
+    return this->tiempo_homeassistant_->now().timestamp;
+  } else if (this->tiempo_sntp_ != nullptr && this->tiempo_sntp_->now().is_valid()) {
+    return this->tiempo_sntp_->now().timestamp;
+  } else {
+    return millis() / 1000;
+  }
+}
+
+float CustomClimate::get_current_temperature() {
+  if (this->sensor_temp_agua_ == nullptr) {
+    this->log_mensaje("ERROR", "Sensor de temperatura de agua no configurado");
+    return NAN;
+  }
+  return this->sensor_temp_agua_->state;
 }
 
 void CustomClimate::actualizar_consumo() {
-  if (this->tiempo_inicio_ > 0) {
-    int64_t tiempo_actual = this->obtener_tiempo_actual();
+  int64_t tiempo_actual = this->obtener_tiempo_actual();
+  if (this->interruptor_bomba_ != nullptr && this->interruptor_bomba_->state) {
     int64_t tiempo_encendido = tiempo_actual - this->tiempo_inicio_;
     this->tiempo_encendido_ += tiempo_encendido;
-    this->kwh_hoy_ += this->consumo_bomba_ * tiempo_encendido / 3600.0;  // Conversión a kWh
-    this->kwh_total_ += this->consumo_bomba_ * tiempo_encendido / 3600.0;  // Conversión a kWh
-    this->tiempo_inicio_ = 0;  // Reiniciar tiempo de inicio
+    float kwh = (this->potencia_bomba_ / 1000.0f) * (tiempo_encendido / 3600.0f);
+    this->kwh_hoy_ += kwh;
+    this->kwh_total_ += kwh;
   }
+  this->tiempo_inicio_ = tiempo_actual;
 }
 
 void CustomClimate::reset_consumo_diario() {
   int64_t tiempo_actual = this->obtener_tiempo_actual();
-  if (tiempo_actual - this->ultimo_reset_diario_ >= 86400) {  // 86400 segundos = 24 horas
-    this->kwh_hoy_ = 0;
+  if (tiempo_actual - this->ultimo_reset_diario_ >= 24 * 60 * 60) {
+    this->kwh_hoy_ = 0.0f;
     this->ultimo_reset_diario_ = tiempo_actual;
-    this->log_mensaje("DEBUG", "Consumo diario reseteado");
+    this->log_mensaje("INFO", "Reseteo diario de consumo");
   }
-}
-
-int64_t CustomClimate::obtener_tiempo_actual() {
-  return static_cast<int64_t>(millis() / 1000);  // Convertir de ms a segundos
 }
 
 void CustomClimate::log_mensaje(const char* nivel, const char* formato, ...) {
