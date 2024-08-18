@@ -63,7 +63,14 @@ class CustomClimate : public climate::Climate, public Component {
   sensor::Sensor *kwh_total_sensor_{nullptr};
 
   unsigned long ultimo_tiempo_verificacion_{0};
-  const unsigned long intervalo_segundos_{2};
+  unsigned long ultimo_tiempo_verificacion_inicial_{0};
+  unsigned long ultimo_tiempo_verificacion_continua_{0};
+  unsigned long tiempo_espera_{0};
+  const unsigned long intervalo_verificacion_inicial_{10000};  // 10 segundos
+  const unsigned long intervalo_verificacion_continua_{2000};  // 2 segundos
+  const unsigned long tiempo_espera_apagado_{300000};  // 5 minutos
+  const unsigned long intervalo_verificacion_target_{60000};  // 60 segundos
+
   bool espera_{false};
   int64_t tiempo_espera_fin_{0};
   int64_t tiempo_inicio_{0};
@@ -77,24 +84,29 @@ class CustomClimate : public climate::Climate, public Component {
   bool estabilizando_{false};
   unsigned long tiempo_estabilizacion_inicio_{0};
 
+  enum Estado {
+    COMPROBACION_INICIAL,
+    COMPROBACION_CONTINUA,
+    MODO_INTERMITENTE,
+    ESPERA_APAGADO,
+    VERIFICACION_TARGET
+  };
+
+  Estado estado_actual_{COMPROBACION_INICIAL};
+
   void log_mensaje(const char* nivel, const char* formato, ...);
-  bool control_bomba();
-  bool modo_cerca_temperatura_objetivo();
-  void control_bomba_cerca_objetivo();
-  void control_bomba_normal();
-  bool diferencia_temperatura_suficiente();
+  void control_bomba();
+  void comprobacion_inicial();
+  void comprobacion_continua();
+  void modo_intermitente();
+  void espera_apagado();
+  void verificacion_target();
   void encender_bomba();
   void apagar_bomba();
-  void esperar_estabilizacion();
-  void activar_espera_proporcional();
-  void activar_espera_fija();
-  bool temperatura_alcanzada();
   int64_t obtener_tiempo_actual();
   float get_current_temperature();
   void actualizar_consumo();
   void reset_consumo_diario();
-  String formatear_tiempo_espera(int64_t segundos);
-  float previous_target_temperature{0.0f};
 };
 
 }  // namespace custom_climate
