@@ -79,16 +79,39 @@ void CustomClimate::loop() {
   }
 }
 
+void CustomClimate::control(const climate::ClimateCall &call) {
+  if (call.get_mode().has_value()) {
+    this->mode = *call.get_mode();
+    this->publish_state();
+  }
+  if (call.get_target_temperature().has_value()) {
+    this->target_temperature = *call.get_target_temperature();
+    this->publish_state();
+  }
+}
+
+climate::ClimateTraits CustomClimate::traits() {
+  auto traits = climate::ClimateTraits();
+  traits.set_supports_current_temperature(true);
+  traits.set_supports_two_point_target_temperature(false);
+  traits.set_visual_min_temperature(this->temperatura_visual_minima_);
+  traits.set_visual_max_temperature(this->temperatura_visual_maxima_);
+  traits.set_supports_action(true);
+  traits.add_supported_mode(climate::CLIMATE_MODE_OFF);
+  traits.add_supported_mode(climate::CLIMATE_MODE_HEAT);
+  return traits;
+}
+
 bool CustomClimate::control_bomba() {
   this->log_mensaje("DEBUG", "Iniciando control de bomba");
 
   if (this->espera_) {
-    unsigned long tiempo_actual = this->obtener_tiempo_actual();
+    int64_t tiempo_actual = this->obtener_tiempo_actual();
     if (tiempo_actual >= this->tiempo_espera_fin_) {
       this->log_mensaje("DEBUG", "Fin del tiempo de espera");
       this->espera_ = false;
     } else {
-      this->log_mensaje("DEBUG", "En espera hasta %lu (actual: %lu)", this->tiempo_espera_fin_, tiempo_actual);
+      this->log_mensaje("DEBUG", "En espera hasta %lld (actual: %lld)", this->tiempo_espera_fin_, tiempo_actual);
       return true;
     }
   }
@@ -106,11 +129,15 @@ bool CustomClimate::control_bomba() {
   return true;
 }
 
+bool CustomClimate::modo_cerca_temperatura_objetivo() {
+  return (this->current_temperature >= (this->target_temperature - this->temperatura_cerca_));
+}
+
 void CustomClimate::control_bomba_cerca_objetivo() {
   this->log_mensaje("DEBUG", "Control de bomba cerca del objetivo");
   if (!this->interruptor_bomba_->state && this->diferencia_temperatura_suficiente()) {
     this->encender_bomba();
-    this->iniciar_estabilizacion();
+    this->esperar_estabilizacion();
     this->activar_espera_proporcional();
   } else if (this->interruptor_bomba_->state) {
     if (this->temperatura_alcanzada()) {
@@ -123,11 +150,19 @@ void CustomClimate::control_bomba_normal() {
   this->log_mensaje("DEBUG", "Control de bomba normal");
   if (!this->interruptor_bomba_->state && this->diferencia_temperatura_suficiente()) {
     this->encender_bomba();
-    this->iniciar_estabilizacion();
+    this->esperar_estabilizacion();
   } else if (this->interruptor_bomba_->state && !this->diferencia_temperatura_suficiente()) {
     this->apagar_bomba();
     this->activar_espera_fija();
   }
+}
+
+bool CustomClimate::diferencia_temperatura_suficiente() {
+  float diferencia_media = this->diferencia_media_number_ != nullptr ? this->diferencia_media_number_->state : this->diferencia_media_;
+  float temp_sol = this->sensor_temp_sol_->state;
+  float temp_agua = this->get_current_temperature();
+
+  return (temp_sol - temp_agua >= diferencia_media) && (temp_agua < this->target_temperature);
 }
 
 void CustomClimate::encender_bomba() {
@@ -151,7 +186,7 @@ void CustomClimate::apagar_bomba() {
   }
 }
 
-void CustomClimate::iniciar_estabilizacion() {
+void CustomClimate::esperar_estabilizacion() {
   this->log_mensaje("DEBUG", "Iniciando estabilización");
   this->estabilizando_ = true;
   this->tiempo_estabilizacion_inicio_ = millis();
@@ -159,10 +194,10 @@ void CustomClimate::iniciar_estabilizacion() {
 
 void CustomClimate::activar_espera_proporcional() {
   float diferencia_temp = this->sensor_temp_sol_->state - this->current_temperature;
-  unsigned long tiempo_activacion = static_cast<unsigned long>(diferencia_temp * this->factor_tiempo_activacion_);
+  int tiempo_activacion = static_cast<int>(diferencia_temp * this->factor_tiempo_activacion_);
   this->espera_ = true;
   this->tiempo_espera_fin_ = this->obtener_tiempo_actual() + tiempo_activacion;
-  this->log_mensaje("DEBUG", "Activada espera proporcional por %lu segundos", tiempo_activacion);
+  this->log_mensaje("DEBUG", "Activada espera proporcional por %d segundos", tiempo_activacion);
 }
 
 void CustomClimate::activar_espera_fija() {
