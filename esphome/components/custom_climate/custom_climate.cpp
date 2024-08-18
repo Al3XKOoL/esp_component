@@ -85,9 +85,12 @@ void CustomClimate::control(const climate::ClimateCall &call) {
     switch (mode) {
       case climate::CLIMATE_MODE_HEAT:
         // Manejar el modo de calefacción
+        this->mode = climate::CLIMATE_MODE_HEAT;
         break;
       case climate::CLIMATE_MODE_OFF:
         // Manejar el modo de apagado
+        this->mode = climate::CLIMATE_MODE_OFF;
+        this->apagar_bomba();
         break;
       // Manejar otros modos si es necesario
       default:
