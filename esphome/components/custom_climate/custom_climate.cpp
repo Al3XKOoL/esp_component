@@ -11,7 +11,7 @@ static const char *TAG = "custom_climate";
 
 void CustomClimate::setup() {
   this->mode = climate::CLIMATE_MODE_OFF;
-  this->current_temperature = this->get_current_temperature();
+  this->current_temperature = get_current_temperature();  // Inicializar la temperatura actual
   this->target_temperature = 37.0;  // Temperatura objetivo predeterminada
 
   // Inicializar valores de los números
