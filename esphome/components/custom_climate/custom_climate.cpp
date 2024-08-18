@@ -142,6 +142,16 @@ bool CustomClimate::modo_cerca_temperatura_objetivo() {
 void CustomClimate::control_bomba_cerca_objetivo() {
   this->log_mensaje("DEBUG", "Control de bomba cerca del objetivo");
 
+  if (this->espera_) {
+    // Detener la bomba durante el tiempo de espera proporcional
+    if (this->interruptor_bomba_->state) {
+      this->apagar_bomba();
+      this->action = climate::CLIMATE_ACTION_OFF;
+      this->publish_state();
+    }
+    return;
+  }
+
   if (this->interruptor_bomba_->state && this->temperatura_alcanzada()) {
     this->apagar_bomba();
     this->action = climate::CLIMATE_ACTION_OFF;
@@ -175,10 +185,9 @@ void CustomClimate::control_bomba_normal() {
 
 bool CustomClimate::diferencia_temperatura_suficiente() {
   float diferencia_media = this->diferencia_media_number_ != nullptr ? this->diferencia_media_number_->state : this->diferencia_media_;
-  float temp_sol = this->sensor_temp_sol_->state;
   float temp_agua = this->get_current_temperature();
 
-  return (temp_sol - temp_agua >= diferencia_media) && (temp_agua < this->target_temperature);
+  return (temp_agua < this->target_temperature - diferencia_media);
 }
 
 void CustomClimate::encender_bomba() {
