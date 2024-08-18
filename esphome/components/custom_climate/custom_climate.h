@@ -74,9 +74,6 @@ class CustomClimate : public climate::Climate, public Component {
   float kwh_total_{0.0f};
   int64_t ultimo_reset_diario_{0};
 
-  bool estabilizando_{false};
-  unsigned long tiempo_estabilizacion_inicio_{0};
-
   void log_mensaje(const char* nivel, const char* formato, ...);
   bool control_bomba();
   bool modo_cerca_temperatura_objetivo();
@@ -85,7 +82,7 @@ class CustomClimate : public climate::Climate, public Component {
   bool diferencia_temperatura_suficiente();
   void encender_bomba();
   void apagar_bomba();
-  void iniciar_estabilizacion();
+  void esperar_estabilizacion();
   void activar_espera_proporcional();
   void activar_espera_fija();
   bool temperatura_alcanzada();
