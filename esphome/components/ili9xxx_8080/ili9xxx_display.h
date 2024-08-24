@@ -2,7 +2,7 @@
 
 #include "esphome/components/display/display_buffer.h"
 #include "esphome/components/display/display_color_utils.h"
-#include "esphome/components/gpio/gpio_pin.h"
+#include "esphome/core/gpio.h"
 #include "ili9xxx_defines.h"
 #include "ili9xxx_init.h"
 
@@ -60,9 +60,9 @@ class ILI9XXXDisplay : public display::DisplayBuffer, public Component {
   void set_interface_mode(ILI9XXXInterfaceMode mode) { this->interface_mode_ = mode; }
 
   // Métodos para el modo paralelo
-  void set_wr_pin(GPIOPin *wr_pin) { this->wr_pin_ = wr_pin; }
-  void set_rd_pin(GPIOPin *rd_pin) { this->rd_pin_ = rd_pin; }
-  void set_data_pins(std::array<GPIOPin*, 8> data_pins) { this->data_pins_ = data_pins; }
+   void set_wr_pin(GPIOPin *wr_pin) { this->wr_pin_ = wr_pin; }
+   void set_rd_pin(GPIOPin *rd_pin) { this->rd_pin_ = rd_pin; }
+   void set_data_pins(std::array<GPIOPin*, 8> data_pins) { this->data_pins_ = data_pins; }
 
   void update() override;
 
