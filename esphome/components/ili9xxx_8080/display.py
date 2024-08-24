@@ -283,7 +283,7 @@ async def to_code(config):
         assert len(palette) == 256 * 3
         rhs = palette
     else:
-        cg.add(var.set_buffer_color_mode(ILI9XXXColorMode.BITS_16
+        cg.add(var.set_buffer_color_mode(ILI9XXXColorMode.BITS_16))
 
     if rhs is not None:
         prog_arr = cg.progmem_array(config[CONF_RAW_DATA_ID], rhs)
