@@ -26,13 +26,18 @@ CONF_MODEL = "model"
 CONF_WR_PIN = "wr_pin"
 CONF_RD_PIN = "rd_pin"
 
+def validate_data_pins(value):
+    if len(value) != 8:
+        raise cv.Invalid("Exactly 8 data pins are required")
+    return value
+
 CONFIG_SCHEMA = cv.All(
     display.FULL_DISPLAY_SCHEMA.extend({
         cv.GenerateID(): cv.declare_id(ILI9341ParallelDisplay),
         cv.Required(CONF_MODEL): cv.string_strict,
         cv.Required(CONF_DC_PIN): pins.gpio_output_pin_schema,
         cv.Required(CONF_RESET_PIN): pins.gpio_output_pin_schema,
-        cv.Required(CONF_DATA_PINS): cv.All(cv.ensure_list(pins.gpio_output_pin_schema), cv.Length(exactly=8)),
+        cv.Required(CONF_DATA_PINS): cv.All(cv.ensure_list(pins.gpio_output_pin_schema), validate_data_pins),
         cv.Required(CONF_WR_PIN): pins.gpio_output_pin_schema,
         cv.Required(CONF_RD_PIN): pins.gpio_output_pin_schema,
         cv.Optional(CONF_WIDTH, default=240): cv.int_,
