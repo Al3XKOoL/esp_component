@@ -6,11 +6,11 @@
 namespace esphome {
 namespace ili9xxx {
 
-class ILI9341ParallelDisplay : public display::DisplayBuffer, public Component {
- public:
-  void setup() override;
-  void dump_config() override;
-  void display();
+class ILI9341ParallelDisplay : public Component, public display::DisplayBuffer {
+public:
+    void setup() override;
+    void dump_config() override;
+    float get_setup_priority() const override { return setup_priority::PROCESSOR; }
   
   void set_dc_pin(GPIOPin *pin) { dc_pin_ = pin; }
   void set_reset_pin(GPIOPin *pin) { reset_pin_ = pin; }
