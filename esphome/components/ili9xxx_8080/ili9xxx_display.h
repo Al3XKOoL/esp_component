@@ -4,7 +4,7 @@
 #include "esphome/components/display/display_buffer.h"
 #include "esphome/components/display/display_color_utils.h"
 #include "ili9xxx_init.h"
-#include "esphome/core/gpio.h" // Incluye gpio.h en lugar de gpiopin.h
+#include "esphome/core/gpio.h"
 
 namespace esphome {
 namespace ili9xxx {
