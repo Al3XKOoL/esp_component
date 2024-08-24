@@ -27,7 +27,7 @@ from esphome.const import (
     CONF_INVERT_COLORS,
 )
 
-DEPENDENCIES = ["spi"]
+DEPENDENCIES = []
 
 def AUTO_LOAD():
     if CORE.is_esp32:
@@ -186,7 +186,6 @@ CONFIG_SCHEMA = cv.All(
         }
     )
     .extend(cv.polling_component_schema("1s"))
-    .extend(spi.spi_device_schema(False, "40MHz")),
     cv.has_at_most_one_key(CONF_PAGES, CONF_LAMBDA),
     _validate,
 )
