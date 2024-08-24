@@ -3,6 +3,7 @@
 
 #include "esphome/core/helpers.h"
 #include <cinttypes>
+#include "ili9xxx_defines.h"
 
 namespace esphome {
 namespace ili9xxx {
