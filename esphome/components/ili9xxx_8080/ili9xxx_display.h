@@ -2,6 +2,7 @@
 
 #include "esphome/components/display/display_buffer.h"
 #include "esphome/components/display/display_color_utils.h"
+#include "esphome/components/gpio/gpio_pin.h"
 #include "ili9xxx_defines.h"
 #include "ili9xxx_init.h"
 
