@@ -11,7 +11,7 @@ namespace ili9xxx {
 void ILI9341Display::setup() {
   // Inicialización de pines
   dc_pin_->setup();
-  rst_pin_->setup();
+  reset_pin_->setup();
   wr_pin_->setup();
   rd_pin_->setup();
   for (auto &pin : data_pins_) {
@@ -19,8 +19,8 @@ void ILI9341Display::setup() {
   }
 
   // Reset del display
-  rst_pin_->digital_write(false);
-  rst_pin_->digital_write(true);
+  reset_pin_->digital_write(false);
+  reset_pin_->digital_write(true);
 
   // Inicialización del display
   write_command(ILI9XXX_SWRESET);
@@ -37,7 +37,7 @@ void ILI9341Display::setup() {
 void ILI9341Display::dump_config() {
   ESP_LOGCONFIG(TAG, "ILI9341 Display:");
   ESP_LOGCONFIG(TAG, "  DC Pin: %s", dc_pin_->to_string().c_str());
-  ESP_LOGCONFIG(TAG, "  RST Pin: %s", rst_pin_->to_string().c_str());
+  ESP_LOGCONFIG(TAG, "  Reset Pin: %s", reset_pin_->to_string().c_str());
   ESP_LOGCONFIG(TAG, "  WR Pin: %s", wr_pin_->to_string().c_str());
   ESP_LOGCONFIG(TAG, "  RD Pin: %s", rd_pin_->to_string().c_str());
   for (size_t i = 0; i < 8; i++) {
