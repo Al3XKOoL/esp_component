@@ -11,8 +11,6 @@ from esphome.const import (
     CONF_DC_PIN,
     CONF_RESET_PIN,
     CONF_DATA_PINS,
-    CONF_WR_PIN,
-    CONF_RD_PIN,
 )
 
 DEPENDENCIES = []
@@ -25,6 +23,8 @@ ILI9341ParallelDisplay = ili9xxx_ns.class_(
 )
 
 CONF_MODEL = "model"
+CONF_WR_PIN = "wr_pin"
+CONF_RD_PIN = "rd_pin"
 
 CONFIG_SCHEMA = cv.All(
     display.FULL_DISPLAY_SCHEMA.extend({
