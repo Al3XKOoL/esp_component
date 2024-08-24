@@ -1,6 +1,5 @@
 #pragma once
 
-#include "esphome/components/spi/spi.h"
 #include "esphome/components/display/display_buffer.h"
 #include "esphome/components/display/display_color_utils.h"
 #include "ili9xxx_defines.h"
