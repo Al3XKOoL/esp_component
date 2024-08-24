@@ -9,7 +9,7 @@ namespace esphome {
 namespace ili9xxx {
 
 // clang-format off
-static const uint8_t PROGMEM INITCMD_ILI9341[] = {
+static const uint8_t INITCMD_ILI9341[] PROGMEM = {
   0xEF, 0x03, 0x80, 0x02,
   0xCF, 0x00, 0xC1, 0x30,
   0xED, 0x64, 0x03, 0x12, 0x81,
