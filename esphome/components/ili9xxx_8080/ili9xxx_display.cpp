@@ -8,7 +8,7 @@
 namespace esphome {
 namespace ili9xxx {
 
-void ILI9341Display::setup() {
+void ILI9341ParallelDisplay::setup() {
   // Inicialización de pines
   dc_pin_->setup();
   reset_pin_->setup();
@@ -34,8 +34,8 @@ void ILI9341Display::setup() {
   }
 }
 
-void ILI9341Display::dump_config() {
-  ESP_LOGCONFIG(get_logger(), "ILI9341 Display:");
+void ILI9341ParallelDisplay::dump_config() {
+  ESP_LOGCONFIG(get_logger(), "ILI9341 Parallel Display:");
   ESP_LOGCONFIG(get_logger(), "  DC Pin: %s", dc_pin_->get_pin()->to_string().c_str());
   ESP_LOGCONFIG(get_logger(), "  Reset Pin: %s", reset_pin_->get_pin()->to_string().c_str());
   ESP_LOGCONFIG(get_logger(), "  WR Pin: %s", wr_pin_->get_pin()->to_string().c_str());
@@ -45,7 +45,7 @@ void ILI9341Display::dump_config() {
   }
 }
 
-void ILI9341Display::write_command(uint8_t command) {
+void ILI9341ParallelDisplay::write_command(uint8_t command) {
   dc_pin_->digital_write(false); // Set DC pin to low for command
   wr_pin_->digital_write(false); // Set WR pin to low for write
   for (size_t i = 0; i < 8; i++) {
@@ -54,7 +54,7 @@ void ILI9341Display::write_command(uint8_t command) {
   wr_pin_->digital_write(true); // Pulse WR pin high to latch data
 }
 
-void ILI9341Display::write_data(uint8_t data) {
+void ILI9341ParallelDisplay::write_data(uint8_t data) {
   dc_pin_->digital_write(true); // Set DC pin to high for data
   wr_pin_->digital_write(false); // Set WR pin to low for write
   for (size_t i = 0; i < 8; i++) {
@@ -63,7 +63,7 @@ void ILI9341Display::write_data(uint8_t data) {
   wr_pin_->digital_write(true); // Pulse WR pin high to latch data
 }
 
-void ILI9341Display::write_array(const uint8_t *data, size_t len) {
+void ILI9341ParallelDisplay::write_array(const uint8_t *data, size_t len) {
   for (size_t i = 0; i < len; i++) {
     write_data(data[i]);
   }
