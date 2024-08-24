@@ -35,13 +35,13 @@ void ILI9341Display::setup() {
 }
 
 void ILI9341Display::dump_config() {
-  ESP_LOGCONFIG(TAG, "ILI9341 Display:");
-  ESP_LOGCONFIG(TAG, "  DC Pin: %s", dc_pin_->to_string().c_str());
-  ESP_LOGCONFIG(TAG, "  Reset Pin: %s", reset_pin_->to_string().c_str());
-  ESP_LOGCONFIG(TAG, "  WR Pin: %s", wr_pin_->to_string().c_str());
-  ESP_LOGCONFIG(TAG, "  RD Pin: %s", rd_pin_->to_string().c_str());
+  ESP_LOGCONFIG(get_logger(), "ILI9341 Display:");
+  ESP_LOGCONFIG(get_logger(), "  DC Pin: %s", dc_pin_->to_string().c_str());
+  ESP_LOGCONFIG(get_logger(), "  Reset Pin: %s", reset_pin_->to_string().c_str());
+  ESP_LOGCONFIG(get_logger(), "  WR Pin: %s", wr_pin_->to_string().c_str());
+  ESP_LOGCONFIG(get_logger(), "  RD Pin: %s", rd_pin_->to_string().c_str());
   for (size_t i = 0; i < 8; i++) {
-    ESP_LOGCONFIG(TAG, "  D%d Pin: %s", i, data_pins_[i]->to_string().c_str());
+    ESP_LOGCONFIG(get_logger(), "  D%d Pin: %s", i, data_pins_[i]->to_string().c_str());
   }
 }
 
