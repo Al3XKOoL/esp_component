@@ -31,10 +31,15 @@ def validate_data_pins(value):
         raise cv.Invalid("Exactly 8 data pins are required")
     return value
 
+def validate_model(value):
+    if value != "ILI9341_PARALLEL":
+        raise cv.Invalid("Only ILI9341_PARALLEL model is supported")
+    return value
+
 CONFIG_SCHEMA = cv.All(
     display.FULL_DISPLAY_SCHEMA.extend({
         cv.GenerateID(): cv.declare_id(ILI9341ParallelDisplay),
-        cv.Required(CONF_MODEL): cv.string_strict,
+        cv.Required(CONF_MODEL): validate_model,
         cv.Required(CONF_DC_PIN): pins.gpio_output_pin_schema,
         cv.Required(CONF_RESET_PIN): pins.gpio_output_pin_schema,
         cv.Required(CONF_DATA_PINS): cv.All(cv.ensure_list(pins.gpio_output_pin_schema), validate_data_pins),
@@ -44,13 +49,7 @@ CONFIG_SCHEMA = cv.All(
         cv.Optional(CONF_HEIGHT, default=320): cv.int_,
     }).extend(cv.polling_component_schema("1s")),
     cv.has_at_most_one_key(CONF_PAGES, CONF_LAMBDA),
-    _validate,
 )
-
-def _validate(config):
-    if config[CONF_MODEL] != "ILI9341_PARALLEL":
-        raise cv.Invalid("Only ILI9341_PARALLEL model is supported")
-    return config
 
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
