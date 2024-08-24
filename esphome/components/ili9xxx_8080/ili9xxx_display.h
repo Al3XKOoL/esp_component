@@ -9,7 +9,7 @@ namespace esphome {
 namespace ili9xxx {
 
 static const char *const TAG = "ili9xxx";
-const size_t ILI9XXX_TRANSFER_BUFFER_SIZE = 126;  // ensure this is divisible by 6
+const size_t ILI9XXX_TRANSFER_BUFFER_SIZE = 126; // ensure this is divisible by 6
 
 enum ILI9XXXColorMode {
   BITS_8 = 0x08,
@@ -24,7 +24,6 @@ enum PixelMode {
 };
 
 enum ILI9XXXInterfaceMode {
-  SPI_MODE,
   PARALLEL_8BIT_MODE,
 };
 
@@ -32,9 +31,7 @@ class ILI9XXXDisplay : public display::DisplayBuffer, public Component {
  public:
   ILI9XXXDisplay() = default;
   ILI9XXXDisplay(uint8_t const *init_sequence, int16_t width, int16_t height, bool invert_colors)
-      : init_sequence_{init_sequence}, width_{width}, height_{height}, pre_invertcolors_{invert_colors} {
-    // ... (resto del constructor sin cambios)
-  }
+      : init_sequence_{init_sequence}, width_{width}, height_{height}, pre_invertcolors_{invert_colors} {}
 
   void add_init_sequence(const std::vector<uint8_t> &sequence) { this->extra_init_sequence_ = sequence; }
   void set_dc_pin(GPIOPin *dc_pin) { dc_pin_ = dc_pin; }
@@ -97,8 +94,8 @@ class ILI9XXXDisplay : public display::DisplayBuffer, public Component {
 
   uint8_t const *init_sequence_{};
   std::vector<uint8_t> extra_init_sequence_;
-  int16_t width_{0};   ///< Display width as modified by current rotation
-  int16_t height_{0};  ///< Display height as modified by current rotation
+  int16_t width_{0}; ///< Display width as modified by current rotation
+  int16_t height_{0}; ///< Display height as modified by current rotation
   int16_t offset_x_{0};
   int16_t offset_y_{0};
   uint16_t x_low_{0};
@@ -135,7 +132,7 @@ class ILI9XXXDisplay : public display::DisplayBuffer, public Component {
   bool swap_xy_{};
   bool mirror_x_{};
   bool mirror_y_{};
-  ILI9XXXInterfaceMode interface_mode_{SPI_MODE};
+  ILI9XXXInterfaceMode interface_mode_{PARALLEL_8BIT_MODE};
 };
 
 //-----------   M5Stack display --------------
@@ -168,7 +165,7 @@ class ILI9XXXILI9342 : public ILI9XXXDisplay {
   ILI9XXXILI9342() : ILI9XXXDisplay(INITCMD_ILI9341, 320, 240, false) {}
 };
 
-//-----------   ILI9XXX_??_TFT rotated display --------------
+//-----------   ILI9481 display --------------
 class ILI9XXXILI9481 : public ILI9XXXDisplay {
  public:
   ILI9XXXILI9481() : ILI9XXXDisplay(INITCMD_ILI9481, 480, 320, false) {}
@@ -180,7 +177,7 @@ class ILI9XXXILI948118 : public ILI9XXXDisplay {
   ILI9XXXILI948118() : ILI9XXXDisplay(INITCMD_ILI9481_18, 320, 480, true) {}
 };
 
-//-----------   ILI9XXX_35_TFT rotated display --------------
+//-----------   ILI9486 display --------------
 class ILI9XXXILI9486 : public ILI9XXXDisplay {
  public:
   ILI9XXXILI9486() : ILI9XXXDisplay(INITCMD_ILI9486, 480, 320, false) {}
@@ -218,6 +215,7 @@ class ILI9XXXILI9488 : public ILI9XXXDisplay {
     this->data(mad);
   }
 };
+
 //-----------   Waveshare 3.5 Res Touch - ILI9488 interfaced via 16 bit shift register to parallel */
 class WAVESHARERES35 : public ILI9XXXILI9488 {
  public:
@@ -230,13 +228,13 @@ class WAVESHARERES35 : public ILI9XXXILI9488 {
   }
 };
 
-//-----------   ILI9XXX_35_TFT origin colors rotated display --------------
+//-----------   ILI9488A display --------------
 class ILI9XXXILI9488A : public ILI9XXXDisplay {
  public:
   ILI9XXXILI9488A() : ILI9XXXDisplay(INITCMD_ILI9488_A, 480, 320, true) {}
 };
 
-//-----------   ILI9XXX_35_TFT rotated display --------------
+//-----------   ILI9486 display --------------
 class ILI9XXXST7796 : public ILI9XXXDisplay {
  public:
   ILI9XXXST7796() : ILI9XXXDisplay(INITCMD_ST7796, 320, 480, false) {}
@@ -257,7 +255,7 @@ class ILI9XXXGC9A01A : public ILI9XXXDisplay {
   ILI9XXXGC9A01A() : ILI9XXXDisplay(INITCMD_GC9A01A, 240, 240, true) {}
 };
 
-//-----------   ILI9XXX_24_TFT display --------------
+//-----------   ILI9341 display --------------
 class ILI9XXXST7735 : public ILI9XXXDisplay {
  public:
   ILI9XXXST7735() : ILI9XXXDisplay(INITCMD_ST7735, 128, 160, false) {}
@@ -270,5 +268,5 @@ class ILI9XXXILI9341Parallel : public ILI9XXXDisplay {
   }
 };
 
-}  // namespace ili9xxx
-}  // namespace esphome
+} // namespace ili9xxx
+} // namespace esphome
