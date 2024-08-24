@@ -4,6 +4,7 @@
 #include "esphome/components/display/display_buffer.h"
 #include "esphome/components/display/display_color_utils.h"
 #include "ili9xxx_init.h"
+#include "ili9xxx_defines.h"
 
 namespace esphome {
 namespace ili9xxx {
@@ -19,7 +20,7 @@ class ILI9341Display : public display::DisplayBuffer, public Component {
    void write_array(const uint8_t *data, size_t len);
 
    GPIOPin *dc_pin_{nullptr};
-   GPIOPin *rst_pin_{nullptr};
+   GPIOPin *reset_pin_{nullptr};
    GPIOPin *wr_pin_{nullptr};
    GPIOPin *rd_pin_{nullptr};
    std::array<GPIOPin*, 8> data_pins_{};
