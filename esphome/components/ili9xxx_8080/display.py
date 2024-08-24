@@ -1,7 +1,8 @@
+# display.py
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome import core, pins
-from esphome.components import display, spi, font
+from esphome.components import display, font
 from esphome.components.display import validate_rotation
 from esphome.core import CORE, HexInt
 from esphome.const import (
@@ -40,7 +41,6 @@ ili9xxx_ns = cg.esphome_ns.namespace("ili9xxx")
 ILI9XXXDisplay = ili9xxx_ns.class_(
     "ILI9XXXDisplay",
     cg.PollingComponent,
-    spi.SPIDevice,
     display.Display,
     display.DisplayBuffer,
 )
@@ -206,9 +206,7 @@ async def to_code(config):
         
         rd_pin = await cg.gpio_pin_expression(config[CONF_RD_PIN])
         cg.add(var.set_rd_pin(rd_pin))
-    else:
-        await spi.register_spi_device(var, config)
-
+    
     dc = await cg.gpio_pin_expression(config[CONF_DC_PIN])
     cg.add(var.set_dc_pin(dc))
     if init_sequences := config.get(CONF_INIT_SEQUENCE):
