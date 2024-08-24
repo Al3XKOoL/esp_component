@@ -185,7 +185,7 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_RD_PIN): pins.gpio_output_pin_schema,
         }
     )
-    .extend(cv.polling_component_schema("1s"))
+    .extend(cv.polling_component_schema("1s")),
     cv.has_at_most_one_key(CONF_PAGES, CONF_LAMBDA),
     _validate,
 )
