@@ -18,9 +18,7 @@ AUTO_LOAD = ["psram"]
 CODEOWNERS = ["@your_github_username"]
 
 ili9xxx_ns = cg.esphome_ns.namespace("ili9xxx")
-ILI9341ParallelDisplay = ili9xxx_ns.class_(
-    "ILI9341ParallelDisplay", cg.Component, display.DisplayBuffer
-)
+ILI9341ParallelDisplay = ili9xxx_ns.class_("ILI9341ParallelDisplay", cg.Component, display.DisplayBuffer)
 
 CONF_MODEL = "model"
 CONF_WR_PIN = "wr_pin"
