@@ -5,6 +5,7 @@
 #include "esphome/components/display/display_color_utils.h"
 #include "ili9xxx_init.h"
 #include "ili9xxx_defines.h"
+#include "esphome/core/gpiopin.h" // Incluye GPIOPin
 
 namespace esphome {
 namespace ili9xxx {
