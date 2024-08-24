@@ -19,7 +19,7 @@ CODEOWNERS = ["@your_github_username"]
 
 ili9xxx_ns = cg.esphome_ns.namespace("ili9xxx")
 ILI9341ParallelDisplay = ili9xxx_ns.class_(
-    "ILI9341ParallelDisplay", cg.PollingComponent, display.DisplayBuffer
+    "ILI9341ParallelDisplay", cg.Component, display.DisplayBuffer
 )
 
 CONF_MODEL = "model"
@@ -32,24 +32,21 @@ def validate_data_pins(value):
     return value
 
 def validate_model(value):
-    if value != "ILI9341_PARALLEL":
-        raise cv.Invalid("Only ILI9341_PARALLEL model is supported")
+    if value != "ili9341_parallel":
+        raise cv.Invalid("Only ili9341_parallel model is supported")
     return value
 
-CONFIG_SCHEMA = cv.All(
-    display.FULL_DISPLAY_SCHEMA.extend({
-        cv.GenerateID(): cv.declare_id(ILI9341ParallelDisplay),
-        cv.Required(CONF_MODEL): validate_model,
-        cv.Required(CONF_DC_PIN): pins.gpio_output_pin_schema,
-        cv.Required(CONF_RESET_PIN): pins.gpio_output_pin_schema,
-        cv.Required(CONF_DATA_PINS): cv.All(cv.ensure_list(pins.gpio_output_pin_schema), validate_data_pins),
-        cv.Required(CONF_WR_PIN): pins.gpio_output_pin_schema,
-        cv.Required(CONF_RD_PIN): pins.gpio_output_pin_schema,
-        cv.Optional(CONF_WIDTH, default=240): cv.int_,
-        cv.Optional(CONF_HEIGHT, default=320): cv.int_,
-    }).extend(cv.polling_component_schema("1s")),
-    cv.has_at_most_one_key(CONF_PAGES, CONF_LAMBDA),
-)
+CONFIG_SCHEMA = display.FULL_DISPLAY_SCHEMA.extend({
+    cv.GenerateID(): cv.declare_id(ILI9341ParallelDisplay),
+    cv.Required(CONF_MODEL): validate_model,
+    cv.Required(CONF_DC_PIN): pins.gpio_output_pin_schema,
+    cv.Required(CONF_RESET_PIN): pins.gpio_output_pin_schema,
+    cv.Required(CONF_DATA_PINS): cv.All(cv.ensure_list(pins.gpio_output_pin_schema), validate_data_pins),
+    cv.Required(CONF_WR_PIN): pins.gpio_output_pin_schema,
+    cv.Required(CONF_RD_PIN): pins.gpio_output_pin_schema,
+    cv.Optional(CONF_WIDTH, default=240): cv.int_,
+    cv.Optional(CONF_HEIGHT, default=320): cv.int_,
+}).extend(cv.COMPONENT_SCHEMA)
 
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
