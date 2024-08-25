@@ -11,17 +11,20 @@ void TFTeSPIDisplay::setup() {
   ESP_LOGCONFIG(TAG, "Setting up TFT eSPI Display...");
   this->tft_ = new TFT_eSPI();
   this->tft_->init();
-  this->tft_->setRotation(0);  // Ajusta según sea necesario
+  this->tft_->setRotation(0);
   this->buffer_ = new uint8_t[this->get_width_internal() * this->get_height_internal() * 3];
 }
 
 Color TFTeSPIDisplay::get_pixel_color(int x, int y) {
-    return Color(this->buffer_[(y * this->get_width_internal() + x) * 3],
-                 this->buffer_[(y * this->get_width_internal() + x) * 3 + 1],
-                 this->buffer_[(y * this->get_width_internal() + x) * 3 + 2]);
+  return Color(this->buffer_[(y * this->get_width_internal() + x) * 3],
+               this->buffer_[(y * this->get_width_internal() + x) * 3 + 1],
+               this->buffer_[(y * this->get_width_internal() + x) * 3 + 2]);
 }
 
 void TFTeSPIDisplay::display() {
+  if (this->auto_clear_) {
+    this->tft_->fillScreen(TFT_BLACK);  // Limpiar pantalla si auto_clear_enabled está activado
+  }
   this->tft_->startWrite();
   for (int y = 0; y < this->get_height_internal(); y++) {
     for (int x = 0; x < this->get_width_internal(); x++) {
@@ -48,7 +51,6 @@ int TFTeSPIDisplay::get_width_internal() { return this->tft_->width(); }
 int TFTeSPIDisplay::get_height_internal() { return this->tft_->height(); }
 
 void TFTeSPIDisplay::set_brightness(float brightness) {
-  // Implementa el control de brillo si tu pantalla lo soporta
   ESP_LOGW(TAG, "Brightness control not implemented for this display");
 }
 
