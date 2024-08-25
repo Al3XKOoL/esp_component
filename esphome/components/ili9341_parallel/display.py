@@ -8,13 +8,11 @@ from esphome.const import (
     CONF_HEIGHT,
 )
 
-# Define el namespace para el componente
-ili9341_parallel_ns = cg.esphome_ns.namespace("ili9341_parallel")
+DEPENDENCIES = ["esp32"]
 
-# Define la clase para el componente y asegúrate de heredar de Component
+ili9341_parallel_ns = cg.esphome_ns.namespace("ili9341_parallel")
 ILI9341ParallelDisplay = ili9341_parallel_ns.class_("ILI9341ParallelDisplay", cg.Component, display.DisplayBuffer)
 
-# Define constantes para las claves de configuración
 CONF_MODEL = "model"
 CONF_DC_PIN = "dc_pin"
 CONF_RESET_PIN = "reset_pin"
@@ -27,15 +25,9 @@ def validate_data_pins(value):
         raise cv.Invalid("Exactly 8 data pins are required")
     return value
 
-def validate_model(value):
-    if value != "ili9341_parallel":
-        raise cv.Invalid("Only ili9341_parallel model is supported")
-    return value
-
-# Define el esquema para la configuración del componente
 CONFIG_SCHEMA = display.FULL_DISPLAY_SCHEMA.extend({
     cv.GenerateID(): cv.declare_id(ILI9341ParallelDisplay),
-    cv.Required(CONF_MODEL): validate_model,
+    cv.Required(CONF_MODEL): cv.string,
     cv.Required(CONF_DC_PIN): pins.gpio_output_pin_schema,
     cv.Required(CONF_RESET_PIN): pins.gpio_output_pin_schema,
     cv.Required(CONF_DATA_PINS): cv.All(cv.ensure_list(pins.gpio_output_pin_schema), validate_data_pins),
@@ -45,50 +37,28 @@ CONFIG_SCHEMA = display.FULL_DISPLAY_SCHEMA.extend({
     cv.Optional(CONF_HEIGHT, default=320): cv.int_,
 }).extend(cv.COMPONENT_SCHEMA)
 
-# Función para convertir la configuración en código
 async def to_code(config):
-    # Crea una nueva variable para el componente
     var = cg.new_Pvariable(config[CONF_ID])
-    
-    # Registra el componente
     await cg.register_component(var, config)
-    
-    # Registra el display
     await display.register_display(var, config)
 
-    # Configura el modelo y los pines
     cg.add(var.set_model_str(config[CONF_MODEL]))
-
     dc = await cg.gpio_pin_expression(config[CONF_DC_PIN])
     cg.add(var.set_dc_pin(dc))
-
     reset = await cg.gpio_pin_expression(config[CONF_RESET_PIN])
     cg.add(var.set_reset_pin(reset))
-
     for i, pin in enumerate(config[CONF_DATA_PINS]):
         data_pin = await cg.gpio_pin_expression(pin)
         cg.add(var.set_data_pin(i, data_pin))
-
     wr_pin = await cg.gpio_pin_expression(config[CONF_WR_PIN])
     cg.add(var.set_wr_pin(wr_pin))
-
     rd_pin = await cg.gpio_pin_expression(config[CONF_RD_PIN])
     cg.add(var.set_rd_pin(rd_pin))
+    cg.add(var.set_width(config[CONF_WIDTH]))
+    cg.add(var.set_height(config[CONF_HEIGHT]))
 
-    # Establece las dimensiones de la pantalla
-    cg.add(var.set_dimensions(config[CONF_WIDTH], config[CONF_HEIGHT]))
-
-    # Configura las lambdas opcionales
-    if 'lambda' in config:
+    if CONF_LAMBDA in config:
         lambda_ = await cg.process_lambda(
-            config['lambda'], [(display.DisplayBufferRef, "it")], return_type=cg.void
+            config[CONF_LAMBDA], [(display.DisplayBufferRef, "it")], return_type=cg.void
         )
         cg.add(var.set_writer(lambda_))
-    
-    if 'pages' in config:
-        for page in config['pages']:
-            if 'lambda' in page:
-                lambda_ = await cg.process_lambda(
-                    page['lambda'], [(display.DisplayBufferRef, "it")], return_type=cg.void
-                )
-                cg.add(var.add_page_lambda(lambda_))
