@@ -9,7 +9,6 @@ DEPENDENCIES = ["esp32"]
 ili9341_parallel_ns = cg.esphome_ns.namespace("ili9341_parallel")
 ILI9341ParallelDisplay = ili9341_parallel_ns.class_("ILI9341ParallelDisplay", cg.Component, display.DisplayBuffer)
 
-# Define las constantes que faltan
 CONF_DC_PIN = "dc_pin"
 CONF_RESET_PIN = "reset_pin"
 CONF_DATA_PINS = "data_pins"
@@ -21,7 +20,7 @@ def validate_data_pins(value):
         raise cv.Invalid("Exactly 8 data pins are required")
     return value
 
-CONFIG_SCHEMA = display.BASIC_DISPLAY_SCHEMA.extend({
+CONFIG_SCHEMA = cv.Schema({
     cv.GenerateID(): cv.declare_id(ILI9341ParallelDisplay),
     cv.Required(CONF_MODEL): cv.string,
     cv.Required(CONF_DC_PIN): pins.gpio_output_pin_schema,
@@ -31,7 +30,7 @@ CONFIG_SCHEMA = display.BASIC_DISPLAY_SCHEMA.extend({
     cv.Required(CONF_RD_PIN): pins.gpio_output_pin_schema,
     cv.Optional(CONF_WIDTH, default=240): cv.int_,
     cv.Optional(CONF_HEIGHT, default=320): cv.int_,
-}).extend(cv.COMPONENT_SCHEMA)
+}).extend(cv.COMPONENT_SCHEMA).extend(display.BASIC_DISPLAY_SCHEMA)
 
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
