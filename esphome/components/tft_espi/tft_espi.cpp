@@ -54,9 +54,8 @@ void TFTeSPIDisplay::update() {
 }
 
 esphome::display::DisplayType TFTeSPIDisplay::get_display_type() {
-  // Retorna un tipo de display adecuado o un valor predeterminado
-  // Asegúrate de que `DisplayType` esté definido correctamente en tu código base
-  return esphome::display::DisplayType::TFT;  // Usa el valor correcto según tu configuración
+  // Si DisplayType no está definido, podrías dejar esto sin implementar o usar un valor predeterminado
+  return esphome::display::DisplayType::UNKNOWN;  // O el tipo adecuado según tu configuración
 }
 
 }  // namespace tft_espi
