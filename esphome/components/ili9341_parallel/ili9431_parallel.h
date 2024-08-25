@@ -4,7 +4,6 @@
 
 #include "esphome/core/component.h"
 #include "esphome/components/display/display_buffer.h"
-#include "esphome/components/esp32/esp32_gpio.h"
 
 namespace esphome {
 namespace ili9341_parallel {
@@ -22,8 +21,7 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer, public Component {
   void set_d5_pin(GPIOPin *pin) { d5_pin_ = pin; }
   void set_d6_pin(GPIOPin *pin) { d6_pin_ = pin; }
   void set_d7_pin(GPIOPin *pin) { d7_pin_ = pin; }
-  
-  // Methods to override from DisplayBuffer and Component
+
   void setup() override;
   void loop() override;
   void dump_config() override;
