@@ -21,7 +21,7 @@ public:
     tft_->drawPixel(x, y, color);
   }
 
-  // Agrega métodos para otras operaciones de la pantalla según lo necesites.
+  // Otros métodos necesarios según la aplicación
 
 private:
   TFT_eSPI* tft_;
