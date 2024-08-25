@@ -6,6 +6,17 @@
 namespace esphome {
 namespace ili9xxx {
 
+extern const uint8_t INITCMD_ST7789V[];
+extern const uint8_t INITCMD_ILI9481_18[];
+extern const uint8_t INITCMD_ILI9488[];
+extern const uint8_t INITCMD_WAVESHARE_RES_3_5[];
+extern const uint8_t INITCMD_ILI9488_A[];
+extern const uint8_t INITCMD_ST7796[];
+extern const uint8_t INITCMD_S3BOX[];
+extern const uint8_t INITCMD_S3BOXLITE[];
+extern const uint8_t INITCMD_GC9A01A[];
+extern const uint8_t INITCMD_ST7735[];
+
 // Definiciones de comandos y parámetros
 #define ILI9XXX_VMCTR1   0xB0
 #define ILI9XXX_VMCTR2   0xB1
