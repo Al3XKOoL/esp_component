@@ -8,8 +8,10 @@ from esphome.const import (
     CONF_HEIGHT,
 )
 
-# Define el namespace y la clase principal para tu componente
+# Define el namespace para el componente
 ili9341_parallel_ns = cg.esphome_ns.namespace("ili9341_parallel")
+
+# Define la clase para el componente y asegúrate de heredar de Component
 ILI9341ParallelDisplay = ili9341_parallel_ns.class_("ILI9341ParallelDisplay", cg.Component, display.DisplayBuffer)
 
 # Define constantes para las claves de configuración
@@ -45,11 +47,16 @@ CONFIG_SCHEMA = display.FULL_DISPLAY_SCHEMA.extend({
 
 # Función para convertir la configuración en código
 async def to_code(config):
+    # Crea una nueva variable para el componente
     var = cg.new_Pvariable(config[CONF_ID])
+    
+    # Registra el componente
     await cg.register_component(var, config)
+    
+    # Registra el display
     await display.register_display(var, config)
 
-    # Establece el modelo y los pines
+    # Configura el modelo y los pines
     cg.add(var.set_model_str(config[CONF_MODEL]))
 
     dc = await cg.gpio_pin_expression(config[CONF_DC_PIN])
@@ -71,7 +78,7 @@ async def to_code(config):
     # Establece las dimensiones de la pantalla
     cg.add(var.set_dimensions(config[CONF_WIDTH], config[CONF_HEIGHT]))
 
-    # Lambdas opcionales
+    # Configura las lambdas opcionales
     if 'lambda' in config:
         lambda_ = await cg.process_lambda(
             config['lambda'], [(display.DisplayBufferRef, "it")], return_type=cg.void
