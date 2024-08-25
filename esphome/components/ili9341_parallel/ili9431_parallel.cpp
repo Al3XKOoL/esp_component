@@ -9,7 +9,6 @@ namespace ili9341_parallel {
 static const char *const TAG = "ili9341_parallel";
 
 void ILI9341ParallelDisplay::setup() {
-  // Initialization code for the display
   ESP_LOGD(TAG, "Setting up ILI9341 Parallel Display");
 }
 
