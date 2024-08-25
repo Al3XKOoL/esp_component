@@ -40,7 +40,6 @@ ILI9XXXDisplay = ili9xxx_ns.class_(
     "ILI9XXXDisplay",
     cg.PollingComponent,
     display.Display,
-    display.DisplayBuffer,
 )
 
 PixelMode = ili9xxx_ns.enum("PixelMode")
@@ -66,7 +65,6 @@ COLOR_PALETTE = cv.one_of("NONE", "GRAYSCALE", "IMAGE_ADAPTIVE")
 
 CONF_LED_PIN = "led_pin"
 CONF_COLOR_PALETTE_IMAGES = "color_palette_images"
-CONF_INVERT_DISPLAY = "invert_display"  # Esta propiedad es obsoleta y debe ser reemplazada
 CONF_PIXEL_MODE = "pixel_mode"
 CONF_INIT_SEQUENCE = "init_sequence"
 CONF_DATA_PINS = "data_pins"
@@ -112,9 +110,7 @@ def _validate(config):
 
     return config
 
-# Función para validar los valores de rotación
 def validate_rotation(value):
-    """ Validates the rotation value """
     if value not in [0, 90, 180, 270]:
         raise cv.Invalid(value)
     return value
@@ -139,16 +135,10 @@ CONFIG_SCHEMA = cv.All(
             ),
             cv.Optional(CONF_DC_PIN): pins.gpio_output_pin_schema,
             cv.Optional(CONF_RESET_PIN): pins.gpio_output_pin_schema,
-            cv.Optional(CONF_LED_PIN): cv.invalid(
-                "This property is removed. To use the backlight use proper light component."
-            ),
             cv.Optional(CONF_COLOR_PALETTE, default="NONE"): COLOR_PALETTE,
             cv.GenerateID(CONF_RAW_DATA_ID): cv.declare_id(cg.uint8),
             cv.Optional(CONF_COLOR_PALETTE_IMAGES, default=[]): cv.ensure_list(
                 cv.file_
-            ),
-            cv.Optional(CONF_INVERT_DISPLAY): cv.invalid(
-                "'invert_display' has been replaced by 'invert_colors'"
             ),
             cv.Optional(CONF_INVERT_COLORS): cv.boolean,
             cv.Optional(CONF_COLOR_ORDER): cv.one_of(*COLOR_ORDERS.keys(), upper=True),
