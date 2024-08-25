@@ -10,12 +10,12 @@ ILI9341ParallelDisplay = ili9341_parallel_ns.class_('ILI9341ParallelDisplay', di
 # Configuración del esquema
 CONFIG_SCHEMA = cv.Schema({
     cv.GenerateID(): cv.declare_id(ILI9341ParallelDisplay),
-    cv.Required('cs_pin'): cv.pin,  # Cambiado a cv.pin para validación simple
-    cv.Required('dc_pin'): cv.pin,
-    cv.Required('reset_pin'): cv.pin,
-    cv.Required('wr_pin'): cv.pin,
-    cv.Required('rd_pin'): cv.pin,
-    cv.Required('data_pins'): cv.All(cv.ensure_list(cv.pin)),  # Asegúrate de usar cv.pin aquí también
+    cv.Required('cs_pin'): gpio.GPIOPin.schema,  # Usa gpio.GPIOPin.schema para validación de pines
+    cv.Required('dc_pin'): gpio.GPIOPin.schema,
+    cv.Required('reset_pin'): gpio.GPIOPin.schema,
+    cv.Required('wr_pin'): gpio.GPIOPin.schema,
+    cv.Required('rd_pin'): gpio.GPIOPin.schema,
+    cv.Required('data_pins'): cv.All(cv.ensure_list(gpio.GPIOPin.schema)),  # Usa gpio.GPIOPin.schema aquí también
 }).extend(cv.COMPONENT_SCHEMA)
 
 async def to_code(config):
