@@ -6,17 +6,15 @@ from esphome.components import display
 ili9341_parallel_ns = cg.esphome_ns.namespace('ili9341_parallel')
 ILI9341ParallelDisplay = ili9341_parallel_ns.class_('ILI9341ParallelDisplay', display.DisplayBuffer, cg.Component)
 
-# Define un esquema para los pines usando la validación de pines estándar
-PIN_SCHEMA = cv.Schema({
-    cv.Required('cs_pin'): cv.all(cv.declare_id(cg.GPIOPin), cv.pin),  # Usa la validación de GPIOPin
-    cv.Required('dc_pin'): cv.all(cv.declare_id(cg.GPIOPin), cv.pin),
-    cv.Required('reset_pin'): cv.all(cv.declare_id(cg.GPIOPin), cv.pin),
-    cv.Required('wr_pin'): cv.all(cv.declare_id(cg.GPIOPin), cv.pin),
-    cv.Required('rd_pin'): cv.all(cv.declare_id(cg.GPIOPin), cv.pin),
-    cv.Required('data_pins'): cv.All(cv.ensure_list(cv.all(cv.declare_id(cg.GPIOPin), cv.pin))),  # Lista de pines
+# Define un esquema para los pines usando la validación estándar
+CONFIG_SCHEMA = cv.Schema({
+    cv.Required('cs_pin'): cv.pin,
+    cv.Required('dc_pin'): cv.pin,
+    cv.Required('reset_pin'): cv.pin,
+    cv.Required('wr_pin'): cv.pin,
+    cv.Required('rd_pin'): cv.pin,
+    cv.Required('data_pins'): cv.All(cv.ensure_list(cv.pin)),  # Lista de pines
 })
-
-CONFIG_SCHEMA = PIN_SCHEMA.extend(cv.COMPONENT_SCHEMA)
 
 async def to_code(config):
     var = cg.new_Pvariable(config[cv.CONF_ID])
