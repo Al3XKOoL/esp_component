@@ -4,37 +4,24 @@
 #include "TFT_eSPI.h"
 
 namespace esphome {
-namespace tft_e_spi {
+namespace tft_espi {
 
 class TFT_eSPIComponent : public esphome::Component {
  public:
-  TFT_eSPIComponent(TFT_eSPI *tft) : tft_(tft) {}
+  TFT_eSPIComponent();
 
-  void setup() override {
-    tft_->begin();
-    tft_->setRotation(rotation_);
-    tft_->fillScreen(TFT_BLACK);
-  }
+  void setup() override;
+  void loop() override;
 
-  void draw_pixel(int x, int y, uint16_t color) {
-    tft_->drawPixel(x, y, color);
-  }
+  void fill_screen(uint16_t color);
+  void print(int x, int y, const char* text, int size, uint16_t color);
 
-  void fill_screen(uint16_t color) {
-    tft_->fillScreen(color);
-  }
-
-  void print(int x, int y, const char* text, int size, uint16_t color) {
-    tft_->setTextSize(size);
-    tft_->setTextColor(color);
-    tft_->setCursor(x, y);
-    tft_->print(text);
-  }
+  void set_rotation(int rotation);
 
  private:
-  TFT_eSPI *tft_;
+  TFT_eSPI tft_;  // El objeto TFT_eSPI
   int rotation_ = 0;
 };
 
-}  // namespace tft_e_spi
+}  // namespace tft_espi
 }  // namespace esphome
