@@ -49,11 +49,6 @@ int TFTeSPIDisplay::get_height_internal() {
   return tft_->height();
 }
 
-esphome::display::DisplayType TFTeSPIDisplay::get_display_type() {
-  // Ajusta el tipo de display aquí
-  return esphome::display::DisplayType::TFT;  // Cambia esto si tienes un tipo específico
-}
-
 void TFTeSPIDisplay::update() {
   // Implementa el método de actualización si es necesario
 }
