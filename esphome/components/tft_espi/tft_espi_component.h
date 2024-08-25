@@ -7,7 +7,7 @@ namespace esphome {
 namespace tft_e_spi {
 
 class TFT_eSPIComponent : public esphome::Component {
-public:
+ public:
   TFT_eSPIComponent(TFT_eSPI *tft) : tft_(tft) {}
 
   void setup() override {
@@ -31,7 +31,7 @@ public:
     tft_->print(text);
   }
 
-private:
+ private:
   TFT_eSPI *tft_;
   int rotation_ = 0;
 };
