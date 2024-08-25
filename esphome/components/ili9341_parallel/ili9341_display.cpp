@@ -27,10 +27,10 @@ void ILI9341ParallelDisplay::dump_config() {
   LOG_PIN("  CS Pin: ", this->cs_pin_);
   LOG_PIN("  Reset Pin: ", this->reset_pin_);
   ESP_LOGCONFIG(TAG, "  Data pins: D0:%d D1:%d D2:%d D3:%d D4:%d D5:%d D6:%d D7:%d",
-                this->data_pins_[0]->get_pin_number(), this->data_pins_[1]->get_pin_number(),
-                this->data_pins_[2]->get_pin_number(), this->data_pins_[3]->get_pin_number(),
-                this->data_pins_[4]->get_pin_number(), this->data_pins_[5]->get_pin_number(),
-                this->data_pins_[6]->get_pin_number(), this->data_pins_[7]->get_pin_number());
+                this->data_pins_[0]->get_pin(), this->data_pins_[1]->get_pin(),
+                this->data_pins_[2]->get_pin(), this->data_pins_[3]->get_pin(),
+                this->data_pins_[4]->get_pin(), this->data_pins_[5]->get_pin(),
+                this->data_pins_[6]->get_pin(), this->data_pins_[7]->get_pin());
   ESP_LOGCONFIG(TAG, "  Rotation: %d", this->rotation_);
   ESP_LOGCONFIG(TAG, "  Dimensions: %dpx x %dpx", this->width_, this->height_);
 }
