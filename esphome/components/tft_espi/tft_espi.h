@@ -13,14 +13,19 @@ class TFTeSPIDisplay : public display::DisplayBuffer {
   void setup() override;
   void dump_config() override;
   float get_setup_priority() const override;
-  void display();  // Revisa si override es necesario
-  void set_brightness(float brightness);  // Revisa si override es necesario
+
+  // Métodos sin override si no están en la clase base
+  void display();  
+  void set_brightness(float brightness);  
+
   void fill(Color color);
   void draw_absolute_pixel_internal(int x, int y, Color color) override;
   int get_width_internal() override;
   int get_height_internal() override;
-  Color get_pixel_color(int x, int y);  // Agrega esta línea si es necesario
-  esphome::display::DisplayType get_display_type() override;  // Si es necesario
+  Color get_pixel_color(int x, int y);  
+
+  // Implementa get_display_type() si es necesario
+  esphome::display::DisplayType get_display_type() override;  
 
  protected:
   void update();  // Implementa este método si es necesario
