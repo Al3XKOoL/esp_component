@@ -5,16 +5,16 @@ namespace ili9xxx {
 
 // Color definitions
 // clang-format off
-static const uint8_t MADCTL_MY    = 0x80;   ///< Bit 7 Bottom to top
-static const uint8_t MADCTL_MX    = 0x40;   ///< Bit 6 Right to left
-static const uint8_t MADCTL_MV    = 0x20;   ///< Bit 5 Reverse Mode
-static const uint8_t MADCTL_ML    = 0x10;   ///< Bit 4 LCD refresh Bottom to top
-static const uint8_t MADCTL_RGB   = 0x00;  ///< Bit 3 Red-Green-Blue pixel order
-static const uint8_t MADCTL_BGR   = 0x08;  ///< Bit 3 Blue-Green-Red pixel order
-static const uint8_t MADCTL_MH    = 0x04;   ///< Bit 2 LCD refresh right to left
+static const uint8_t MADCTL_MY    = 0x80;   ///< Bit 7: Bottom to top
+static const uint8_t MADCTL_MX    = 0x40;   ///< Bit 6: Right to left
+static const uint8_t MADCTL_MV    = 0x20;   ///< Bit 5: Reverse Mode
+static const uint8_t MADCTL_ML    = 0x10;   ///< Bit 4: LCD refresh Bottom to top
+static const uint8_t MADCTL_RGB   = 0x00;   ///< Bit 3: Red-Green-Blue pixel order
+static const uint8_t MADCTL_BGR   = 0x08;   ///< Bit 3: Blue-Green-Red pixel order
+static const uint8_t MADCTL_MH    = 0x04;   ///< Bit 2: LCD refresh right to left
 // clang-format on
 
-// All ILI9XXX specific commands some are used by init()
+// ILI9XXX specific commands
 static const uint8_t ILI9XXX_NOP = 0x00;
 static const uint8_t ILI9XXX_SWRESET = 0x01;
 static const uint8_t ILI9XXX_RDDID = 0x04;
@@ -93,14 +93,15 @@ static const uint8_t ILI9XXX_GMCTRN1 = 0xE1;
 static const uint8_t ILI9XXX_CSCON = 0xF0;
 static const uint8_t ILI9XXX_ADJCTL3 = 0xF7;
 static const uint8_t ILI9XXX_DELAY_FLAG = 0xFF;
-// special marker for delay - command byte reprents ms, length byte is an impossible value
+
+// Macro for delay in milliseconds
 #define ILI9XXX_DELAY(ms) ((uint8_t) ((ms) | 0x80)), ILI9XXX_DELAY_FLAG
 
-// Nuevas definiciones para el modo paralelo de 8 bits
+// Parallel interface mode definitions
 static const uint8_t ILI9XXX_CMD_MODE = 0x00;
 static const uint8_t ILI9XXX_DATA_MODE = 0x01;
 
-// Comandos específicos para la inicialización en modo paralelo
+// Commands for parallel mode initialization
 static const uint8_t ILI9XXX_PWCTRB = 0xCF;
 static const uint8_t ILI9XXX_PORCTRB = 0xED;
 static const uint8_t ILI9XXX_DTCA = 0xE8;
@@ -108,18 +109,16 @@ static const uint8_t ILI9XXX_DTCB = 0xEA;
 static const uint8_t ILI9XXX_PWCTRA = 0xCB;
 static const uint8_t ILI9XXX_PUMPRC = 0xF7;
 
-// Definición para el modo de interfaz
+// Interface mode command
 static const uint8_t ILI9XXX_INTERFACE_CONTROL = 0xF6;
 
-// Valores para el modo de interfaz
+// Interface mode values
 static const uint8_t ILI9XXX_INTERFACE_8BIT_PARALLEL = 0x00;
 static const uint8_t ILI9XXX_INTERFACE_16BIT_PARALLEL = 0x01;
 static const uint8_t ILI9XXX_INTERFACE_SPI = 0x02;
 
-// Macro para enviar comandos en modo paralelo
+// Macros for sending commands and data in parallel mode
 #define ILI9XXX_PARALLEL_CMD(cmd) ((uint8_t) (cmd)), ILI9XXX_CMD_MODE
-
-// Macro para enviar datos en modo paralelo
 #define ILI9XXX_PARALLEL_DATA(data) ((uint8_t) (data)), ILI9XXX_DATA_MODE
 
 }  // namespace ili9xxx
