@@ -19,15 +19,15 @@ CONFIG_SCHEMA = cv.Schema({
     cv.Required('data_pins'): cv.All([pins.gpio_output_pin_schema], lambda value: value if len(value) == 8 else cv.Invalid("Need 8 data pins")),
 }).extend(cv.COMPONENT_SCHEMA)
 
-def to_code(config):
+async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
 
-    # Se asume que gpio_pin_expression no es asíncrono en esta versión
-    cs_pin = cg.gpio_pin_expression(config['cs_pin'])
-    dc_pin = cg.gpio_pin_expression(config['dc_pin'])
-    reset_pin = cg.gpio_pin_expression(config['reset_pin'])
-    wr_pin = cg.gpio_pin_expression(config['wr_pin'])
-    rd_pin = cg.gpio_pin_expression(config['rd_pin'])
+    # Esperar los pines de GPIO
+    cs_pin = await cg.gpio_pin_expression(config['cs_pin'])
+    dc_pin = await cg.gpio_pin_expression(config['dc_pin'])
+    reset_pin = await cg.gpio_pin_expression(config['reset_pin'])
+    wr_pin = await cg.gpio_pin_expression(config['wr_pin'])
+    rd_pin = await cg.gpio_pin_expression(config['rd_pin'])
 
     # Agregar los pines
     cg.add(var.set_cs_pin(cs_pin))
@@ -37,9 +37,9 @@ def to_code(config):
     cg.add(var.set_rd_pin(rd_pin))
 
     # Agregar los pines de datos
-    data_pins = [cg.gpio_pin_expression(pin) for pin in config['data_pins']]
+    data_pins = [await cg.gpio_pin_expression(pin) for pin in config['data_pins']]
     cg.add(var.set_data_pins(*data_pins))
 
     # Registrar el componente y el display
-    yield cg.register_component(var, config)
-    yield display.register_display(var, config)
+    await cg.register_component(var, config)
+    await display.register_display(var, config)
