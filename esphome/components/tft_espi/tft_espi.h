@@ -17,6 +17,7 @@ class TFTeSPIDisplay : public display::DisplayBuffer {
   int get_width_internal() override;
   int get_height_internal() override;
   void set_brightness(float brightness);
+  void set_auto_clear(bool auto_clear) { this->auto_clear_ = auto_clear; }
   
   // Cambia esta línea
   Color get_pixel_color(int x, int y);  // Elimina 'override'
@@ -27,6 +28,7 @@ class TFTeSPIDisplay : public display::DisplayBuffer {
  protected:
     TFT_eSPI *tft_{nullptr};
     uint8_t *buffer_{nullptr};  // Asegúrate de que esto esté declarado
+    bool auto_clear_{true};  // Agregar soporte para auto_clear_enabled
 };
 
 }  // namespace tft_espi
