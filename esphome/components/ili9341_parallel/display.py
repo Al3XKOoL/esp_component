@@ -38,7 +38,7 @@ CONFIG_SCHEMA = cv.Schema({
     cv.Required(CONF_D7_PIN): cv.positive_int,
     cv.Optional(CONF_UPDATE_INTERVAL, default="1s"): cv.positive_time_period_milliseconds,
     cv.Optional(CONF_MODEL, default="ILI9341"): cv.string,
-}).extend(cv.COMPONENT_SCHEMA).extend(display.FANOUT_SCHEMA)
+}).extend(cv.COMPONENT_SCHEMA)
 
 def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
