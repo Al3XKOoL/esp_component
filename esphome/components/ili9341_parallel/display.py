@@ -2,20 +2,10 @@ import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome import pins
 from esphome.components import display
-from esphome.const import (
-    CONF_ID,
-    CONF_DC_PIN,
-    CONF_RESET_PIN,
-    CONF_DATA_PINS,
-    CONF_WR_PIN,
-    CONF_RD_PIN,
-    CONF_WIDTH,
-    CONF_HEIGHT,
-)
+from esphome.const import CONF_ID, CONF_WIDTH, CONF_HEIGHT
 
 DEPENDENCIES = []
-AUTO_LOAD = ["psram"]
-CODEOWNERS = ["@your_github_username"]
+AUTO_LOAD = []
 
 # Define the namespace and the main class for your component
 ili9341_parallel_ns = cg.esphome_ns.namespace("ili9341_parallel")
@@ -23,6 +13,11 @@ ILI9341ParallelDisplay = ili9341_parallel_ns.class_("ILI9341ParallelDisplay", cg
 
 # Define constants for your configuration keys
 CONF_MODEL = "model"
+CONF_DC_PIN = "dc_pin"
+CONF_RESET_PIN = "reset_pin"
+CONF_DATA_PINS = "data_pins"
+CONF_WR_PIN = "wr_pin"
+CONF_RD_PIN = "rd_pin"
 
 def validate_data_pins(value):
     if len(value) != 8:
