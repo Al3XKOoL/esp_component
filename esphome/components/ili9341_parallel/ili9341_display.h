@@ -6,7 +6,7 @@
 namespace esphome {
 namespace ili9341_parallel {
 
-class ILI9341ParallelDisplay : public display::DisplayBuffer, public Component {
+class ILI9341ParallelDisplay : public Component, public display::DisplayBuffer {
  public:
   void setup() override;
   void dump_config() override;
