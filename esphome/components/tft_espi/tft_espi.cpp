@@ -15,6 +15,16 @@ void TFTeSPIDisplay::setup() {
 }
 
 Color TFTeSPIDisplay::get_pixel_color(int x, int y) {
+  // Ensure buffer is initialized and valid
+  if (this->buffer_ == nullptr) {
+    ESP_LOGE(TAG, "Buffer not initialized");
+    return Color(0, 0, 0); // Return a default color or handle error
+  }
+  // Ensure coordinates are within bounds
+  if (x < 0 || x >= this->get_width_internal() || y < 0 || y >= this->get_height_internal()) {
+    ESP_LOGE(TAG, "Coordinates out of bounds");
+    return Color(0, 0, 0); // Return a default color or handle error
+  }
   return Color(this->buffer_[(y * this->get_width_internal() + x) * 3],
                this->buffer_[(y * this->get_width_internal() + x) * 3 + 1],
                this->buffer_[(y * this->get_width_internal() + x) * 3 + 2]);
@@ -22,7 +32,7 @@ Color TFTeSPIDisplay::get_pixel_color(int x, int y) {
 
 void TFTeSPIDisplay::display() {
   if (this->auto_clear_) {
-    this->tft_->fillScreen(TFT_BLACK);  // Limpiar pantalla si auto_clear_enabled está activado
+    this->tft_->fillScreen(TFT_BLACK);  // Clear screen if auto_clear is enabled
   }
   this->tft_->startWrite();
   for (int y = 0; y < this->get_height_internal(); y++) {
