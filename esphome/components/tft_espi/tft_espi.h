@@ -18,6 +18,7 @@ class TFTeSPIDisplay : public display::DisplayBuffer {
   int get_height_internal() override;
   void set_brightness(float brightness);
 
+  Color get_pixel_color(int x, int y) override;
   display::DisplayType get_display_type() override {
     return display::DisplayType::DISPLAY_TYPE_COLOR;
   }
