@@ -2,10 +2,15 @@ import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome import pins
 from esphome.components import display
-from esphome.const import CONF_ID, CONF_WIDTH, CONF_HEIGHT
+from esphome.const import (
+    CONF_ID,
+    CONF_WIDTH,
+    CONF_HEIGHT,
+)
 
 DEPENDENCIES = []
 AUTO_LOAD = []
+CODEOWNERS = ["@your_github_username"]
 
 # Define the namespace and the main class for your component
 ili9341_parallel_ns = cg.esphome_ns.namespace("ili9341_parallel")
