@@ -167,11 +167,11 @@ void ILI9XXXDisplay::draw_pixels_at(int x_start, int y_start, int w, int h, cons
                                     int x_offset, int y_offset, int x_pad) {
   if (w <= 0 || h <= 0)
     return;
-  if (bitness == display::BITS_8 || order != this->color_order_ ||
-      (x_offset != 0 || y_offset != 0 || x_pad != 0)) {
-    this->mark_failed();
-    return;
-  }
+if (bitness == ILI9XXXColorMode::BITS_8 || order != this->color_order_ ||
+    (x_offset != 0 || y_offset != 0 || x_pad != 0)) {
+  Component::mark_failed();
+  return;
+}
   if (x_start < 0 || y_start < 0 || x_start >= this->width_ || y_start >= this->height_) {
     ESP_LOGE(TAG, "draw_pixels_at out of bounds: %d,%d w:%d h:%d", x_start, y_start, w, h);
     this->mark_failed();
