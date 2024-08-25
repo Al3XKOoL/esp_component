@@ -4,7 +4,7 @@ from esphome import pins
 from esphome.components import display
 from esphome.const import CONF_ID, CONF_MODEL, CONF_WIDTH, CONF_HEIGHT
 
-DEPENDENCIES = ["esp32"]
+DEPENDENCIES = []
 
 ili9341_parallel_ns = cg.esphome_ns.namespace("ili9341_parallel")
 ILI9341ParallelDisplay = ili9341_parallel_ns.class_("ILI9341ParallelDisplay", cg.Component, display.DisplayBuffer)
