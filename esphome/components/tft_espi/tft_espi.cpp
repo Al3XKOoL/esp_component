@@ -45,7 +45,7 @@ void TFTeSPIDisplay::display() {
 void TFTeSPIDisplay::set_brightness(float brightness) {
   // Ajusta el brillo si es aplicable
   ESP_LOGD(TAG, "Setting brightness to %f", brightness);
-  // Implementa el ajuste de brillo
+  // Implementa el ajuste de brillo si es necesario
 }
 
 void TFTeSPIDisplay::fill(Color color) {
