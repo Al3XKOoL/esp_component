@@ -1,6 +1,5 @@
 #include "tft_espi.h"
 #include "esphome/core/log.h"
-#include "esphome/core/application.h"
 
 namespace esphome {
 namespace tft_espi {
@@ -63,8 +62,7 @@ Color TFTeSPIDisplay::get_pixel_color(int x, int y) {
 }
 
 esphome::display::DisplayType TFTeSPIDisplay::get_display_type() {
-  // Implementa esta función si es necesario
-  return esphome::display::DisplayType::UNKNOWN;
+  return esphome::display::DisplayType::TFT;  // Ajusta esto según los valores válidos en display.h
 }
 
 void TFTeSPIDisplay::update() {
