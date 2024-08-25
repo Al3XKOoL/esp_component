@@ -2,9 +2,10 @@
 
 #include "esphome/core/component.h"
 #include "TFT_eSPI.h"
+#include "esphome/components/display/display_buffer.h"
 
 namespace esphome {
-namespace tft_e_spi {
+namespace tft_espi {
 
 class TFT_eSPIComponent : public esphome::Component, public esphome::display::DisplayBuffer {
  public:
@@ -23,5 +24,5 @@ class TFT_eSPIComponent : public esphome::Component, public esphome::display::Di
   int rotation_ = 0;
 };
 
-}  // namespace tft_e_spi
+}  // namespace tft_espi
 }  // namespace esphome
