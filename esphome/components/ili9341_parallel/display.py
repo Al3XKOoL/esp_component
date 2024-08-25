@@ -27,7 +27,7 @@ def to_code(config):
     cg.add(var.set_wr_pin(config['wr_pin']))
     cg.add(var.set_rd_pin(config['rd_pin']))
     
-    pins_ = [yield cg.gpio_pin_expression(pin) for pin in config['data_pins']]
+    pins_ = [cg.gpio_pin_expression(pin) for pin in config['data_pins']]
     cg.add(var.set_data_pins(*pins_))
 
     yield cg.register_component(var, config)
