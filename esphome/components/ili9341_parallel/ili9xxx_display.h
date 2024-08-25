@@ -151,65 +151,22 @@ class ILI9XXXST7789V : public ILI9XXXDisplay {
   ILI9XXXST7789V() : ILI9XXXDisplay(INITCMD_ST7789V, 240, 320, false) {}
 };
 
-class ILI9XXXILI9341 : public ILI9XXXDisplay {
- public:
-  ILI9XXXILI9341() : ILI9XXXDisplay(INITCMD_ILI9341, 240, 320, false) {}
-};
-
-class ILI9XXXILI9342 : public ILI9XXXDisplay {
- public:
-  ILI9XXXILI9342() : ILI9XXXDisplay(INITCMD_ILI9341, 320, 240, false) {}
-};
-
-class ILI9XXXILI9481 : public ILI9XXXDisplay {
- public:
-  ILI9XXXILI9481() : ILI9XXXDisplay(INITCMD_ILI9481, 480, 320, false) {}
-};
-
 class ILI9XXXILI948118 : public ILI9XXXDisplay {
  public:
   ILI9XXXILI948118() : ILI9XXXDisplay(INITCMD_ILI9481_18, 320, 480, true) {}
 };
 
-class ILI9XXXILI9486 : public ILI9XXXDisplay {
- public:
-  ILI9XXXILI9486() : ILI9XXXDisplay(INITCMD_ILI9486, 480, 320, false) {}
-};
-
 class ILI9XXXILI9488 : public ILI9XXXDisplay {
  public:
   ILI9XXXILI9488(const uint8_t *seq = INITCMD_ILI9488) : ILI9XXXDisplay(seq, 480, 320, true) {}
-
- protected:
-  void set_madctl() override {
-    uint8_t mad = (color_order_ == display::COLOR_ORDER_BGR) ? MADCTL_BGR : MADCTL_RGB;
-    uint8_t dfun = 0x22;
-    width_ = 320;
-    height_ = 480;
-    if (swap_xy_ && mirror_x_ && mirror_y_) {
-      dfun = 0x42;  // Rotate 180 degrees
-    } else if (swap_xy_) {
-      width_ = 480;
-      height_ = 320;
-      mad |= 0x20;
-      dfun = (mirror_x_) ? 0x02 : 0x62;
-    }
-    command(ILI9XXX_DFUNCTR);
-    data(0);
-    data(dfun);
-    command(ILI9XXX_MADCTL);
-    data(mad);
-  }
 };
 
 class WAVESHARERES35 : public ILI9XXXILI9488 {
  public:
   WAVESHARERES35() : ILI9XXXILI9488(INITCMD_WAVESHARE_RES_3_5) {}
   void data(uint8_t value) override {
-    start_data_();
-    write_byte(0);
-    write_byte(value);
-    end_data_();
+    ILI9XXXILI9488::data(value);
+    this->data(0);
   }
 };
 
@@ -241,13 +198,6 @@ class ILI9XXXGC9A01A : public ILI9XXXDisplay {
 class ILI9XXXST7735 : public ILI9XXXDisplay {
  public:
   ILI9XXXST7735() : ILI9XXXDisplay(INITCMD_ST7735, 128, 160, false) {}
-};
-
-class ILI9XXXILI9341Parallel : public ILI9XXXDisplay {
- public:
-  ILI9XXXILI9341Parallel() : ILI9XXXDisplay(INITCMD_ILI9341, 240, 320, false) {
-    set_interface_mode(PARALLEL_8BIT_MODE);
-  }
 };
 
 }  // namespace ili9xxx
