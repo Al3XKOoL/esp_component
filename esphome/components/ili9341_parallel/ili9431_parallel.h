@@ -2,6 +2,7 @@
 
 #include "esphome/core/component.h"
 #include "esphome/components/display/display_buffer.h"
+#include "esphome/core/gpio.h"
 
 namespace esphome {
 namespace ili9341_parallel {
