@@ -57,12 +57,8 @@ int TFTeSPIDisplay::get_width_internal() { return this->tft_->width(); }
 int TFTeSPIDisplay::get_height_internal() { return this->tft_->height(); }
 
 Color TFTeSPIDisplay::get_pixel_color(int x, int y) {
-  // Implementa la función aquí
-  return Color(0, 0, 0); // Un valor por defecto, implementa la lógica real
-}
-
-esphome::display::DisplayType TFTeSPIDisplay::get_display_type() {
-  return esphome::display::DisplayType::TFT;  // Ajusta a un tipo válido
+  // Implementa la función aquí si es necesario
+  return Color(0, 0, 0); // Un valor por defecto
 }
 
 void TFTeSPIDisplay::update() {
