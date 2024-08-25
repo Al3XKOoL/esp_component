@@ -53,10 +53,10 @@ void TFTeSPIDisplay::update() {
   // Implementa el método de actualización si es necesario
 }
 
-esphome::display::DisplayType TFTeSPIDisplay::get_display_type() {
-  // Si DisplayType no está definido, podrías dejar esto sin implementar o usar un valor predeterminado
-  return esphome::display::DisplayType::UNKNOWN;  // O el tipo adecuado según tu configuración
-}
+// Si no se necesita el método get_display_type(), puedes comentarlo o eliminarlo
+// esphome::display::DisplayType TFTeSPIDisplay::get_display_type() {
+//   return esphome::display::DisplayType::UNKNOWN;  // O elimina este método si no es necesario
+// }
 
 }  // namespace tft_espi
 }  // namespace esphome
