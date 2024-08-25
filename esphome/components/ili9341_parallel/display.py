@@ -7,7 +7,7 @@ from esphome import pins
 DEPENDENCIES = ['esp32']
 
 ili9341_parallel_ns = cg.esphome_ns.namespace('ili9341_parallel')
-ILI9341ParallelDisplay = ili9341_parallel_ns.class_('ILI9341ParallelDisplay', display.DisplayBuffer, cg.Component)
+ILI9341ParallelDisplay = ili9341_parallel_ns.class_('ILI9341ParallelDisplay', cg.Component, display.DisplayBuffer)
 
 CONF_DATA_PINS = 'data_pins'
 CONF_RESET_PIN = 'reset_pin'
@@ -16,15 +16,18 @@ CONF_WR_PIN = 'wr_pin'
 CONF_RD_PIN = 'rd_pin'
 CONF_CS_PIN = 'cs_pin'
 
-CONFIG_SCHEMA = display.BASIC_DISPLAY_SCHEMA.extend({
-    cv.GenerateID(): cv.declare_id(ILI9341ParallelDisplay),
-    cv.Required(CONF_DATA_PINS): cv.All(cv.ensure_list(pins.gpio_output_pin_schema), cv.Length(min=8, max=8)),
-    cv.Required(CONF_RESET_PIN): pins.gpio_output_pin_schema,
-    cv.Required(CONF_DC_PIN): pins.gpio_output_pin_schema,
-    cv.Required(CONF_WR_PIN): pins.gpio_output_pin_schema,
-    cv.Required(CONF_RD_PIN): pins.gpio_output_pin_schema,
-    cv.Required(CONF_CS_PIN): pins.gpio_output_pin_schema,
-}).extend(cv.COMPONENT_SCHEMA)
+CONFIG_SCHEMA = cv.All(
+    display.BASIC_DISPLAY_SCHEMA.extend({
+        cv.GenerateID(): cv.declare_id(ILI9341ParallelDisplay),
+        cv.Required(CONF_DATA_PINS): cv.All(cv.ensure_list(pins.gpio_output_pin_schema), cv.Length(min=8, max=8)),
+        cv.Required(CONF_RESET_PIN): pins.gpio_output_pin_schema,
+        cv.Required(CONF_DC_PIN): pins.gpio_output_pin_schema,
+        cv.Required(CONF_WR_PIN): pins.gpio_output_pin_schema,
+        cv.Required(CONF_RD_PIN): pins.gpio_output_pin_schema,
+        cv.Required(CONF_CS_PIN): pins.gpio_output_pin_schema,
+    }).extend(cv.COMPONENT_SCHEMA),
+    cv.only_with_arduino,
+)
 
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
