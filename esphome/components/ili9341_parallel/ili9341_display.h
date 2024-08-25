@@ -2,7 +2,7 @@
 
 #include "esphome/core/component.h"
 #include "esphome/components/display/display_buffer.h"
-#include "esphome/components/gpio/gpio.h"
+#include "esphome/core/gpio.h"
 #include "ili9341_defines.h"
 
 namespace esphome {
