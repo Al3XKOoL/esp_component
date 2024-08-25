@@ -62,7 +62,7 @@ Color TFTeSPIDisplay::get_pixel_color(int x, int y) {
 }
 
 esphome::display::DisplayType TFTeSPIDisplay::get_display_type() {
-  return esphome::display::DisplayType::UNKNOWN;  // Cambiado a UNKNOWN si TFT no está definido
+  return esphome::display::DisplayType::TFT;  // Ajusta a un tipo válido
 }
 
 void TFTeSPIDisplay::update() {
