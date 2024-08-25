@@ -7,7 +7,7 @@
 namespace esphome {
 namespace ili9341_parallel {
 
-class ILI9341ParallelDisplay : public display::DisplayBuffer, public Component {
+class ILI9341ParallelDisplay : public Component, public display::DisplayBuffer {
  public:
   void set_model(const std::string &model) { model_ = model; }
   void set_width(int16_t width) { width_ = width; }
@@ -20,18 +20,18 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer, public Component {
 
   void setup() override;
   void dump_config() override;
-  float get_setup_priority() const override;
-  void update() override;
+  float get_setup_priority() const override { return setup_priority::PROCESSOR; }
+  void display();
 
  protected:
   std::string model_;
-  int16_t width_;
-  int16_t height_;
-  GPIOPin *dc_pin_;
-  GPIOPin *reset_pin_;
-  GPIOPin *wr_pin_;
-  GPIOPin *rd_pin_;
-  GPIOPin *data_pins_[8];
+  int16_t width_{240};
+  int16_t height_{320};
+  GPIOPin *dc_pin_{nullptr};
+  GPIOPin *reset_pin_{nullptr};
+  GPIOPin *wr_pin_{nullptr};
+  GPIOPin *rd_pin_{nullptr};
+  GPIOPin *data_pins_[8]{nullptr};
 };
 
 }  // namespace ili9341_parallel
