@@ -26,15 +26,15 @@ void ILI9341ParallelDisplay::dump_config() {
   LOG_PIN("  RD Pin: ", this->rd_pin_);
   LOG_PIN("  CS Pin: ", this->cs_pin_);
   LOG_PIN("  Reset Pin: ", this->reset_pin_);
-ESP_LOGCONFIG(TAG, "  Data pins: D0:%d D1:%d D2:%d D3:%d D4:%d D5:%d D6:%d D7:%d",
-              dynamic_cast<InternalGPIOPin*>(this->data_pins_[0]) ? dynamic_cast<InternalGPIOPin*>(this->data_pins_[0])->get_pin() : -1,
-              dynamic_cast<InternalGPIOPin*>(this->data_pins_[1]) ? dynamic_cast<InternalGPIOPin*>(this->data_pins_[1])->get_pin() : -1,
-              dynamic_cast<InternalGPIOPin*>(this->data_pins_[2]) ? dynamic_cast<InternalGPIOPin*>(this->data_pins_[2])->get_pin() : -1,
-              dynamic_cast<InternalGPIOPin*>(this->data_pins_[3]) ? dynamic_cast<InternalGPIOPin*>(this->data_pins_[3])->get_pin() : -1,
-              dynamic_cast<InternalGPIOPin*>(this->data_pins_[4]) ? dynamic_cast<InternalGPIOPin*>(this->data_pins_[4])->get_pin() : -1,
-              dynamic_cast<InternalGPIOPin*>(this->data_pins_[5]) ? dynamic_cast<InternalGPIOPin*>(this->data_pins_[5])->get_pin() : -1,
-              dynamic_cast<InternalGPIOPin*>(this->data_pins_[6]) ? dynamic_cast<InternalGPIOPin*>(this->data_pins_[6])->get_pin() : -1,
-              dynamic_cast<InternalGPIOPin*>(this->data_pins_[7]) ? dynamic_cast<InternalGPIOPin*>(this->data_pins_[7])->get_pin() : -1);
+ESP_LOGCONFIG(TAG, "  Data pins: D0:%s D1:%s D2:%s D3:%s D4:%s D5:%s D6:%s D7:%s",
+              this->data_pins_[0]->dump_summary().c_str(),
+              this->data_pins_[1]->dump_summary().c_str(),
+              this->data_pins_[2]->dump_summary().c_str(),
+              this->data_pins_[3]->dump_summary().c_str(),
+              this->data_pins_[4]->dump_summary().c_str(),
+              this->data_pins_[5]->dump_summary().c_str(),
+              this->data_pins_[6]->dump_summary().c_str(),
+              this->data_pins_[7]->dump_summary().c_str());
   ESP_LOGCONFIG(TAG, "  Rotation: %d", this->rotation_);
   ESP_LOGCONFIG(TAG, "  Dimensions: %dpx x %dpx", this->width_, this->height_);
 }
