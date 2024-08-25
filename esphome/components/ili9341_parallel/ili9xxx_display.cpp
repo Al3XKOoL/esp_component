@@ -3,6 +3,7 @@
 #include "esphome/core/hal.h"
 #include "esphome/core/helpers.h"
 #include "esphome/core/log.h"
+#include "ili9xxx_defines.h"  // Asegúrate de que este archivo contiene las constantes necesarias
 
 namespace esphome {
 namespace ili9xxx {
@@ -68,12 +69,12 @@ void ILI9XXXDisplay::setup() {
 }
 
 void ILI9XXXDisplay::alloc_buffer_() {
-  if (this->buffer_color_mode_ == BITS_16) {
+  if (this->buffer_color_mode_ == display::BITS_16) {
     this->init_internal_(this->get_buffer_length_() * 2);
     if (this->buffer_ != nullptr) {
       return;
     }
-    this->buffer_color_mode_ = BITS_8;
+    this->buffer_color_mode_ = display::BITS_8;
   }
   this->init_internal_(this->get_buffer_length_());
   if (this->buffer_ == nullptr) {
@@ -104,7 +105,7 @@ void ILI9XXXDisplay::display_() {
   size_t h = this->y_high_ - this->y_low_ + 1;
 
   auto now = millis();
-  if (this->buffer_color_mode_ == BITS_16 && !this->is_18bitdisplay_) {
+  if (this->buffer_color_mode_ == display::BITS_16 && !this->is_18bitdisplay_) {
     ESP_LOGD(TAG, "Doing single write of %zu bytes", this->width_ * h * 2);
     set_addr_window_(0, this->y_low_, this->width_ - 1, this->y_high_);
     this->write_array(this->buffer_ + this->y_low_ * this->width_ * 2, h * this->width_ * 2);
@@ -119,10 +120,10 @@ void ILI9XXXDisplay::display_() {
     while (rem-- != 0) {
       uint16_t color_val;
       switch (this->buffer_color_mode_) {
-        case BITS_8:
+        case display::BITS_8:
           color_val = display::ColorUtil::color_to_565(display::ColorUtil::rgb332_to_color(this->buffer_[pos++]));
           break;
-        case BITS_8_INDEXED:
+        case display::BITS_8_INDEXED:
           color_val = display::ColorUtil::color_to_565(
               display::ColorUtil::index8_to_color_palette888(this->buffer_[pos++], this->palette_));
           break;
