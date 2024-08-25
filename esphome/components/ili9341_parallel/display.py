@@ -55,5 +55,6 @@ def to_code(config):
         cg.add(var.set_update_interval(config[CONF_UPDATE_INTERVAL]))
     if CONF_MODEL in config:
         cg.add(var.set_model(config[CONF_MODEL]))
+    # Registrar el componente y el display
     yield cg.register_component(var, config)
     yield display.register_display(var, config)
