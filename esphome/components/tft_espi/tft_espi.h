@@ -21,7 +21,9 @@ class TFTeSPIDisplay : public display::DisplayBuffer {
   int get_height_internal(); 
 
   // Implementación del método de tipo de display
-  esphome::display::DisplayType get_display_type() override;
+  // Si no se requiere, puedes dejar este método sin implementación
+  // o eliminar el override si no tienes un valor definido
+  // esphome::display::DisplayType get_display_type() override;
 
  protected:
   void update(); 
