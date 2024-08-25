@@ -5,9 +5,6 @@ from esphome import config_validation as cv
 from esphome.components import display
 from esphome.const import CONF_ID, CONF_UPDATE_INTERVAL, CONF_MODEL
 
-# Eliminar la dependencia de SPI
-# DEPENDENCIES = ['spi']
-
 # Definición de pines específicos para la comunicación paralela
 CONF_CS_PIN = "cs_pin"
 CONF_DC_PIN = "dc_pin"
@@ -59,4 +56,5 @@ def to_code(config):
     if CONF_MODEL in config:
         cg.add(var.set_model(config[CONF_MODEL]))
     yield cg.register_component(var, config)
-    yield display.setup_display(var, config)
+    # Cambiar a display.setup en lugar de display.setup_display
+    yield display.setup(var, config)
