@@ -1,20 +1,19 @@
 #include "tft_e_spi_component.h"
-#include "esphome/core/log.h"
 
 namespace esphome {
-namespace tft_espi {
+namespace tft_e_spi {
 
 TFT_eSPIComponent::TFT_eSPIComponent() : tft_(TFT_eSPI()) {}
 
 void TFT_eSPIComponent::setup() {
-  // Aquí configuras el display usando TFT_eSPI
+  // Configura el display
   tft_.begin();
   tft_.setRotation(rotation_);
   tft_.fillScreen(TFT_BLACK);
 }
 
-void TFT_eSPIComponent::loop() {
-  // Puedes agregar actualizaciones periódicas si es necesario
+void TFT_eSPIComponent::update() {
+  // Aquí podrías actualizar el display periódicamente si es necesario
 }
 
 void TFT_eSPIComponent::fill_screen(uint16_t color) {
@@ -33,5 +32,5 @@ void TFT_eSPIComponent::set_rotation(int rotation) {
   tft_.setRotation(rotation_);
 }
 
-}  // namespace tft_espi
+}  // namespace tft_e_spi
 }  // namespace esphome
