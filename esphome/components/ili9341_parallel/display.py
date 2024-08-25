@@ -2,6 +2,7 @@ import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import display
 from esphome.const import CONF_ID, CONF_LAMBDA
+from esphome import pins
 
 DEPENDENCIES = ['esp32']
 
@@ -17,12 +18,12 @@ CONF_CS_PIN = 'cs_pin'
 
 CONFIG_SCHEMA = display.BASIC_DISPLAY_SCHEMA.extend({
     cv.GenerateID(): cv.declare_id(ILI9341ParallelDisplay),
-    cv.Required(CONF_DATA_PINS): cv.All(cv.ensure_list(cv.gpio_output_pin_schema), cv.Length(min=8, max=8)),
-    cv.Required(CONF_RESET_PIN): cv.gpio_output_pin_schema,
-    cv.Required(CONF_DC_PIN): cv.gpio_output_pin_schema,
-    cv.Required(CONF_WR_PIN): cv.gpio_output_pin_schema,
-    cv.Required(CONF_RD_PIN): cv.gpio_output_pin_schema,
-    cv.Required(CONF_CS_PIN): cv.gpio_output_pin_schema,
+    cv.Required(CONF_DATA_PINS): cv.All(cv.ensure_list(pins.gpio_output_pin_schema), cv.Length(min=8, max=8)),
+    cv.Required(CONF_RESET_PIN): pins.gpio_output_pin_schema,
+    cv.Required(CONF_DC_PIN): pins.gpio_output_pin_schema,
+    cv.Required(CONF_WR_PIN): pins.gpio_output_pin_schema,
+    cv.Required(CONF_RD_PIN): pins.gpio_output_pin_schema,
+    cv.Required(CONF_CS_PIN): pins.gpio_output_pin_schema,
 }).extend(cv.polling_component_schema('1s'))
 
 async def to_code(config):
