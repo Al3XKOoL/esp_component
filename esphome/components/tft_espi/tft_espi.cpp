@@ -33,21 +33,6 @@ float TFTeSPIDisplay::get_setup_priority() const {
   return esphome::setup_priority::HARDWARE;
 }
 
-void TFTeSPIDisplay::display() {
-  // Actualiza la pantalla
-  for (int x = 0; x < get_width_internal(); ++x) {
-    for (int y = 0; y < get_height_internal(); ++y) {
-      tft_->drawPixel(x, y, display::ColorUtil::color_to_565(this->get_pixel_color(x, y)));
-    }
-  }
-}
-
-void TFTeSPIDisplay::set_brightness(float brightness) {
-  // Ajusta el brillo si es aplicable
-  ESP_LOGD(TAG, "Setting brightness to %f", brightness);
-  // Implementa el ajuste de brillo si es necesario
-}
-
 void TFTeSPIDisplay::fill(Color color) {
   tft_->fillScreen(display::ColorUtil::color_to_565(color));
 }
