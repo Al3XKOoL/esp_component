@@ -8,15 +8,11 @@ from esphome.const import (
     CONF_HEIGHT,
 )
 
-DEPENDENCIES = []
-AUTO_LOAD = []
-CODEOWNERS = ["@your_github_username"]
-
-# Define the namespace and the main class for your component
+# Define el namespace y la clase principal para tu componente
 ili9341_parallel_ns = cg.esphome_ns.namespace("ili9341_parallel")
 ILI9341ParallelDisplay = ili9341_parallel_ns.class_("ILI9341ParallelDisplay", cg.Component, display.DisplayBuffer)
 
-# Define constants for your configuration keys
+# Define constantes para las claves de configuración
 CONF_MODEL = "model"
 CONF_DC_PIN = "dc_pin"
 CONF_RESET_PIN = "reset_pin"
@@ -34,7 +30,7 @@ def validate_model(value):
         raise cv.Invalid("Only ili9341_parallel model is supported")
     return value
 
-# Define the schema for the component configuration
+# Define el esquema para la configuración del componente
 CONFIG_SCHEMA = display.FULL_DISPLAY_SCHEMA.extend({
     cv.GenerateID(): cv.declare_id(ILI9341ParallelDisplay),
     cv.Required(CONF_MODEL): validate_model,
@@ -47,13 +43,13 @@ CONFIG_SCHEMA = display.FULL_DISPLAY_SCHEMA.extend({
     cv.Optional(CONF_HEIGHT, default=320): cv.int_,
 }).extend(cv.COMPONENT_SCHEMA)
 
-# Function to convert the configuration to code
+# Función para convertir la configuración en código
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
     await display.register_display(var, config)
 
-    # Set model and pins
+    # Establece el modelo y los pines
     cg.add(var.set_model_str(config[CONF_MODEL]))
 
     dc = await cg.gpio_pin_expression(config[CONF_DC_PIN])
@@ -72,10 +68,10 @@ async def to_code(config):
     rd_pin = await cg.gpio_pin_expression(config[CONF_RD_PIN])
     cg.add(var.set_rd_pin(rd_pin))
 
-    # Set display dimensions
+    # Establece las dimensiones de la pantalla
     cg.add(var.set_dimensions(config[CONF_WIDTH], config[CONF_HEIGHT]))
 
-    # Optional lambdas
+    # Lambdas opcionales
     if 'lambda' in config:
         lambda_ = await cg.process_lambda(
             config['lambda'], [(display.DisplayBufferRef, "it")], return_type=cg.void
