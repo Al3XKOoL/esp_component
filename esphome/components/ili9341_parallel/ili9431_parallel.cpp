@@ -3,14 +3,7 @@
 namespace esphome {
 namespace ili9341_parallel {
 
-void ILI9341ParallelDisplay::setup() {
-  tft.init();
-  tft.setRotation(rotation_);
-}
-
-void ILI9341ParallelDisplay::loop() {
-  this->do_update_();
-}
+// Implement any additional methods if needed
 
 }  // namespace ili9341_parallel
 }  // namespace esphome
