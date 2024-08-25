@@ -1,6 +1,5 @@
 import esphome.codegen as cg
 from esphome import config_validation as cv
-from esphome import pins
 from esphome.components import display
 from esphome.const import CONF_ID
 
