@@ -18,24 +18,19 @@ void TFTeSPIDisplay::display() {
   this->tft_->startWrite();
   for (int y = 0; y < this->get_height_internal(); y++) {
     for (int x = 0; x < this->get_width_internal(); x++) {
-      Color color = this->get_pixel(x, y);
+      Color color = this->get_pixel_(x, y);
       this->draw_absolute_pixel_internal(x, y, color);
     }
   }
   this->tft_->endWrite();
 }
 
-void TFTeSPIDisplay::update() {
-  this->do_update_();
-  this->display();
-}
-
 void TFTeSPIDisplay::fill(Color color) {
-  this->tft_->fillScreen(color.to_565());
+  this->tft_->fillScreen(display::ColorUtil::color_to_565(color));
 }
 
 void TFTeSPIDisplay::draw_absolute_pixel_internal(int x, int y, Color color) {
-  this->tft_->drawPixel(x, y, color.to_565());
+  this->tft_->drawPixel(x, y, display::ColorUtil::color_to_565(color));
 }
 
 int TFTeSPIDisplay::get_width_internal() { return this->tft_->width(); }
