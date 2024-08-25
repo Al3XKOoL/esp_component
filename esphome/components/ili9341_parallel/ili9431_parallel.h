@@ -1,5 +1,3 @@
-// esphome/components/ili9341_parallel/ili9341_parallel.h
-
 #pragma once
 
 #include "esphome/core/component.h"
@@ -13,31 +11,41 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer, public Component {
   void set_cs_pin(GPIOPin *pin) { cs_pin_ = pin; }
   void set_dc_pin(GPIOPin *pin) { dc_pin_ = pin; }
   void set_reset_pin(GPIOPin *pin) { reset_pin_ = pin; }
-  void set_d0_pin(GPIOPin *pin) { d0_pin_ = pin; }
-  void set_d1_pin(GPIOPin *pin) { d1_pin_ = pin; }
-  void set_d2_pin(GPIOPin *pin) { d2_pin_ = pin; }
-  void set_d3_pin(GPIOPin *pin) { d3_pin_ = pin; }
-  void set_d4_pin(GPIOPin *pin) { d4_pin_ = pin; }
-  void set_d5_pin(GPIOPin *pin) { d5_pin_ = pin; }
-  void set_d6_pin(GPIOPin *pin) { d6_pin_ = pin; }
-  void set_d7_pin(GPIOPin *pin) { d7_pin_ = pin; }
+  void set_wr_pin(GPIOPin *pin) { wr_pin_ = pin; }
+  void set_rd_pin(GPIOPin *pin) { rd_pin_ = pin; }
+  void set_data_pins(GPIOPin *d0, GPIOPin *d1, GPIOPin *d2, GPIOPin *d3, GPIOPin *d4, GPIOPin *d5, GPIOPin *d6, GPIOPin *d7) {
+    data_pins_[0] = d0;
+    data_pins_[1] = d1;
+    data_pins_[2] = d2;
+    data_pins_[3] = d3;
+    data_pins_[4] = d4;
+    data_pins_[5] = d5;
+    data_pins_[6] = d6;
+    data_pins_[7] = d7;
+  }
 
   void setup() override;
   void loop() override;
   void dump_config() override;
 
+  void command(uint8_t value);
+  void data(uint8_t value);
+  void send_command(uint8_t command_byte, const uint8_t *data_bytes, uint8_t num_data_bytes);
+  void update() override;
+
  protected:
+  void setup_pins_();
+  void write_byte(uint8_t data);
+  void write_array(const uint8_t *data, size_t length);
+  void enable();
+  void disable();
+
   GPIOPin *cs_pin_{nullptr};
   GPIOPin *dc_pin_{nullptr};
   GPIOPin *reset_pin_{nullptr};
-  GPIOPin *d0_pin_{nullptr};
-  GPIOPin *d1_pin_{nullptr};
-  GPIOPin *d2_pin_{nullptr};
-  GPIOPin *d3_pin_{nullptr};
-  GPIOPin *d4_pin_{nullptr};
-  GPIOPin *d5_pin_{nullptr};
-  GPIOPin *d6_pin_{nullptr};
-  GPIOPin *d7_pin_{nullptr};
+  GPIOPin *wr_pin_{nullptr};
+  GPIOPin *rd_pin_{nullptr};
+  GPIOPin *data_pins_[8];
 };
 
 }  // namespace ili9341_parallel
