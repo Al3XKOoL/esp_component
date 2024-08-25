@@ -1,33 +1,32 @@
-#include "tft_e_spi_component.h"
+#include "tft_e_spi_display.h"
 
 namespace esphome {
-namespace tft_e_spi {
+namespace tft_espi {
 
-TFT_eSPIComponent::TFT_eSPIComponent() : tft_(TFT_eSPI()) {}
+TFT_eSPI_Display::TFT_eSPI_Display() : tft_(TFT_eSPI()) {}
 
-void TFT_eSPIComponent::setup() {
-  // Inicializa el display
+void TFT_eSPI_Display::setup() {
   tft_.begin();
   tft_.setRotation(rotation_);
   tft_.fillScreen(TFT_BLACK);
 }
 
-void TFT_eSPIComponent::update() {
+void TFT_eSPI_Display::update() {
   // Actualiza el display si es necesario
 }
 
-void TFT_eSPIComponent::fill_screen(uint16_t color) {
+void TFT_eSPI_Display::fill_screen(uint16_t color) {
   tft_.fillScreen(color);
 }
 
-void TFT_eSPIComponent::print(int x, int y, const char* text, int size, uint16_t color) {
+void TFT_eSPI_Display::print(int x, int y, const char* text, int size, uint16_t color) {
   tft_.setTextSize(size);
   tft_.setTextColor(color);
   tft_.setCursor(x, y);
   tft_.print(text);
 }
 
-void TFT_eSPIComponent::set_rotation(int rotation) {
+void TFT_eSPI_Display::set_rotation(int rotation) {
   rotation_ = rotation;
   tft_.setRotation(rotation_);
 }
