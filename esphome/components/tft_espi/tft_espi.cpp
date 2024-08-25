@@ -8,12 +8,9 @@ namespace tft_espi {
 static const char *TAG = "tft_espi";
 
 TFTeSPIDisplay::TFTeSPIDisplay() : buffer_(nullptr) {}
-
 TFTeSPIDisplay::~TFTeSPIDisplay() {
-  if (this->buffer_ != nullptr) {
-    delete[] this->buffer_;
-    this->buffer_ = nullptr;
-  }
+  delete this->tft_;
+  delete[] this->buffer_;
 }
 
 void TFTeSPIDisplay::setup() {
@@ -21,24 +18,15 @@ void TFTeSPIDisplay::setup() {
   this->tft_ = new TFT_eSPI();
   this->tft_->init();
   this->tft_->fillScreen(TFT_BLACK);
-  
-  // Inicializa el buffer
-  size_t buffer_size = this->get_width_internal() * this->get_height_internal() * 3;
-  this->buffer_ = new uint8_t[buffer_size];
-  memset(this->buffer_, 0, buffer_size);  // Inicializa el buffer con ceros
 }
 
-Color TFTeSPIDisplay::get_pixel_color(int x, int y) {
-  if (this->buffer_ == nullptr) {
-    ESP_LOGE(TAG, "Buffer not initialized");
-    return Color(0, 0, 0);
-  }
-  if (x < 0 || x >= this->get_width_internal() || y < 0 || y >= this->get_height_internal()) {
-    ESP_LOGE(TAG, "Coordinates out of bounds");
-    return Color(0, 0, 0);
-  }
-  int index = (y * this->get_width_internal() + x) * 3;
-  return Color(this->buffer_[index], this->buffer_[index + 1], this->buffer_[index + 2]);
+void TFTeSPIDisplay::dump_config() {
+  ESP_LOGCONFIG(TAG, "TFT eSPI Display:");
+  LOG_UPDATE_INTERVAL(this);
+}
+
+float TFTeSPIDisplay::get_setup_priority() const {
+  return setup_priority::PROCESSOR;
 }
 
 void TFTeSPIDisplay::display() {
@@ -54,9 +42,8 @@ void TFTeSPIDisplay::display() {
   this->tft_->endWrite();
 }
 
-void TFTeSPIDisplay::update() {
-  this->do_update_();
-  this->display();
+void TFTeSPIDisplay::set_brightness(float brightness) {
+  ESP_LOGW(TAG, "Brightness control not implemented for this display");
 }
 
 void TFTeSPIDisplay::fill(Color color) {
@@ -70,8 +57,19 @@ void TFTeSPIDisplay::draw_absolute_pixel_internal(int x, int y, Color color) {
 int TFTeSPIDisplay::get_width_internal() { return this->tft_->width(); }
 int TFTeSPIDisplay::get_height_internal() { return this->tft_->height(); }
 
-void TFTeSPIDisplay::set_brightness(float brightness) {
-  ESP_LOGW(TAG, "Brightness control not implemented for this display");
+Color TFTeSPIDisplay::get_pixel_color(int x, int y) {
+  // Implementa la función aquí
+  return Color(0, 0, 0); // Un valor por defecto, implementa la lógica real
+}
+
+esphome::display::DisplayType TFTeSPIDisplay::get_display_type() {
+  // Implementa esta función si es necesario
+  return esphome::display::DisplayType::UNKNOWN;
+}
+
+void TFTeSPIDisplay::update() {
+  this->do_update_();
+  this->display();
 }
 
 }  // namespace tft_espi
