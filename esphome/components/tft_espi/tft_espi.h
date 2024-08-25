@@ -20,6 +20,7 @@ class TFTeSPIDisplay : public display::DisplayBuffer {
   int get_width_internal() override;
   int get_height_internal() override;
   Color get_pixel_color(int x, int y);  // Si es necesario
+  esphome::display::DisplayType get_display_type() override;  // Implementa este método
 
  protected:
   void update();  // Implementa este método si es necesario
