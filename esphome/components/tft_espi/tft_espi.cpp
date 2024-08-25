@@ -19,7 +19,7 @@ void TFTeSPIDisplay::display() {
   for (int y = 0; y < this->get_height_internal(); y++) {
     for (int x = 0; x < this->get_width_internal(); x++) {
       Color TFTeSPIDisplay::get_pixel_color(int x, int y) {
-      return this->get_buffer()[y * this->get_width_internal() + x];
+      return this->get_pixel_(x, y);
     }
   }
   this->tft_->endWrite();
