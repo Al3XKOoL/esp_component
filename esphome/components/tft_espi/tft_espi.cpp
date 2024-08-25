@@ -25,6 +25,11 @@ void TFTeSPIDisplay::display() {
   this->tft_->endWrite();
 }
 
+void TFTeSPIDisplay::update() {
+  this->do_update_();
+  this->display();
+}
+
 void TFTeSPIDisplay::fill(Color color) {
   this->tft_->fillScreen(display::ColorUtil::color_to_565(color));
 }
