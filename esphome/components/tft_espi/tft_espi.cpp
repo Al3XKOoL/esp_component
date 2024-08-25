@@ -12,10 +12,13 @@ void TFTeSPIDisplay::setup() {
   this->tft_ = new TFT_eSPI();
   this->tft_->init();
   this->tft_->setRotation(0);  // Ajusta según sea necesario
+  this->buffer_ = new uint8_t[this->get_width_internal() * this->get_height_internal() * 3];
 }
 
 Color TFTeSPIDisplay::get_pixel_color(int x, int y) {
-    return this->get_buffer()[y * this->get_width_internal() + x];
+    return Color(this->buffer_[(y * this->get_width_internal() + x) * 3],
+                 this->buffer_[(y * this->get_width_internal() + x) * 3 + 1],
+                 this->buffer_[(y * this->get_width_internal() + x) * 3 + 2]);
 }
 
 void TFTeSPIDisplay::display() {
