@@ -59,4 +59,4 @@ def to_code(config):
     if CONF_MODEL in config:
         cg.add(var.set_model(config[CONF_MODEL]))
     yield cg.register_component(var, config)
-    yield from display.build_display(var, config)
+    yield display.setup_display(var, config)
