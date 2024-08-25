@@ -49,14 +49,9 @@ int TFTeSPIDisplay::get_height_internal() {
   return tft_->height();
 }
 
-Color TFTeSPIDisplay::get_pixel_color(int x, int y) {
-  // Implementa si tu pantalla permite leer píxeles
-  return Color(0, 0, 0);  // Devuelve un color predeterminado
-}
-
 esphome::display::DisplayType TFTeSPIDisplay::get_display_type() {
   // Ajusta el tipo de display aquí
-  return esphome::display::DisplayType::UNKNOWN;  // Cambia esto si tienes un tipo específico
+  return esphome::display::DisplayType::TFT;  // Cambia esto si tienes un tipo específico
 }
 
 void TFTeSPIDisplay::update() {
