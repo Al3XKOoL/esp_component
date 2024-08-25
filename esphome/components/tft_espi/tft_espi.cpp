@@ -1,69 +1,74 @@
 #include "tft_espi.h"
-#include "esphome/core/log.h"
 
 namespace esphome {
 namespace tft_espi {
 
-static const char *TAG = "tft_espi";
+TFTeSPIDisplay::TFTeSPIDisplay() : buffer_(nullptr), tft_(nullptr) {}
 
-TFTeSPIDisplay::TFTeSPIDisplay() : buffer_(nullptr) {}
 TFTeSPIDisplay::~TFTeSPIDisplay() {
-  delete this->tft_;
-  delete[] this->buffer_;
+  if (buffer_) {
+    delete[] buffer_;
+  }
 }
 
 void TFTeSPIDisplay::setup() {
-  ESP_LOGCONFIG(TAG, "Setting up TFT eSPI Display...");
-  this->tft_ = new TFT_eSPI();
-  this->tft_->init();
-  this->tft_->fillScreen(TFT_BLACK);
+  // Configura el TFT aquí
+  tft_ = new TFT_eSPI();  // O cualquier configuración adicional
+  tft_->init();
 }
 
 void TFTeSPIDisplay::dump_config() {
-  ESP_LOGCONFIG(TAG, "TFT eSPI Display:");
-  LOG_UPDATE_INTERVAL(this);
+  // Imprime la configuración
+  ESP_LOGCONFIG("TFTeSPIDisplay", "TFTeSPIDisplay configuration:");
 }
 
 float TFTeSPIDisplay::get_setup_priority() const {
-  return setup_priority::PROCESSOR;
+  return esphome::setup_priority::HARDWARE;
 }
 
 void TFTeSPIDisplay::display() {
-  if (this->auto_clear_) {
-    this->tft_->fillScreen(TFT_BLACK);
-  }
-  this->tft_->startWrite();
-  for (int y = 0; y < this->get_height_internal(); y++) {
-    for (int x = 0; x < this->get_width_internal(); x++) {
-      this->tft_->drawPixel(x, y, display::ColorUtil::color_to_565(this->get_pixel_color(x, y)));
+  // Código para actualizar la pantalla
+  // Ejemplo:
+  for (int x = 0; x < get_width_internal(); ++x) {
+    for (int y = 0; y < get_height_internal(); ++y) {
+      tft_->drawPixel(x, y, display::ColorUtil::color_to_565(this->get_pixel_color(x, y)));
     }
   }
-  this->tft_->endWrite();
 }
 
 void TFTeSPIDisplay::set_brightness(float brightness) {
-  ESP_LOGW(TAG, "Brightness control not implemented for this display");
+  // Código para ajustar el brillo
+  // Esto puede depender del hardware específico
 }
 
 void TFTeSPIDisplay::fill(Color color) {
-  this->tft_->fillScreen(display::ColorUtil::color_to_565(color));
+  tft_->fillScreen(display::ColorUtil::color_to_565(color));
 }
 
 void TFTeSPIDisplay::draw_absolute_pixel_internal(int x, int y, Color color) {
-  this->tft_->drawPixel(x, y, display::ColorUtil::color_to_565(color));
+  tft_->drawPixel(x, y, display::ColorUtil::color_to_565(color));
 }
 
-int TFTeSPIDisplay::get_width_internal() { return this->tft_->width(); }
-int TFTeSPIDisplay::get_height_internal() { return this->tft_->height(); }
+int TFTeSPIDisplay::get_width_internal() {
+  return tft_->width();
+}
+
+int TFTeSPIDisplay::get_height_internal() {
+  return tft_->height();
+}
 
 Color TFTeSPIDisplay::get_pixel_color(int x, int y) {
-  // Implementa la función aquí si es necesario
-  return Color(0, 0, 0); // Un valor por defecto
+  // Si tu pantalla permite leer píxeles, implementa esto aquí
+  return Color(0, 0, 0);  // Retorna un color por defecto
+}
+
+esphome::display::DisplayType TFTeSPIDisplay::get_display_type() {
+  // Ajusta el tipo de display aquí
+  return esphome::display::DisplayType::TFT;  // O el tipo adecuado según la configuración
 }
 
 void TFTeSPIDisplay::update() {
-  this->do_update_();
-  this->display();
+  // Implementa el código de actualización si es necesario
 }
 
 }  // namespace tft_espi
