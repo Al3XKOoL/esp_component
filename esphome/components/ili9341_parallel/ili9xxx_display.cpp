@@ -134,7 +134,7 @@ void ILI9XXXDisplay::display_() {
       }
       if (this->is_18bitdisplay_) {
         transfer_buffer[idx++] = (uint8_t) ((color_val & 0xF800) >> 8);  
-        transfer_buffer[idx++] = (uint8_t) ((color_val & 0x7E0) >> 3);   
+        transfer_buffer[idx++] = (uint8_t) ((color_val & 0x07E0) >> 3);   
         transfer_buffer[idx++] = (uint8_t) (color_val << 3);             
       } else {
         put16_be(transfer_buffer + idx, color_val);
