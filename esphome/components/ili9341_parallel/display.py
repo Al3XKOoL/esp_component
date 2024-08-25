@@ -18,7 +18,7 @@ CONF_CS_PIN = 'cs_pin'
 
 CONFIG_SCHEMA = display.BASIC_DISPLAY_SCHEMA.extend({
     cv.GenerateID(): cv.declare_id(ILI9341ParallelDisplay),
-    cv.Required(CONF_DATA_PINS): cv.All(cv.ensure_list(pins.gpio_output_pin_schema), cv.Length(exactly=8)),
+    cv.Required(CONF_DATA_PINS): cv.All(cv.ensure_list(pins.gpio_output_pin_schema), cv.Length(min=8, max=8
     cv.Required(CONF_RESET_PIN): pins.gpio_output_pin_schema,
     cv.Required(CONF_DC_PIN): pins.gpio_output_pin_schema,
     cv.Required(CONF_WR_PIN): pins.gpio_output_pin_schema,
