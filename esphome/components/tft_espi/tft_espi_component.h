@@ -7,9 +7,9 @@
 namespace esphome {
 namespace tft_espi {
 
-class TFT_eSPIComponent : public esphome::Component, public esphome::display::DisplayBuffer {
+class TFT_eSPI_Display : public esphome::Component, public esphome::display::DisplayBuffer {
  public:
-  TFT_eSPIComponent();
+  TFT_eSPI_Display();
 
   void setup() override;
   void update() override;
@@ -20,7 +20,7 @@ class TFT_eSPIComponent : public esphome::Component, public esphome::display::Di
   void set_rotation(int rotation);
 
  private:
-  TFT_eSPI tft_;  // El objeto TFT_eSPI
+  TFT_eSPI tft_;
   int rotation_ = 0;
 };
 
