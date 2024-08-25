@@ -25,8 +25,7 @@ void TFTeSPIDisplay::display() {
   this->tft_->startWrite();
   for (int y = 0; y < this->get_height_internal(); y++) {
     for (int x = 0; x < this->get_width_internal(); x++) {
-      Color TFTeSPIDisplay::get_pixel_color(int x, int y) {
-      return this->get_pixel_(x, y);
+      this->tft_->drawPixel(x, y, display::ColorUtil::color_to_565(this->get_pixel_color(x, y)));
     }
   }
   this->tft_->endWrite();
