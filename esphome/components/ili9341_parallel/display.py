@@ -22,7 +22,7 @@ CONFIG_SCHEMA = cv.Schema({
 def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
 
-    # Asegúrate de que las expresiones son válidas
+    # Se asume que gpio_pin_expression no es asíncrono en esta versión
     cs_pin = cg.gpio_pin_expression(config['cs_pin'])
     dc_pin = cg.gpio_pin_expression(config['dc_pin'])
     reset_pin = cg.gpio_pin_expression(config['reset_pin'])
@@ -43,4 +43,3 @@ def to_code(config):
     # Registrar el componente y el display
     yield cg.register_component(var, config)
     yield display.register_display(var, config)
-
