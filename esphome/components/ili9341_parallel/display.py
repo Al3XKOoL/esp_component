@@ -1,6 +1,6 @@
 import esphome.codegen as cg
-from esphome import config_validation as cv
-from esphome.components import display, gpio
+import esphome.config_validation as cv
+from esphome.components import display
 from esphome.const import CONF_ID, CONF_PIN
 
 # Define el namespace para el nuevo controlador
@@ -10,12 +10,12 @@ ILI9341ParallelDisplay = ili9341_parallel_ns.class_('ILI9341ParallelDisplay', di
 # Configuración del esquema
 CONFIG_SCHEMA = cv.Schema({
     cv.GenerateID(): cv.declare_id(ILI9341ParallelDisplay),
-    cv.Required('cs_pin'): cv.pin,
-    cv.Required('dc_pin'): cv.pin,
-    cv.Required('reset_pin'): cv.pin,
-    cv.Required('wr_pin'): cv.pin,
-    cv.Required('rd_pin'): cv.pin,
-    cv.Required('data_pins'): cv.All(cv.ensure_list(cv.pin)),
+    cv.Required('cs_pin'): cv.use('pin_schema'),
+    cv.Required('dc_pin'): cv.use('pin_schema'),
+    cv.Required('reset_pin'): cv.use('pin_schema'),
+    cv.Required('wr_pin'): cv.use('pin_schema'),
+    cv.Required('rd_pin'): cv.use('pin_schema'),
+    cv.Required('data_pins'): cv.All(cv.ensure_list(cv.use('pin_schema'))),
 }).extend(cv.COMPONENT_SCHEMA)
 
 async def to_code(config):
