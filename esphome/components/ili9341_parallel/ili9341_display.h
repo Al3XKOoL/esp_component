@@ -18,7 +18,7 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
   void set_dc_pin(GPIOPin *dc_pin) { dc_pin_ = dc_pin; }
   void set_wr_pin(GPIOPin *wr_pin) { wr_pin_ = wr_pin; }
   void set_rd_pin(GPIOPin *rd_pin) { rd_pin_ = rd_pin; }
-  void set_cs_pin(GPIOPin *cs_pin) { cs_pin_ = dc_pin; }
+  void set_cs_pin(GPIOPin *cs_pin) { cs_pin_ = cs_pin; }
   void set_reset_pin(GPIOPin *reset_pin) { reset_pin_ = reset_pin; }
   void set_data_pins(GPIOPin *d0, GPIOPin *d1, GPIOPin *d2, GPIOPin *d3,
                      GPIOPin *d4, GPIOPin *d5, GPIOPin *d6, GPIOPin *d7) {
