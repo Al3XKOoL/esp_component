@@ -5,9 +5,10 @@ from esphome import config_validation as cv
 from esphome.components import display
 from esphome.const import CONF_ID, CONF_UPDATE_INTERVAL, CONF_MODEL
 
-DEPENDENCIES = ['spi']
+# Eliminar la dependencia de SPI
+# DEPENDENCIES = ['spi']
 
-# Configuración del componente
+# Definición de pines específicos para la comunicación paralela
 CONF_CS_PIN = "cs_pin"
 CONF_DC_PIN = "dc_pin"
 CONF_RESET_PIN = "reset_pin"
