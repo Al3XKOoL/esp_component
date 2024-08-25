@@ -11,8 +11,7 @@ void TFTeSPIDisplay::setup() {
   ESP_LOGCONFIG(TAG, "Setting up TFT eSPI Display...");
   this->tft_ = new TFT_eSPI();
   this->tft_->init();
-  this->tft_->setRotation(0);
-  this->buffer_ = new uint8_t[this->get_width_internal() * this->get_height_internal() * 3];
+  this->tft_->fillScreen(TFT_BLACK);
 }
 
 Color TFTeSPIDisplay::get_pixel_color(int x, int y) {
