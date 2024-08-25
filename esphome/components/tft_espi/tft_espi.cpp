@@ -61,6 +61,11 @@ Color TFTeSPIDisplay::get_pixel_color(int x, int y) {
   return Color(0, 0, 0); // Un valor por defecto
 }
 
+esphome::display::DisplayType TFTeSPIDisplay::get_display_type() {
+  // Ajusta esto según los valores válidos en display.h
+  return esphome::display::DisplayType::UNKNOWN;
+}
+
 void TFTeSPIDisplay::update() {
   this->do_update_();
   this->display();
