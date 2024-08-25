@@ -3,14 +3,13 @@
 #include "esphome/core/hal.h"
 #include "esphome/core/helpers.h"
 #include "esphome/core/log.h"
-#include "ili9xxx_defines.h"  // Asegúrate de que este archivo contiene las constantes necesarias
+#include "ili9xxx_defines.h"
 
 namespace esphome {
 namespace ili9xxx {
 
-static const uint16_t MAX_BLOCK_SIZE = 4092;  // Max size of continuous transfer
+static const uint16_t MAX_BLOCK_SIZE = 4092;
 
-// Store a 16-bit value in a buffer, big endian
 static inline void put16_be(uint8_t *buf, uint16_t value) {
   buf[0] = value >> 8;
   buf[1] = value;
@@ -69,16 +68,16 @@ void ILI9XXXDisplay::setup() {
 }
 
 void ILI9XXXDisplay::alloc_buffer_() {
-  if (this->buffer_color_mode_ == display::BITS_16) {
+  if (this->buffer_color_mode_ == ILI9XXXColorMode::BITS_16) {
     this->init_internal_(this->get_buffer_length_() * 2);
     if (this->buffer_ != nullptr) {
       return;
     }
-    this->buffer_color_mode_ = display::BITS_8;
+    this->buffer_color_mode_ = ILI9XXXColorMode::BITS_8;
   }
   this->init_internal_(this->get_buffer_length_());
   if (this->buffer_ == nullptr) {
-    this->mark_failed();
+    this->status_set_warning();
   }
 }
 
@@ -105,10 +104,10 @@ void ILI9XXXDisplay::display_() {
   size_t h = this->y_high_ - this->y_low_ + 1;
 
   auto now = millis();
-  if (this->buffer_color_mode_ == display::BITS_16 && !this->is_18bitdisplay_) {
+  if (this->buffer_color_mode_ == ILI9XXXColorMode::BITS_16 && !this->is_18bitdisplay_) {
     ESP_LOGD(TAG, "Doing single write of %zu bytes", this->width_ * h * 2);
     set_addr_window_(0, this->y_low_, this->width_ - 1, this->y_high_);
-    this->write_array(this->buffer_ + this->y_low_ * this->width_ * 2, h * this->width_ * 2);
+    this->write_array_(this->buffer_ + this->y_low_ * this->width_ * 2, h * this->width_ * 2);
   } else {
     ESP_LOGD(TAG, "Doing multiple writes");
     uint8_t transfer_buffer[MAX_BLOCK_SIZE];
@@ -120,10 +119,10 @@ void ILI9XXXDisplay::display_() {
     while (rem-- != 0) {
       uint16_t color_val;
       switch (this->buffer_color_mode_) {
-        case display::BITS_8:
+        case ILI9XXXColorMode::BITS_8:
           color_val = display::ColorUtil::color_to_565(display::ColorUtil::rgb332_to_color(this->buffer_[pos++]));
           break;
-        case display::BITS_8_INDEXED:
+        case ILI9XXXColorMode::BITS_8_INDEXED:
           color_val = display::ColorUtil::color_to_565(
               display::ColorUtil::index8_to_color_palette888(this->buffer_[pos++], this->palette_));
           break;
@@ -141,7 +140,7 @@ void ILI9XXXDisplay::display_() {
         idx += 2;
       }
       if (idx == sizeof(transfer_buffer)) {
-        this->write_array(transfer_buffer, idx);
+        this->write_array_(transfer_buffer, idx);
         idx = 0;
         App.feed_wdt();
       }
@@ -151,7 +150,7 @@ void ILI9XXXDisplay::display_() {
       }
     }
     if (idx != 0) {
-      this->write_array(transfer_buffer, idx);
+      this->write_array_(transfer_buffer, idx);
     }
   }
   this->end_data_();
