@@ -3,9 +3,8 @@
 import esphome.codegen as cg
 from esphome import config_validation as cv
 from esphome.components import display
-from esphome.const import CONF_ID, CONF_UPDATE_INTERVAL, CONF_MODEL
+from esphome.const import CONF_ID
 
-# Definición de pines específicos para la comunicación paralela
 CONF_CS_PIN = "cs_pin"
 CONF_DC_PIN = "dc_pin"
 CONF_RESET_PIN = "reset_pin"
@@ -19,7 +18,7 @@ CONF_D6_PIN = "d6_pin"
 CONF_D7_PIN = "d7_pin"
 
 ili9341_parallel_ns = cg.esphome_ns.namespace('ili9341_parallel')
-ILI9341ParallelDisplay = ili9341_parallel_ns.class_('ILI9341ParallelDisplay', display.DisplayBuffer)
+ILI9341ParallelDisplay = ili9341_parallel_ns.class_('ILI9341ParallelDisplay', display.DisplayBuffer, cg.Component)
 
 CONFIG_SCHEMA = cv.Schema({
     cv.GenerateID(): cv.declare_id(ILI9341ParallelDisplay),
@@ -34,8 +33,6 @@ CONFIG_SCHEMA = cv.Schema({
     cv.Required(CONF_D5_PIN): cv.positive_int,
     cv.Required(CONF_D6_PIN): cv.positive_int,
     cv.Required(CONF_D7_PIN): cv.positive_int,
-    cv.Optional(CONF_UPDATE_INTERVAL, default="1s"): cv.positive_time_period_milliseconds,
-    cv.Optional(CONF_MODEL, default="ILI9341"): cv.string,
 }).extend(cv.COMPONENT_SCHEMA)
 
 def to_code(config):
@@ -51,10 +48,7 @@ def to_code(config):
     cg.add(var.set_d5_pin(config[CONF_D5_PIN]))
     cg.add(var.set_d6_pin(config[CONF_D6_PIN]))
     cg.add(var.set_d7_pin(config[CONF_D7_PIN]))
-    if CONF_UPDATE_INTERVAL in config:
-        cg.add(var.set_update_interval(config[CONF_UPDATE_INTERVAL]))
-    if CONF_MODEL in config:
-        cg.add(var.set_model(config[CONF_MODEL]))
-    # Registrar el componente y el display
+
+    # Register the display
     yield cg.register_component(var, config)
     yield display.register_display(var, config)
