@@ -13,10 +13,6 @@ class ILI9341ParallelDisplay : public Component, public display::DisplayBuffer {
     tft.setRotation(rotation_);
   }
 
-  void loop() override {
-    this->do_update_();
-  }
-
   void draw_absolute_pixel_internal(int x, int y, Color color) override {
     uint16_t c = color.to_rgb_565();
     tft.drawPixel(x, y, c);
