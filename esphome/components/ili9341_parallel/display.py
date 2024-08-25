@@ -2,40 +2,31 @@ import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome import pins
 from esphome.components import display
-from esphome.const import (
-    CONF_ID,
-    CONF_MODEL,
-    CONF_WIDTH,
-    CONF_HEIGHT,
-)
+from esphome.const import CONF_ID, CONF_MODEL, CONF_WIDTH, CONF_HEIGHT
 
 DEPENDENCIES = ["esp32"]
 
 ili9341_parallel_ns = cg.esphome_ns.namespace("ili9341_parallel")
 ILI9341ParallelDisplay = ili9341_parallel_ns.class_("ILI9341ParallelDisplay", cg.Component, display.DisplayBuffer)
 
-CONF_DC_PIN = "dc_pin"
-CONF_RESET_PIN = "reset_pin"
-CONF_DATA_PINS = "data_pins"
-CONF_WR_PIN = "wr_pin"
-CONF_RD_PIN = "rd_pin"
+# ... (resto de las definiciones de CONF_*)
 
-def validate_data_pins(value):
-    if len(value) != 8:
-        raise cv.Invalid("Exactly 8 data pins are required")
-    return value
-
-CONFIG_SCHEMA = display.BASIC_DISPLAY_SCHEMA.extend({
-    cv.GenerateID(): cv.declare_id(ILI9341ParallelDisplay),
-    cv.Required(CONF_MODEL): cv.string,
-    cv.Required(CONF_DC_PIN): pins.gpio_output_pin_schema,
-    cv.Required(CONF_RESET_PIN): pins.gpio_output_pin_schema,
-    cv.Required(CONF_DATA_PINS): cv.All(cv.ensure_list(pins.gpio_output_pin_schema), validate_data_pins),
-    cv.Required(CONF_WR_PIN): pins.gpio_output_pin_schema,
-    cv.Required(CONF_RD_PIN): pins.gpio_output_pin_schema,
-    cv.Optional(CONF_WIDTH, default=240): cv.int_,
-    cv.Optional(CONF_HEIGHT, default=320): cv.int_,
-}).extend(cv.COMPONENT_SCHEMA)
+CONFIG_SCHEMA = cv.All(
+    display.BASIC_DISPLAY_SCHEMA.extend(
+        {
+            cv.GenerateID(): cv.declare_id(ILI9341ParallelDisplay),
+            cv.Required(CONF_MODEL): cv.string,
+            cv.Required(CONF_DC_PIN): pins.gpio_output_pin_schema,
+            cv.Required(CONF_RESET_PIN): pins.gpio_output_pin_schema,
+            cv.Required(CONF_DATA_PINS): cv.All(cv.ensure_list(pins.gpio_output_pin_schema), validate_data_pins),
+            cv.Required(CONF_WR_PIN): pins.gpio_output_pin_schema,
+            cv.Required(CONF_RD_PIN): pins.gpio_output_pin_schema,
+            cv.Optional(CONF_WIDTH, default=240): cv.int_,
+            cv.Optional(CONF_HEIGHT, default=320): cv.int_,
+        }
+    ).extend(cv.COMPONENT_SCHEMA),
+    cv.only_with_arduino,
+)
 
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
