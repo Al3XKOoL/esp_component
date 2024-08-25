@@ -66,7 +66,7 @@ COLOR_PALETTE = cv.one_of("NONE", "GRAYSCALE", "IMAGE_ADAPTIVE")
 
 CONF_LED_PIN = "led_pin"
 CONF_COLOR_PALETTE_IMAGES = "color_palette_images"
-CONF_INVERT_DISPLAY = "invert_display"
+CONF_INVERT_DISPLAY = "invert_display"  # Esta propiedad es obsoleta y debe ser reemplazada
 CONF_PIXEL_MODE = "pixel_mode"
 CONF_INIT_SEQUENCE = "init_sequence"
 CONF_DATA_PINS = "data_pins"
