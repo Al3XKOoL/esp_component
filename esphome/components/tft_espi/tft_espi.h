@@ -15,14 +15,13 @@ class TFTeSPIDisplay : public display::DisplayBuffer {
   void setup() override;
   void dump_config() override;
   float get_setup_priority() const override;
-  void fill(Color color) override;
-  void draw_absolute_pixel_internal(int x, int y, Color color) override;
-  int get_width_internal() override;
-  int get_height_internal() override;
-  esphome::display::DisplayType get_display_type() override;
+  void fill(Color color); // No necesita override
+  void draw_absolute_pixel_internal(int x, int y, Color color); // No necesita override
+  int get_width_internal(); // No necesita override
+  int get_height_internal(); // No necesita override
 
  protected:
-  void update() override;
+  void update(); // Implementa este método si es necesario
 
  private:
   TFT_eSPI *tft_;
