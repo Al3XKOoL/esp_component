@@ -1,5 +1,6 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
+import esphome.components.tft_espi as tft_espi
 from esphome.components import display
 from esphome.const import CONF_ID, CONF_LAMBDA, CONF_ROTATION, CONF_INVERT
 
