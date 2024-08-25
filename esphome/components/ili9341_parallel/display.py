@@ -112,6 +112,13 @@ def _validate(config):
 
     return config
 
+# Función para validar los valores de rotación
+def validate_rotation(value):
+    """ Validates the rotation value """
+    if value not in [0, 90, 180, 270]:
+        raise cv.Invalid(value)
+    return value
+
 CONFIG_SCHEMA = cv.All(
     font.validate_pillow_installed,
     display.FULL_DISPLAY_SCHEMA.extend(
