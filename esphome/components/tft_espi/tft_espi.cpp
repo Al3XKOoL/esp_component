@@ -18,7 +18,7 @@ void TFTeSPIDisplay::display() {
   this->tft_->startWrite();
   for (int y = 0; y < this->get_height_internal(); y++) {
     for (int x = 0; x < this->get_width_internal(); x++) {
-      Color color = this->get_pixel_color(x, y);  // Cambiado de get_pixel_ a get_pixel_color
+      Color color = this->get_pixel_color(x, y);
       this->draw_absolute_pixel_internal(x, y, color);
     }
   }
