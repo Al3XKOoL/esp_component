@@ -2,27 +2,32 @@
 
 #include "esphome/core/component.h"
 #include "TFT_eSPI.h"
-#include "esphome/components/display/display_buffer.h"
 
-namespace esphome {
-namespace tft_espi {
+// Asegúrate de ajustar el tamaño del display y otros parámetros aquí
+#define TFT_WIDTH  240
+#define TFT_HEIGHT 320
 
-class TFT_eSPI_Display : public esphome::Component, public esphome::display::DisplayBuffer {
+class TFT_ESPIComponent : public esphome::Component {
  public:
-  TFT_eSPI_Display();
+  TFT_ESPIComponent() : tft_() {}
 
-  void setup() override;
-  void update() override;
+  void setup() override {
+    // Inicializa la pantalla TFT
+    tft_.init();
+    tft_.setRotation(0);  // Ajusta la rotación según tu pantalla
+    tft_.fillScreen(TFT_BLACK);  // Limpia la pantalla con color negro
+  }
 
-  void fill_screen(uint16_t color);
-  void print(int x, int y, const char* text, int size, uint16_t color);
+  void loop() override {
+    // Llama a tus actualizaciones de pantalla aquí si es necesario
+  }
 
-  void set_rotation(int rotation);
+  void draw_text(int16_t x, int16_t y, const String &text, uint16_t color) {
+    tft_.setTextColor(color);
+    tft_.setCursor(x, y);
+    tft_.print(text);
+  }
 
  private:
   TFT_eSPI tft_;
-  int rotation_ = 0;
 };
-
-}  // namespace tft_espi
-}  // namespace esphome
