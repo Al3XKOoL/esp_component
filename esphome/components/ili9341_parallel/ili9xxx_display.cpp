@@ -183,7 +183,7 @@ void ILI9XXXDisplay::draw_pixels_at(int x_start, int y_start, int w, int h, cons
         this->write_array_(pixel, 2);
         ptr += 2;
       } else {
-        uint16_t color = display::ColorUtil::color_to_565(display::ColorUtil::rgb888_to_color(ptr[0], ptr[1], ptr[2]));
+        uint16_t color = display::ColorUtil::color_to_565(display::ColorUtil::rgb_to_color(ptr[0], ptr[1], ptr[2]));
         pixel[0] = color >> 8;
         pixel[1] = color;
         this->write_array_(pixel, 2);
