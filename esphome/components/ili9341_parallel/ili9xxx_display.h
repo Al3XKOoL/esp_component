@@ -1,18 +1,18 @@
 #pragma once
 
-#include "esphome/core/hal.h"  // Incluido para GPIOPin
+#include "esphome/core/hal.h"
 #include "esphome/components/display/display_buffer.h"
 #include "esphome/components/display/display_color_utils.h"
 #include "ili9xxx_defines.h"
 #include "ili9xxx_init.h"
-#include <array>  // Incluido para std::array
-#include <vector>  // Incluido para std::vector
+#include <array>
+#include <vector>
 
 namespace esphome {
 namespace ili9xxx {
 
 static const char *const TAG = "ili9xxx";
-const size_t ILI9XXX_TRANSFER_BUFFER_SIZE = 126;  // Asegúrate de que este tamaño sea divisible por 6
+const size_t ILI9XXX_TRANSFER_BUFFER_SIZE = 126;
 
 enum ILI9XXXColorMode {
   BITS_8 = 0x08,
@@ -30,7 +30,7 @@ enum ILI9XXXInterfaceMode {
   PARALLEL_8BIT_MODE,
 };
 
-class ILI9XXXDisplay : public display::DisplayBuffer, public Component {
+class ILI9XXXDisplay : public display::DisplayBuffer {
  public:
   ILI9XXXDisplay() = default;
   ILI9XXXDisplay(const uint8_t *init_sequence, int16_t width, int16_t height, bool invert_colors)
@@ -63,10 +63,11 @@ class ILI9XXXDisplay : public display::DisplayBuffer, public Component {
   void set_rd_pin(GPIOPin *rd_pin) { rd_pin_ = rd_pin; }
   void set_data_pins(const std::array<GPIOPin*, 8> &data_pins) { data_pins_ = data_pins; }
 
+  void setup() override;
+  void dump_config() override;
+  float get_setup_priority() const override { return setup_priority::PROCESSOR; }
   void update() override;
   void fill(Color color) override;
-  void dump_config() override;
-  void setup() override;
   display::DisplayType get_display_type() override { return display::DisplayType::DISPLAY_TYPE_COLOR; }
   void draw_pixels_at(int x_start, int y_start, int w, int h, const uint8_t *ptr, display::ColorOrder order,
                       display::ColorBitness bitness, bool big_endian, int x_offset, int y_offset, int x_pad) override;
@@ -75,7 +76,7 @@ class ILI9XXXDisplay : public display::DisplayBuffer, public Component {
   inline bool check_buffer_() {
     if (buffer_ == nullptr) {
       alloc_buffer_();
-      return !Component::is_failed();
+      return !is_failed();
     }
     return true;
   }
@@ -90,8 +91,8 @@ class ILI9XXXDisplay : public display::DisplayBuffer, public Component {
 
   uint8_t const *init_sequence_;
   std::vector<uint8_t> extra_init_sequence_;
-  int16_t width_{0};   ///< Display width as modified by current rotation
-  int16_t height_{0};  ///< Display height as modified by current rotation
+  int16_t width_{0};
+  int16_t height_{0};
   int16_t offset_x_{0};
   int16_t offset_y_{0};
   uint16_t x_low_{0};
@@ -125,10 +126,13 @@ class ILI9XXXDisplay : public display::DisplayBuffer, public Component {
   bool need_update_ = false;
   bool is_18bitdisplay_ = false;
   bool pre_invertcolors_ = false;
+  bool is_parallel_{false};
   display::ColorOrder color_order_{display::COLOR_ORDER_BGR};
   bool swap_xy_ = false;
   bool mirror_x_ = false;
   bool mirror_y_ = false;
+
+  void write_array_(const uint8_t *data, size_t len);
 };
 
 // Clases derivadas para displays específicos
