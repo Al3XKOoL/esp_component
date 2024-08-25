@@ -49,6 +49,5 @@ def to_code(config):
     cg.add(var.set_d6_pin(config[CONF_D6_PIN]))
     cg.add(var.set_d7_pin(config[CONF_D7_PIN]))
 
-    # Register the display
     yield cg.register_component(var, config)
     yield display.register_display(var, config)
