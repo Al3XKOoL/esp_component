@@ -1,4 +1,4 @@
-#include "tft_espi_display.h"
+#include "tft_espi.h"
 #include "esphome/core/log.h"
 #include "esphome/core/application.h"
 
