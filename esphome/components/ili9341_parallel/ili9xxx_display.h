@@ -75,7 +75,7 @@ class ILI9XXXDisplay : public display::DisplayBuffer, public Component {
   inline bool check_buffer_() {
     if (buffer_ == nullptr) {
       alloc_buffer_();
-      return !is_failed();
+      return !Component::is_failed();
     }
     return true;
   }
