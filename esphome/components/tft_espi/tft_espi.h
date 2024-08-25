@@ -19,7 +19,6 @@ class TFTeSPIDisplay : public display::DisplayBuffer {
   void draw_absolute_pixel_internal(int x, int y, Color color) override;
   int get_width_internal() override;
   int get_height_internal() override;
-  Color get_pixel_color(int x, int y) override;
   esphome::display::DisplayType get_display_type() override;
 
  protected:
