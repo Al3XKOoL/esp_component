@@ -40,5 +40,5 @@ async def to_code(config):
     cg.add(var.set_data_pins(*data_pins))
 
     # Registrar el componente y el display
-    await cg.register_component(var, config)
+    await cg.register_component(var, config)  # Asegúrate de que esto solo se llame una vez
     await display.register_display(var, config)
