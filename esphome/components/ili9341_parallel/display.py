@@ -1,6 +1,6 @@
 import esphome.codegen as cg
 from esphome import config_validation as cv
-from esphome.components import display
+from esphome.components import display, pins
 from esphome.const import CONF_ID
 
 # Define el namespace para el nuevo controlador
@@ -15,7 +15,7 @@ CONFIG_SCHEMA = cv.Schema({
     cv.Required('reset_pin'): pins.gpio_output_pin_schema,
     cv.Required('wr_pin'): pins.gpio_output_pin_schema,
     cv.Required('rd_pin'): pins.gpio_output_pin_schema,
-    cv.Required('data_pins'): cv.All([pins.gpio_output_pin_schema], lambda value: value if len(value) == 8 else cv.Invalid("Need 8 data pins")),
+    cv.Required('data_pins'): cv.All(cv.ensure_list(cv.All(cv.declare_id(pins.gpio_pin_schema)))),
 }).extend(cv.COMPONENT_SCHEMA)
 
 async def to_code(config):
