@@ -13,7 +13,9 @@ class TFTeSPIDisplay : public display::DisplayBuffer {
   void display();
   void update() override;
   void fill(Color color) override;
-  void draw_pixel_at(int x, int y, Color color) override;
+  void draw_absolute_pixel_internal(int x, int y, Color color) override;
+  int get_width_internal() override;
+  int get_height_internal() override;
   void set_brightness(float brightness);
 
   float get_setup_priority() const override { return setup_priority::PROCESSOR; }
