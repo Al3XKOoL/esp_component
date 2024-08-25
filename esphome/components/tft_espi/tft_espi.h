@@ -25,7 +25,8 @@ class TFTeSPIDisplay : public display::DisplayBuffer {
   display::DisplayType get_display_type() override { return display::DisplayType::DISPLAY_TYPE_COLOR; }
 
  protected:
-  TFT_eSPI *tft_{nullptr};
+    TFT_eSPI *tft_{nullptr};
+    uint8_t *buffer_{nullptr};  // Asegúrate de que esto esté declarado
 };
 
 }  // namespace tft_espi
