@@ -4,14 +4,14 @@
 #include "TFT_eSPI.h"
 
 namespace esphome {
-namespace tft_espi {
+namespace tft_e_spi {
 
-class TFT_eSPIComponent : public esphome::Component {
+class TFT_eSPIComponent : public esphome::Component, public esphome::display::DisplayBuffer {
  public:
   TFT_eSPIComponent();
 
   void setup() override;
-  void loop() override;
+  void update() override;
 
   void fill_screen(uint16_t color);
   void print(int x, int y, const char* text, int size, uint16_t color);
@@ -23,5 +23,5 @@ class TFT_eSPIComponent : public esphome::Component {
   int rotation_ = 0;
 };
 
-}  // namespace tft_espi
+}  // namespace tft_e_spi
 }  // namespace esphome
