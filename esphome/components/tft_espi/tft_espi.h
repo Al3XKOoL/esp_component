@@ -20,8 +20,8 @@ class TFTeSPIDisplay : public display::DisplayBuffer {
   int get_width_internal(); 
   int get_height_internal(); 
 
-  // Implementación del método puro virtual
-  esphome::display::DisplayType get_display_type() override; 
+  // Implementación del método de tipo de display
+  esphome::display::DisplayType get_display_type() override;
 
  protected:
   void update(); 
