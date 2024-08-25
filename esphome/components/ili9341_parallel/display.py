@@ -56,5 +56,4 @@ def to_code(config):
     if CONF_MODEL in config:
         cg.add(var.set_model(config[CONF_MODEL]))
     yield cg.register_component(var, config)
-    # Cambiar a display.setup en lugar de display.setup_display
-    yield display.setup(var, config)
+    yield display.register_display(var, config)
