@@ -7,7 +7,7 @@ from esphome import pins
 DEPENDENCIES = ['esp32']
 
 ili9341_parallel_ns = cg.esphome_ns.namespace('ili9341_parallel')
-ILI9341ParallelDisplay = ili9341_parallel_ns.class_('ILI9341ParallelDisplay', display.DisplayBuffer, cg.PollingComponent)
+ILI9341ParallelDisplay = ili9341_parallel_ns.class_('ILI9341ParallelDisplay', display.DisplayBuffer, cg.Component)
 
 CONF_DATA_PINS = 'data_pins'
 CONF_RESET_PIN = 'reset_pin'
@@ -24,12 +24,12 @@ CONFIG_SCHEMA = display.BASIC_DISPLAY_SCHEMA.extend({
     cv.Required(CONF_WR_PIN): pins.gpio_output_pin_schema,
     cv.Required(CONF_RD_PIN): pins.gpio_output_pin_schema,
     cv.Required(CONF_CS_PIN): pins.gpio_output_pin_schema,
-}).extend(cv.polling_component_schema('1s'))
+}).extend(cv.COMPONENT_SCHEMA)
 
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
-    await display.register_display(var, config)
     await cg.register_component(var, config)
+    await display.register_display(var, config)
 
     data_pins = []
     for pin in config[CONF_DATA_PINS]:
