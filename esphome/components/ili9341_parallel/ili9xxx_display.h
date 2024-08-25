@@ -1,9 +1,11 @@
 #pragma once
 
+#include "esphome/core/hal.h"  // Incluido para GPIOPin
 #include "esphome/components/display/display_buffer.h"
 #include "esphome/components/display/display_color_utils.h"
 #include "ili9xxx_defines.h"
 #include "ili9xxx_init.h"
+#include <array>  // Incluido para std::array
 
 namespace esphome {
 namespace ili9xxx {
