@@ -166,43 +166,31 @@ void ILI9XXXDisplay::draw_pixels_at(int x_start, int y_start, int w, int h, cons
                                     int x_offset, int y_offset, int x_pad) {
   if (w <= 0 || h <= 0)
     return;
-if (bitness == ILI9XXXColorMode::BITS_8 || order != this->color_order_ ||
-    (x_offset != 0 || y_offset != 0 || x_pad != 0)) {
-  Component::mark_failed();
-  return;
-}
-  if (x_start < 0 || y_start < 0 || x_start >= this->width_ || y_start >= this->height_) {
-    ESP_LOGE(TAG, "draw_pixels_at out of bounds: %d,%d w:%d h:%d", x_start, y_start, w, h);
-    this->mark_failed();
+  if (bitness == ILI9XXXColorMode::BITS_8 || order != this->color_order_ ||
+      (x_offset != 0 || y_offset != 0 || x_pad != 0)) {
+    this->status_set_warning();
     return;
   }
-  if (x_start + w > this->width_)
-    w = this->width_ - x_start;
-  if (y_start + h > this->height_)
-    h = this->height_ - y_start;
-  if (w <= 0 || h <= 0)
-    return;
-  this->start_data_();
-  this->set_addr_window_(x_start, y_start, x_start + w - 1, y_start + h - 1);
-  size_t idx = 0;
+
+  set_addr_window_(x_start, y_start, x_start + w - 1, y_start + h - 1);
+
   uint8_t pixel[2];
-  for (int y = y_start; y < y_start + h; y++) {
-    for (int x = x_start; x < x_start + w; x++) {
-      if (bitness == display::BITS_16) {
-        pixel[0] = ptr[idx++];
-        pixel[1] = ptr[idx++];
-        this->write_array(pixel, 2);
+  for (int y = 0; y < h; y++) {
+    for (int x = 0; x < w; x++) {
+      if (bitness == ILI9XXXColorMode::BITS_16) {
+        pixel[0] = ptr[0];
+        pixel[1] = ptr[1];
+        this->write_array_(pixel, 2);
+        ptr += 2;
       } else {
-        uint8_t color = ptr[idx++];
-        uint16_t color_val = display::ColorUtil::color_to_565(
-            display::ColorUtil::index8_to_color_palette888(color, this->palette_));
-        pixel[0] = color_val >> 8;
-        pixel[1] = color_val;
-        this->write_array(pixel, 2);
+        uint16_t color = display::ColorUtil::color_to_565(display::ColorUtil::rgb888_to_color(ptr[0], ptr[1], ptr[2]));
+        pixel[0] = color >> 8;
+        pixel[1] = color;
+        this->write_array_(pixel, 2);
+        ptr += 3;
       }
     }
   }
-  this->end_data_();
 }
 
 }  // namespace ili9xxx
