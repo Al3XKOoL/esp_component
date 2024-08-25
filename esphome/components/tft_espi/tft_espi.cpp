@@ -7,15 +7,15 @@ namespace tft_espi {
 
 static const char *TAG = "tft_espi";
 
-Color TFTeSPIDisplay::get_pixel_color(int x, int y) {
-    return this->get_buffer()[y * this->get_width_internal() + x];
-}
-
 void TFTeSPIDisplay::setup() {
   ESP_LOGCONFIG(TAG, "Setting up TFT eSPI Display...");
   this->tft_ = new TFT_eSPI();
   this->tft_->init();
   this->tft_->setRotation(0);  // Ajusta según sea necesario
+}
+
+Color TFTeSPIDisplay::get_pixel_color(int x, int y) {
+    return this->get_buffer()[y * this->get_width_internal() + x];
 }
 
 void TFTeSPIDisplay::display() {
