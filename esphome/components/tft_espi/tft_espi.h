@@ -17,13 +17,12 @@ class TFTeSPIDisplay : public display::DisplayBuffer {
   int get_width_internal() override;
   int get_height_internal() override;
   void set_brightness(float brightness);
-
-  Color get_pixel_color(int x, int y) override;
-  display::DisplayType get_display_type() override {
-    return display::DisplayType::DISPLAY_TYPE_COLOR;
-  }
+  
+  // Cambia esta línea
+  Color get_pixel_color(int x, int y);  // Elimina 'override'
 
   float get_setup_priority() const override { return setup_priority::PROCESSOR; }
+  display::DisplayType get_display_type() override { return display::DisplayType::DISPLAY_TYPE_COLOR; }
 
  protected:
   TFT_eSPI *tft_{nullptr};
