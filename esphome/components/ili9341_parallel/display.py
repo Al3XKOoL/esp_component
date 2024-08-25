@@ -1,44 +1,91 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
+from esphome import pins
 from esphome.components import display
+from esphome.const import (
+    CONF_ID,
+    CONF_DC_PIN,
+    CONF_RESET_PIN,
+    CONF_DATA_PINS,
+    CONF_WR_PIN,
+    CONF_RD_PIN,
+    CONF_WIDTH,
+    CONF_HEIGHT,
+)
 
-# Define el namespace para el nuevo controlador
-ili9341_parallel_ns = cg.esphome_ns.namespace('ili9341_parallel')
-ILI9341ParallelDisplay = ili9341_parallel_ns.class_('ILI9341ParallelDisplay', display.DisplayBuffer, cg.Component)
+DEPENDENCIES = []
+AUTO_LOAD = ["psram"]
+CODEOWNERS = ["@your_github_username"]
 
-# Define un esquema para los pines usando la validación estándar
-CONFIG_SCHEMA = cv.Schema({
-    cv.Required('cs_pin'): cv.pin,
-    cv.Required('dc_pin'): cv.pin,
-    cv.Required('reset_pin'): cv.pin,
-    cv.Required('wr_pin'): cv.pin,
-    cv.Required('rd_pin'): cv.pin,
-    cv.Required('data_pins'): cv.All(cv.ensure_list(cv.pin)),  # Lista de pines
-})
+# Define the namespace and the main class for your component
+ili9341_parallel_ns = cg.esphome_ns.namespace("ili9341_parallel")
+ILI9341ParallelDisplay = ili9341_parallel_ns.class_("ILI9341ParallelDisplay", cg.Component, display.DisplayBuffer)
 
+# Define constants for your configuration keys
+CONF_MODEL = "model"
+
+def validate_data_pins(value):
+    if len(value) != 8:
+        raise cv.Invalid("Exactly 8 data pins are required")
+    return value
+
+def validate_model(value):
+    if value != "ili9341_parallel":
+        raise cv.Invalid("Only ili9341_parallel model is supported")
+    return value
+
+# Define the schema for the component configuration
+CONFIG_SCHEMA = display.FULL_DISPLAY_SCHEMA.extend({
+    cv.GenerateID(): cv.declare_id(ILI9341ParallelDisplay),
+    cv.Required(CONF_MODEL): validate_model,
+    cv.Required(CONF_DC_PIN): pins.gpio_output_pin_schema,
+    cv.Required(CONF_RESET_PIN): pins.gpio_output_pin_schema,
+    cv.Required(CONF_DATA_PINS): cv.All(cv.ensure_list(pins.gpio_output_pin_schema), validate_data_pins),
+    cv.Required(CONF_WR_PIN): pins.gpio_output_pin_schema,
+    cv.Required(CONF_RD_PIN): pins.gpio_output_pin_schema,
+    cv.Optional(CONF_WIDTH, default=240): cv.int_,
+    cv.Optional(CONF_HEIGHT, default=320): cv.int_,
+}).extend(cv.COMPONENT_SCHEMA)
+
+# Function to convert the configuration to code
 async def to_code(config):
-    var = cg.new_Pvariable(config[cv.CONF_ID])
-    # Agregar pines al componente
-    cg.add(var.set_cs_pin(config['cs_pin']))
-    cg.add(var.set_dc_pin(config['dc_pin']))
-    cg.add(var.set_reset_pin(config['reset_pin']))
-    cg.add(var.set_wr_pin(config['wr_pin']))
-    cg.add(var.set_rd_pin(config['rd_pin']))
-    data_pins = [await cg.gpio_pin_expression(pin) for pin in config['data_pins']]
-    cg.add(var.set_data_pins(data_pins))
+    var = cg.new_Pvariable(config[CONF_ID])
+    await cg.register_component(var, config)
     await display.register_display(var, config)
 
-    # Agregar los pines
-    cg.add(var.set_cs_pin(cs_pin))
-    cg.add(var.set_dc_pin(dc_pin))
-    cg.add(var.set_reset_pin(reset_pin))
+    # Set model and pins
+    cg.add(var.set_model_str(config[CONF_MODEL]))
+
+    dc = await cg.gpio_pin_expression(config[CONF_DC_PIN])
+    cg.add(var.set_dc_pin(dc))
+
+    reset = await cg.gpio_pin_expression(config[CONF_RESET_PIN])
+    cg.add(var.set_reset_pin(reset))
+
+    for i, pin in enumerate(config[CONF_DATA_PINS]):
+        data_pin = await cg.gpio_pin_expression(pin)
+        cg.add(var.set_data_pin(i, data_pin))
+
+    wr_pin = await cg.gpio_pin_expression(config[CONF_WR_PIN])
     cg.add(var.set_wr_pin(wr_pin))
+
+    rd_pin = await cg.gpio_pin_expression(config[CONF_RD_PIN])
     cg.add(var.set_rd_pin(rd_pin))
 
-    # Agregar los pines de datos
-    data_pins = [await cg.gpio_pin_expression(pin) for pin in config['data_pins']]
-    cg.add(var.set_data_pins(*data_pins))
+    # Set display dimensions
+    cg.add(var.set_dimensions(config[CONF_WIDTH], config[CONF_HEIGHT]))
 
-    # Registrar el componente y el display
-    await cg.register_component(var, config)  # Asegúrate de que esto solo se llame una vez
-    await display.register_display(var, config)
+    # Optional lambdas
+    if 'lambda' in config:
+        lambda_ = await cg.process_lambda(
+            config['lambda'], [(display.DisplayBufferRef, "it")], return_type=cg.void
+        )
+        cg.add(var.set_writer(lambda_))
+    
+    if 'pages' in config:
+        for page in config['pages']:
+            if 'lambda' in page:
+                lambda_ = await cg.process_lambda(
+                    page['lambda'], [(display.DisplayBufferRef, "it")], return_type=cg.void
+                )
+                cg.add(var.add_page_lambda(lambda_))
