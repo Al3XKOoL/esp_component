@@ -7,11 +7,25 @@ namespace tft_espi {
 
 static const char *TAG = "tft_espi";
 
+TFTeSPIDisplay::TFTeSPIDisplay() : buffer_(nullptr) {}
+
+TFTeSPIDisplay::~TFTeSPIDisplay() {
+  if (this->buffer_ != nullptr) {
+    delete[] this->buffer_;
+    this->buffer_ = nullptr;
+  }
+}
+
 void TFTeSPIDisplay::setup() {
   ESP_LOGCONFIG(TAG, "Setting up TFT eSPI Display...");
   this->tft_ = new TFT_eSPI();
   this->tft_->init();
   this->tft_->fillScreen(TFT_BLACK);
+  
+  // Inicializa el buffer
+  size_t buffer_size = this->get_width_internal() * this->get_height_internal() * 3;
+  this->buffer_ = new uint8_t[buffer_size];
+  memset(this->buffer_, 0, buffer_size);  // Inicializa el buffer con ceros
 }
 
 Color TFTeSPIDisplay::get_pixel_color(int x, int y) {
