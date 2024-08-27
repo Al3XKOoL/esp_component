@@ -10,8 +10,7 @@ ili9341_parallel_ns = cg.esphome_ns.namespace("ili9xxx")
 ILI9341ParallelDisplay = ili9341_parallel_ns.class_("ILI9341ParallelDisplay", display.Display)
 
 def validate_gpio_pin(value):
-    value = pins.gpio_pin_schema(value)
-    return value
+    return pins.internal_gpio_output_pin_schema(value)
 
 CONFIG_SCHEMA = display.FULL_DISPLAY_SCHEMA.extend({
     cv.GenerateID(): cv.declare_id(ILI9341ParallelDisplay),
@@ -29,17 +28,17 @@ async def to_code(config):
 
     data_pins = config["data_pins"]
     for i, pin in enumerate(data_pins):
-        cg.add(var.set_data_pin(i, pin))
+        cg.add(var.set_data_pin(i, await cg.gpio_pin_expression(pin)))
 
-    cg.add(var.set_wr_pin(config["wr_pin"]))
-    cg.add(var.set_rd_pin(config["rd_pin"]))
-    cg.add(var.set_dc_pin(config["dc_pin"]))
+    cg.add(var.set_wr_pin(await cg.gpio_pin_expression(config["wr_pin"])))
+    cg.add(var.set_rd_pin(await cg.gpio_pin_expression(config["rd_pin"])))
+    cg.add(var.set_dc_pin(await cg.gpio_pin_expression(config["dc_pin"])))
 
     if "reset_pin" in config:
-        cg.add(var.set_reset_pin(config["reset_pin"]))
+        cg.add(var.set_reset_pin(await cg.gpio_pin_expression(config["reset_pin"])))
 
     if "cs_pin" in config:
-        cg.add(var.set_cs_pin(config["cs_pin"]))
+        cg.add(var.set_cs_pin(await cg.gpio_pin_expression(config["cs_pin"])))
 
     if CONF_LAMBDA in config:
         lambda_ = await cg.process_lambda(config[CONF_LAMBDA], [(display.DisplayRef, "it")],
