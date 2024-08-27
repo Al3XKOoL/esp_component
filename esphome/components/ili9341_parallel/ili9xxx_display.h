@@ -15,6 +15,7 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
   void dump_config() override;
   float get_setup_priority() const override;
   void update() override;
+  void fill(Color color) override;
 
   // Implementa estos métodos
   display::DisplayType get_display_type() override { return display::DisplayType::DISPLAY_TYPE_COLOR; }
@@ -23,6 +24,7 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
   
   void set_width(int width) { this->width_ = width; }
   void set_height(int height) { this->height_ = height; }
+  void set_rotation(int rotation) { set_rotation(static_cast<display::DisplayRotation>(rotation)); }
   void set_rotation(display::DisplayRotation rotation);
   void set_data_pins(GPIOPin *d0, GPIOPin *d1, GPIOPin *d2, GPIOPin *d3, GPIOPin *d4, GPIOPin *d5, GPIOPin *d6, GPIOPin *d7);
   void set_wr_pin(GPIOPin *wr_pin) { this->wr_pin_ = wr_pin; }
@@ -52,6 +54,9 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
   GPIOPin *reset_pin_{nullptr};
   GPIOPin *cs_pin_{nullptr};
   display::DisplayRotation rotation_{display::DISPLAY_ROTATION_0_DEGREES};
+
+  static uint16_t color_to_rgb565(Color color);
+  Color get_pixel_color_(int x, int y) const;
 };
 
 }  // namespace ili9xxx
