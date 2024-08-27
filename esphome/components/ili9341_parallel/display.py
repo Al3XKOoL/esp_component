@@ -1,7 +1,15 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import display
-from esphome.const import CONF_ID, CONF_LAMBDA, CONF_PAGES
+from esphome.const import (
+    CONF_ID,
+    CONF_LAMBDA,
+    CONF_PAGES,
+    CONF_WIDTH,
+    CONF_HEIGHT,
+    CONF_ROTATION,
+    CONF_MODEL,
+)
 from esphome import pins
 
 DEPENDENCIES = []
@@ -12,8 +20,12 @@ ILI9341ParallelDisplay = ili9341_parallel_ns.class_("ILI9341ParallelDisplay", di
 def validate_gpio_pin(value):
     return pins.internal_gpio_output_pin_schema(value)
 
-CONFIG_SCHEMA = display.FULL_DISPLAY_SCHEMA.extend({
+CONFIG_SCHEMA = display.BASIC_DISPLAY_SCHEMA.extend({
     cv.GenerateID(): cv.declare_id(ILI9341ParallelDisplay),
+    cv.Required(CONF_MODEL): cv.string,
+    cv.Required(CONF_WIDTH): cv.positive_int,
+    cv.Required(CONF_HEIGHT): cv.positive_int,
+    cv.Optional(CONF_ROTATION): cv.int_range(min=0, max=3),
     cv.Required("data_pins"): cv.All(cv.ensure_list(validate_gpio_pin), cv.Length(min=8, max=8)),
     cv.Required("wr_pin"): validate_gpio_pin,
     cv.Required("rd_pin"): validate_gpio_pin,
@@ -25,6 +37,11 @@ CONFIG_SCHEMA = display.FULL_DISPLAY_SCHEMA.extend({
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
     await display.register_display(var, config)
+
+    cg.add(var.set_width(config[CONF_WIDTH]))
+    cg.add(var.set_height(config[CONF_HEIGHT]))
+    if CONF_ROTATION in config:
+        cg.add(var.set_rotation(config[CONF_ROTATION]))
 
     data_pins = config["data_pins"]
     for i, pin in enumerate(data_pins):
