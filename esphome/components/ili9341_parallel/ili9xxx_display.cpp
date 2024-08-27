@@ -60,7 +60,7 @@ void ILI9341ParallelDisplay::write_display_data_() {
 
   for (int y = 0; y < this->get_height_internal(); y++) {
     for (int x = 0; x < this->get_width_internal(); x++) {
-      auto color = this->get_pixel_color(x, y);
+      auto color = this->get_pixel_color_(x, y);
       uint16_t rgb565 = color_to_rgb565(color);
       this->send_data_(rgb565 >> 8);
       this->send_data_(rgb565);
@@ -206,8 +206,20 @@ void ILI9341ParallelDisplay::set_rotation(display::DisplayRotation rotation) {
   }
 }
 
-Color ILI9341ParallelDisplay::get_pixel_color(int x, int y) const {
+Color ILI9341ParallelDisplay::get_pixel_color_(int x, int y) const {
   return this->buffer_[x + y * this->get_width_internal()];
+}
+
+void ILI9341ParallelDisplay::set_data_pins(GPIOPin *d0, GPIOPin *d1, GPIOPin *d2, GPIOPin *d3,
+                                           GPIOPin *d4, GPIOPin *d5, GPIOPin *d6, GPIOPin *d7) {
+  this->data_pins_[0] = d0;
+  this->data_pins_[1] = d1;
+  this->data_pins_[2] = d2;
+  this->data_pins_[3] = d3;
+  this->data_pins_[4] = d4;
+  this->data_pins_[5] = d5;
+  this->data_pins_[6] = d6;
+  this->data_pins_[7] = d7;
 }
 
 }  // namespace ili9xxx
