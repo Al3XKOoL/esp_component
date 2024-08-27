@@ -9,8 +9,6 @@
 namespace esphome {
 namespace ili9xxx {
 
-static const char *const TAG = "ili9341_parallel";
-
 class ILI9341ParallelDisplay : public display::DisplayBuffer {
  public:
   void setup() override;
