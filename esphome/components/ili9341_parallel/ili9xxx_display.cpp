@@ -207,7 +207,9 @@ void ILI9341ParallelDisplay::set_rotation(display::DisplayRotation rotation) {
 }
 
 Color ILI9341ParallelDisplay::get_pixel_color_(int x, int y) const {
-  return this->buffer_[x + y * this->get_width_internal()];
+  return Color(this->buffer_[(x + y * this->width_) * 3],
+               this->buffer_[(x + y * this->width_) * 3 + 1],
+               this->buffer_[(x + y * this->width_) * 3 + 2]);
 }
 
 void ILI9341ParallelDisplay::set_data_pins(GPIOPin *d0, GPIOPin *d1, GPIOPin *d2, GPIOPin *d3,
