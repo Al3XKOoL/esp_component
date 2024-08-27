@@ -14,9 +14,8 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
   void setup() override;
   void dump_config() override;
   float get_setup_priority() const override;
-  void display() override;
-  void update() override;
-  
+  // Elimina la línea 'void display() override;' ya que no está en la clase base
+
   // Implementa estos métodos
   display::DisplayType get_display_type() override { return display::DisplayType::DISPLAY_TYPE_COLOR; }
   int get_width_internal() override { return this->width_; }
@@ -26,6 +25,11 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
   void set_height(int height) { this->height_ = height; }
   void set_rotation(display::DisplayRotation rotation);
   void set_data_pins(GPIOPin *d0, GPIOPin *d1, GPIOPin *d2, GPIOPin *d3, GPIOPin *d4, GPIOPin *d5, GPIOPin *d6, GPIOPin *d7);
+  void set_wr_pin(GPIOPin *wr_pin) { this->wr_pin_ = wr_pin; }
+  void set_rd_pin(GPIOPin *rd_pin) { this->rd_pin_ = rd_pin; }
+  void set_dc_pin(GPIOPin *dc_pin) { this->dc_pin_ = dc_pin; }
+  void set_reset_pin(GPIOPin *reset_pin) { this->reset_pin_ = reset_pin; }
+  void set_cs_pin(GPIOPin *cs_pin) { this->cs_pin_ = cs_pin; }
 
  protected:
   void draw_absolute_pixel_internal(int x, int y, Color color) override;
