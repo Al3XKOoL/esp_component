@@ -9,12 +9,12 @@
 namespace esphome {
 namespace ili9xxx {
 
-class ILI9341ParallelDisplay : public display::DisplayBuffer {
+class ILI9341ParallelDisplay : public display::DisplayBuffer, public PollingComponent {
  public:
   void setup() override;
   void dump_config() override;
   float get_setup_priority() const override;
-  // Elimina la línea 'void display() override;' ya que no está en la clase base
+  void update() override;  // Añade este método
 
   // Implementa estos métodos
   display::DisplayType get_display_type() override { return display::DisplayType::DISPLAY_TYPE_COLOR; }
