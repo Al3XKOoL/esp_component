@@ -9,7 +9,7 @@
 namespace esphome {
 namespace ili9xxx {
 
-class ILI9341ParallelDisplay : public display::DisplayBuffer, public esphome::PollingComponent {
+class ILI9341ParallelDisplay : public display::DisplayBuffer {
  public:
   void setup() override;
   void dump_config() override;
