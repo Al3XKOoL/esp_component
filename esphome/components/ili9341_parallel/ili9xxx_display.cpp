@@ -110,14 +110,13 @@ void ILI9341ParallelDisplay::write_display_data_() {
 
   this->send_command_(ILI9XXX_RAMWR);
 
-  uint32_t buffer_size = this->get_width_internal() * this->get_height_internal() * 3; // 3 bytes per pixel (RGB)
-  for (uint32_t i = 0; i < buffer_size; i += 3) {
-    uint8_t r = this->buffer_[i];
-    uint8_t g = this->buffer_[i + 1];
-    uint8_t b = this->buffer_[i + 2];
-    uint16_t rgb565 = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
-    this->send_data_(rgb565 >> 8);
-    this->send_data_(rgb565);
+  for (int y = 0; y < this->get_height_internal(); y++) {
+    for (int x = 0; x < this->get_width_internal(); x++) {
+      Color color = this->get_pixel_(x, y);
+      uint16_t rgb565 = ((color.r & 0xF8) << 8) | ((color.g & 0xFC) << 3) | (color.b >> 3);
+      this->send_data_(rgb565 >> 8);
+      this->send_data_(rgb565);
+    }
   }
 }
 
