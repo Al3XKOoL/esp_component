@@ -27,6 +27,7 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
   void set_rotation(int rotation) { set_rotation(static_cast<display::DisplayRotation>(rotation)); }
   void set_rotation(display::DisplayRotation rotation);
   void set_data_pins(GPIOPin *d0, GPIOPin *d1, GPIOPin *d2, GPIOPin *d3, GPIOPin *d4, GPIOPin *d5, GPIOPin *d6, GPIOPin *d7);
++  void set_data_pin(uint8_t index, GPIOPin *pin);
   void set_wr_pin(GPIOPin *wr_pin) { this->wr_pin_ = wr_pin; }
   void set_rd_pin(GPIOPin *rd_pin) { this->rd_pin_ = rd_pin; }
   void set_dc_pin(GPIOPin *dc_pin) { this->dc_pin_ = dc_pin; }
