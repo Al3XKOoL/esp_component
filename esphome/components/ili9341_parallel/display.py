@@ -2,20 +2,25 @@ import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import display
 from esphome.const import CONF_ID, CONF_LAMBDA, CONF_PAGES
+from esphome import pins
 
 DEPENDENCIES = []
 
 ili9341_parallel_ns = cg.esphome_ns.namespace("ili9xxx")
 ILI9341ParallelDisplay = ili9341_parallel_ns.class_("ILI9341ParallelDisplay", display.Display)
 
+def validate_gpio_pin(value):
+    value = pins.gpio_pin_schema(value)
+    return value
+
 CONFIG_SCHEMA = display.FULL_DISPLAY_SCHEMA.extend({
     cv.GenerateID(): cv.declare_id(ILI9341ParallelDisplay),
-    cv.Required("data_pins"): cv.All(cv.ensure_list(cv.gpio_pin_schema), cv.Length(min=8, max=8)),
-    cv.Required("wr_pin"): cv.gpio_pin_schema,
-    cv.Required("rd_pin"): cv.gpio_pin_schema,
-    cv.Required("dc_pin"): cv.gpio_pin_schema,
-    cv.Optional("reset_pin"): cv.gpio_pin_schema,
-    cv.Optional("cs_pin"): cv.gpio_pin_schema,
+    cv.Required("data_pins"): cv.All(cv.ensure_list(validate_gpio_pin), cv.Length(min=8, max=8)),
+    cv.Required("wr_pin"): validate_gpio_pin,
+    cv.Required("rd_pin"): validate_gpio_pin,
+    cv.Required("dc_pin"): validate_gpio_pin,
+    cv.Optional("reset_pin"): validate_gpio_pin,
+    cv.Optional("cs_pin"): validate_gpio_pin,
 }).extend(cv.COMPONENT_SCHEMA)
 
 async def to_code(config):
@@ -24,25 +29,17 @@ async def to_code(config):
 
     data_pins = config["data_pins"]
     for i, pin in enumerate(data_pins):
-        pin = await cg.gpio_pin_expression(pin)
         cg.add(var.set_data_pin(i, pin))
 
-    wr_pin = await cg.gpio_pin_expression(config["wr_pin"])
-    cg.add(var.set_wr_pin(wr_pin))
-
-    rd_pin = await cg.gpio_pin_expression(config["rd_pin"])
-    cg.add(var.set_rd_pin(rd_pin))
-
-    dc_pin = await cg.gpio_pin_expression(config["dc_pin"])
-    cg.add(var.set_dc_pin(dc_pin))
+    cg.add(var.set_wr_pin(config["wr_pin"]))
+    cg.add(var.set_rd_pin(config["rd_pin"]))
+    cg.add(var.set_dc_pin(config["dc_pin"]))
 
     if "reset_pin" in config:
-        reset_pin = await cg.gpio_pin_expression(config["reset_pin"])
-        cg.add(var.set_reset_pin(reset_pin))
+        cg.add(var.set_reset_pin(config["reset_pin"]))
 
     if "cs_pin" in config:
-        cs_pin = await cg.gpio_pin_expression(config["cs_pin"])
-        cg.add(var.set_cs_pin(cs_pin))
+        cg.add(var.set_cs_pin(config["cs_pin"]))
 
     if CONF_LAMBDA in config:
         lambda_ = await cg.process_lambda(config[CONF_LAMBDA], [(display.DisplayRef, "it")],
