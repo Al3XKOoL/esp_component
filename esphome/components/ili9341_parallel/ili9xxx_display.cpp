@@ -35,8 +35,34 @@ void ILI9341ParallelDisplay::update() {
   this->write_display_data_();
 }
 
-void ILI9341ParallelDisplay::display() {
-  this->write_display_data_();
+void ILI9341ParallelDisplay::write_display_data_() {
+  uint16_t x1 = 0;
+  uint16_t x2 = this->get_width_internal() - 1;
+  uint16_t y1 = 0;
+  uint16_t y2 = this->get_height_internal() - 1;
+
+  this->send_command_(ILI9XXX_CASET);
+  this->send_data_(x1 >> 8);
+  this->send_data_(x1);
+  this->send_data_(x2 >> 8);
+  this->send_data_(x2);
+
+  this->send_command_(ILI9XXX_PASET);
+  this->send_data_(y1 >> 8);
+  this->send_data_(y1);
+  this->send_data_(y2 >> 8);
+  this->send_data_(y2);
+
+  this->send_command_(ILI9XXX_RAMWR);
+
+  for (int y = 0; y < this->get_height_internal(); y++) {
+    for (int x = 0; x < this->get_width_internal(); x++) {
+      Color color = this->get_pixel_color_(x, y);  // Usa get_pixel_color_ en lugar de get_pixel
+      uint16_t rgb565 = ((color.r & 0xF8) << 8) | ((color.g & 0xFC) << 3) | (color.b >> 3);
+      this->send_data_(rgb565 >> 8);
+      this->send_data_(rgb565);
+    }
+  }
 }
 
 void ILI9341ParallelDisplay::draw_absolute_pixel_internal(int x, int y, Color color) {
@@ -87,36 +113,6 @@ void ILI9341ParallelDisplay::init_lcd_() {
       delay(120);
     }
     i += num_args;
-  }
-}
-
-void ILI9341ParallelDisplay::write_display_data_() {
-  uint16_t x1 = 0;
-  uint16_t x2 = this->get_width_internal() - 1;
-  uint16_t y1 = 0;
-  uint16_t y2 = this->get_height_internal() - 1;
-
-  this->send_command_(ILI9XXX_CASET);
-  this->send_data_(x1 >> 8);
-  this->send_data_(x1);
-  this->send_data_(x2 >> 8);
-  this->send_data_(x2);
-
-  this->send_command_(ILI9XXX_PASET);
-  this->send_data_(y1 >> 8);
-  this->send_data_(y1);
-  this->send_data_(y2 >> 8);
-  this->send_data_(y2);
-
-  this->send_command_(ILI9XXX_RAMWR);
-
-  for (int y = 0; y < this->get_height_internal(); y++) {
-    for (int x = 0; x < this->get_width_internal(); x++) {
-      Color color = this->get_pixel(x, y);
-      uint16_t rgb565 = ((color.r & 0xF8) << 8) | ((color.g & 0xFC) << 3) | (color.b >> 3);
-      this->send_data_(rgb565 >> 8);
-      this->send_data_(rgb565);
-    }
   }
 }
 
