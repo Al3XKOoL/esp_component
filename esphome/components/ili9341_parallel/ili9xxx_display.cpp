@@ -1,62 +1,214 @@
-#pragma once
-#include "esphome/core/component.h"
-#include "esphome/components/display/display_buffer.h"
-#include "esphome/core/gpio.h"  // Añade esta línea
-#include "ili9xxx_defines.h"
-
-#define BUFFER_SIZE 32  // Ajusta este valor según la memoria disponible
+#include "ili9xxx_display.h"
+#include "esphome/core/log.h"
+#include "esphome/core/application.h"
+#include "esphome/core/helpers.h"
 
 namespace esphome {
 namespace ili9xxx {
 
-class ILI9341ParallelDisplay : public display::DisplayBuffer {
- public:
-  void setup() override;
-  void dump_config() override;
-  float get_setup_priority() const override;
-  void update() override;
-  void fill(Color color) override;
+static const char *const TAG = "ili9341_parallel";
 
-  // Implementa estos métodos
-  display::DisplayType get_display_type() override { return display::DisplayType::DISPLAY_TYPE_COLOR; }
-  int get_width_internal() override { return this->width_; }
-  int get_height_internal() override { return this->height_; }
+static uint16_t color_to_rgb565(Color color) {
+  return ((color.r & 0xF8) << 8) | ((color.g & 0xFC) << 3) | (color.b >> 3);
+}
+
+void ILI9341ParallelDisplay::setup() {
+  this->init_lcd_();
   
-  void set_width(int width) { this->width_ = width; }
-  void set_height(int height) { this->height_ = height; }
-  void set_rotation(display::DisplayRotation rotation);
-  void set_data_pins(GPIOPin *d0, GPIOPin *d1, GPIOPin *d2, GPIOPin *d3, GPIOPin *d4, GPIOPin *d5, GPIOPin *d6, GPIOPin *d7);
-  void set_wr_pin(GPIOPin *wr_pin) { this->wr_pin_ = wr_pin; }
-  void set_rd_pin(GPIOPin *rd_pin) { this->rd_pin_ = rd_pin; }
-  void set_dc_pin(GPIOPin *dc_pin) { this->dc_pin_ = dc_pin; }
-  void set_reset_pin(GPIOPin *reset_pin) { this->reset_pin_ = reset_pin; }
-  void set_cs_pin(GPIOPin *cs_pin) { this->cs_pin_ = cs_pin; }
+  // Configurar la rotación
+  this->set_rotation(display::DISPLAY_ROTATION_0_DEGREES);
+}
 
-  using display::DisplayBuffer::set_update_interval;
-  using esphome::PollingComponent::set_component_source;
+void ILI9341ParallelDisplay::dump_config() {
+  ESP_LOGCONFIG(TAG, "ILI9341 Parallel Display:");
+  LOG_PIN("  Reset Pin: ", this->reset_pin_);
+  LOG_PIN("  CS Pin: ", this->cs_pin_);
+  LOG_PIN("  DC Pin: ", this->dc_pin_);
+  LOG_PIN("  WR Pin: ", this->wr_pin_);
+  LOG_PIN("  RD Pin: ", this->rd_pin_);
+  ESP_LOGCONFIG(TAG, "  Data Pins: D0-D7");
+  ESP_LOGCONFIG(TAG, "  Width: %d, Height: %d", this->width_, this->height_);
+  ESP_LOGCONFIG(TAG, "  Rotation: %d", this->rotation_);
+}
 
- protected:
-  void draw_absolute_pixel_internal(int x, int y, Color color) override;
-  void write_display_data_();
-  void init_lcd_();
-  void reset_();
-  void send_command_(uint8_t cmd);
-  void send_data_(uint8_t data);
-  void write_byte(uint8_t value);
+float ILI9341ParallelDisplay::get_setup_priority() const { return setup_priority::PROCESSOR; }
 
-  int width_{240};
-  int height_{320};
-  GPIOPin *data_pins_[8];
-  GPIOPin *dc_pin_;
-  GPIOPin *wr_pin_;
-  GPIOPin *rd_pin_;
-  GPIOPin *reset_pin_{nullptr};
-  GPIOPin *cs_pin_{nullptr};
-  display::DisplayRotation rotation_{display::DISPLAY_ROTATION_0_DEGREES};
+void ILI9341ParallelDisplay::update() {
+  this->do_update_();
+  this->write_display_data_();
+}
 
-  static uint16_t color_to_rgb565(Color color);
-  Color get_pixel_color(int x, int y) const;
-};
+void ILI9341ParallelDisplay::write_display_data_() {
+  uint16_t x1 = 0;
+  uint16_t x2 = this->get_width_internal() - 1;
+  uint16_t y1 = 0;
+  uint16_t y2 = this->get_height_internal() - 1;
+
+  this->send_command_(ILI9XXX_CASET);
+  this->send_data_(x1 >> 8);
+  this->send_data_(x1);
+  this->send_data_(x2 >> 8);
+  this->send_data_(x2);
+
+  this->send_command_(ILI9XXX_PASET);
+  this->send_data_(y1 >> 8);
+  this->send_data_(y1);
+  this->send_data_(y2 >> 8);
+  this->send_data_(y2);
+
+  this->send_command_(ILI9XXX_RAMWR);
+
+  for (int y = 0; y < this->get_height_internal(); y++) {
+    for (int x = 0; x < this->get_width_internal(); x++) {
+      auto color = this->get_pixel_color(x, y);
+      uint16_t rgb565 = color_to_rgb565(color);
+      this->send_data_(rgb565 >> 8);
+      this->send_data_(rgb565);
+    }
+  }
+}
+
+void ILI9341ParallelDisplay::draw_absolute_pixel_internal(int x, int y, Color color) {
+  if (x >= this->get_width_internal() || x < 0 || y >= this->get_height_internal() || y < 0)
+    return;
+
+  uint16_t rgb565 = color_to_rgb565(color);
+
+  this->send_command_(ILI9XXX_CASET);
+  this->send_data_(x >> 8);
+  this->send_data_(x);
+  this->send_data_(x >> 8);
+  this->send_data_(x);
+
+  this->send_command_(ILI9XXX_PASET);
+  this->send_data_(y >> 8);
+  this->send_data_(y);
+  this->send_data_(y >> 8);
+  this->send_data_(y);
+
+  this->send_command_(ILI9XXX_RAMWR);
+  this->send_data_(rgb565 >> 8);
+  this->send_data_(rgb565);
+}
+
+void ILI9341ParallelDisplay::init_lcd_() {
+  this->reset_();
+  
+  // Inicialización del LCD
+  static const uint8_t init_cmd[] = {
+    ILI9XXX_SWRESET, 0x80,
+    ILI9XXX_SLPOUT, 0x80,
+    ILI9XXX_PIXFMT, 1, 0x55,
+    ILI9XXX_GAMMASET, 1, 0x01,
+    ILI9XXX_DISPON, 0x80,
+    0x00  // End of list
+  };
+
+  for (uint8_t i = 0; init_cmd[i] != 0x00; i += 2) {
+    this->send_command_(init_cmd[i]);
+    uint8_t num_args = init_cmd[i + 1] & 0x7F;
+    if (num_args) {
+      for (uint8_t j = 0; j < num_args; j++) {
+        this->send_data_(init_cmd[i + 2 + j]);
+      }
+    }
+    if (init_cmd[i + 1] & 0x80) {
+      delay(120);
+    }
+    i += num_args;
+  }
+}
+
+void ILI9341ParallelDisplay::reset_() {
+  if (this->reset_pin_ != nullptr) {
+    this->reset_pin_->digital_write(true);
+    delay(1);
+    this->reset_pin_->digital_write(false);
+    delay(10);
+    this->reset_pin_->digital_write(true);
+    delay(120);
+  }
+}
+
+void ILI9341ParallelDisplay::send_command_(uint8_t cmd) {
+  if (this->cs_pin_ != nullptr) {
+    this->cs_pin_->digital_write(false);
+  }
+  this->dc_pin_->digital_write(false);
+  this->write_byte(cmd);
+  if (this->cs_pin_ != nullptr) {
+    this->cs_pin_->digital_write(true);
+  }
+}
+
+void ILI9341ParallelDisplay::send_data_(uint8_t data) {
+  if (this->cs_pin_ != nullptr) {
+    this->cs_pin_->digital_write(false);
+  }
+  this->dc_pin_->digital_write(true);
+  this->write_byte(data);
+  if (this->cs_pin_ != nullptr) {
+    this->cs_pin_->digital_write(true);
+  }
+}
+
+void ILI9341ParallelDisplay::write_byte(uint8_t value) {
+  for (int i = 0; i < 8; i++) {
+    this->data_pins_[i]->digital_write((value >> i) & 0x01);
+  }
+  this->wr_pin_->digital_write(false);
+  this->wr_pin_->digital_write(true);
+}
+
+void ILI9341ParallelDisplay::set_rotation(display::DisplayRotation rotation) {
+  // Convertir el valor entero a DisplayRotation si es necesario
+  display::DisplayRotation actual_rotation;
+  if (rotation >= display::DISPLAY_ROTATION_0_DEGREES && rotation <= display::DISPLAY_ROTATION_270_DEGREES) {
+    actual_rotation = rotation;
+  } else {
+    switch (static_cast<int>(rotation)) {
+      case 0:
+        actual_rotation = display::DISPLAY_ROTATION_0_DEGREES;
+        break;
+      case 1:
+        actual_rotation = display::DISPLAY_ROTATION_90_DEGREES;
+        break;
+      case 2:
+        actual_rotation = display::DISPLAY_ROTATION_180_DEGREES;
+        break;
+      case 3:
+        actual_rotation = display::DISPLAY_ROTATION_270_DEGREES;
+        break;
+      default:
+        ESP_LOGW(TAG, "Invalid rotation value %d. Using default (0 degrees).", static_cast<int>(rotation));
+        actual_rotation = display::DISPLAY_ROTATION_0_DEGREES;
+    }
+  }
+
+  this->rotation_ = actual_rotation;
+  switch (actual_rotation) {
+    case display::DISPLAY_ROTATION_0_DEGREES:
+      this->send_command_(ILI9XXX_MADCTL);
+      this->send_data_(0x48);
+      break;
+    case display::DISPLAY_ROTATION_90_DEGREES:
+      this->send_command_(ILI9XXX_MADCTL);
+      this->send_data_(0x28);
+      break;
+    case display::DISPLAY_ROTATION_180_DEGREES:
+      this->send_command_(ILI9XXX_MADCTL);
+      this->send_data_(0x88);
+      break;
+    case display::DISPLAY_ROTATION_270_DEGREES:
+      this->send_command_(ILI9XXX_MADCTL);
+      this->send_data_(0xE8);
+      break;
+  }
+}
+
+Color ILI9341ParallelDisplay::get_pixel_color(int x, int y) const {
+  return this->buffer_[x + y * this->get_width_internal()];
+}
 
 }  // namespace ili9xxx
 }  // namespace esphome
