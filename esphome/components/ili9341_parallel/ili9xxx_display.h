@@ -9,12 +9,12 @@
 namespace esphome {
 namespace ili9xxx {
 
-class ILI9341ParallelDisplay : public display::DisplayBuffer, public PollingComponent {
+class ILI9341ParallelDisplay : public display::DisplayBuffer, public esphome::PollingComponent {
  public:
   void setup() override;
   void dump_config() override;
   float get_setup_priority() const override;
-  void update() override;  // Añade este método
+  void update() override;
 
   // Implementa estos métodos
   display::DisplayType get_display_type() override { return display::DisplayType::DISPLAY_TYPE_COLOR; }
@@ -30,6 +30,9 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer, public PollingComp
   void set_dc_pin(GPIOPin *dc_pin) { this->dc_pin_ = dc_pin; }
   void set_reset_pin(GPIOPin *reset_pin) { this->reset_pin_ = reset_pin; }
   void set_cs_pin(GPIOPin *cs_pin) { this->cs_pin_ = cs_pin; }
+
+  using display::DisplayBuffer::set_update_interval;
+  using esphome::PollingComponent::set_component_source;
 
  protected:
   void draw_absolute_pixel_internal(int x, int y, Color color) override;
