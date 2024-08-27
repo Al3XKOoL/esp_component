@@ -19,7 +19,7 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
 
   // Implementa estos métodos
   display::DisplayType get_display_type() override { return display::DisplayType::DISPLAY_TYPE_COLOR; }
-  int get_width_internal() const override { return this->width_; }
+  int get_width_internal() override { return this->width_; }
   int get_height_internal() override { return this->height_; }
   
   void set_width(int width) { this->width_ = width; }
