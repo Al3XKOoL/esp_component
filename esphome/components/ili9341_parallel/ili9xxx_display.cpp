@@ -14,6 +14,9 @@ static uint16_t color_to_rgb565(Color color) {
 
 void ILI9341ParallelDisplay::setup() {
   this->init_lcd_();
+  
+  // Configurar la rotación
+  this->set_rotation(display::DISPLAY_ROTATION_0_DEGREES);
 }
 
 void ILI9341ParallelDisplay::dump_config() {
@@ -57,7 +60,7 @@ void ILI9341ParallelDisplay::write_display_data_() {
 
   for (int y = 0; y < this->get_height_internal(); y++) {
     for (int x = 0; x < this->get_width_internal(); x++) {
-      auto color = this->get_buffer()[x + y * this->get_width_internal()];
+      auto color = this->get_pixel_color(x, y);
       uint16_t rgb565 = color_to_rgb565(color);
       this->send_data_(rgb565 >> 8);
       this->send_data_(rgb565);
@@ -163,28 +166,24 @@ void ILI9341ParallelDisplay::set_rotation(display::DisplayRotation rotation) {
     case display::DISPLAY_ROTATION_0_DEGREES:
       this->send_command_(ILI9XXX_MADCTL);
       this->send_data_(0x48);
-      this->width_ = 240;
-      this->height_ = 320;
       break;
     case display::DISPLAY_ROTATION_90_DEGREES:
       this->send_command_(ILI9XXX_MADCTL);
       this->send_data_(0x28);
-      this->width_ = 320;
-      this->height_ = 240;
       break;
     case display::DISPLAY_ROTATION_180_DEGREES:
       this->send_command_(ILI9XXX_MADCTL);
       this->send_data_(0x88);
-      this->width_ = 240;
-      this->height_ = 320;
       break;
     case display::DISPLAY_ROTATION_270_DEGREES:
       this->send_command_(ILI9XXX_MADCTL);
       this->send_data_(0xE8);
-      this->width_ = 320;
-      this->height_ = 240;
       break;
   }
+}
+
+Color ILI9341ParallelDisplay::get_pixel_color(int x, int y) const {
+  return this->buffer_[x + y * this->get_width_internal()];
 }
 
 }  // namespace ili9xxx
