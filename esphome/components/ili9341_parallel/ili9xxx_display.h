@@ -16,6 +16,7 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
   float get_setup_priority() const override;
   void update() override;
   void fill(Color color) override;
+  static uint16_t color_to_rgb565(Color color);
 
   // Implementa estos métodos
   display::DisplayType get_display_type() override { return display::DisplayType::DISPLAY_TYPE_COLOR; }
