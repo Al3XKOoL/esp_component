@@ -8,8 +8,13 @@ namespace ili9xxx {
 
 static const char *const TAG = "ili9341_parallel";
 
-static uint16_t color_to_rgb565(Color color) {
-  return ((color.r & 0xF8) << 8) | ((color.g & 0xFC) << 3) | (color.b >> 3);
+void ILI9341ParallelDisplay::fill(Color color) {
+  uint16_t rgb565 = color_to_rgb565(color);
+  for (int y = 0; y < this->get_height_internal(); y++) {
+    for (int x = 0; x < this->get_width_internal(); x++) {
+      this->draw_absolute_pixel_internal(x, y, color);
+    }
+  }
 }
 
 void ILI9341ParallelDisplay::setup() {
@@ -230,6 +235,10 @@ void ILI9341ParallelDisplay::set_data_pin(uint8_t index, GPIOPin *pin) {
   } else {
     ESP_LOGE(TAG, "Invalid data pin index: %d", index);
   }
+}
+
+uint16_t ILI9341ParallelDisplay::color_to_rgb565(Color color) {
+  return ((color.r & 0xF8) << 8) | ((color.g & 0xFC) << 3) | (color.b >> 3);
 }
 
 }  // namespace ili9xxx
