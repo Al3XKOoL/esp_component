@@ -8,6 +8,10 @@ namespace ili9xxx {
 
 static const char *const TAG = "ili9341_parallel";
 
+static uint16_t color_to_rgb565(Color color) {
+  return ((color.r & 0xF8) << 8) | ((color.g & 0xFC) << 3) | (color.b >> 3);
+}
+
 void ILI9341ParallelDisplay::setup() {
   this->init_lcd_();
 }
@@ -39,7 +43,7 @@ void ILI9341ParallelDisplay::draw_absolute_pixel_internal(int x, int y, Color co
   if (x >= this->get_width_internal() || x < 0 || y >= this->get_height_internal() || y < 0)
     return;
 
-  uint16_t rgb565 = color.to_rgb565();
+  uint16_t rgb565 = color_to_rgb565(color);
 
   this->send_command_(ILI9XXX_CASET);
   this->send_data_(x >> 8);
@@ -108,8 +112,8 @@ void ILI9341ParallelDisplay::write_display_data_() {
 
   for (int y = 0; y < this->get_height_internal(); y++) {
     for (int x = 0; x < this->get_width_internal(); x++) {
-      Color color = this->get_pixel_color_(x, y);
-      uint16_t rgb565 = color.to_rgb565();
+      Color color = this->get_pixel_(x, y);
+      uint16_t rgb565 = color_to_rgb565(color);
       this->send_data_(rgb565 >> 8);
       this->send_data_(rgb565);
     }
