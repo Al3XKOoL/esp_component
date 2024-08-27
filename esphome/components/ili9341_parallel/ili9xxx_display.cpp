@@ -112,7 +112,7 @@ void ILI9341ParallelDisplay::write_display_data_() {
 
   for (int y = 0; y < this->get_height_internal(); y++) {
     for (int x = 0; x < this->get_width_internal(); x++) {
-      Color color = this->get_pixel_(x, y);
+      Color color = this->get_pixel_color(x, y);
       uint16_t rgb565 = color_to_rgb565(color);
       this->send_data_(rgb565 >> 8);
       this->send_data_(rgb565);
