@@ -224,5 +224,13 @@ void ILI9341ParallelDisplay::set_data_pins(GPIOPin *d0, GPIOPin *d1, GPIOPin *d2
   this->data_pins_[7] = d7;
 }
 
+void ILI9341ParallelDisplay::set_data_pin(uint8_t index, GPIOPin *pin) {
+  if (index < 8) {
+    this->data_pins_[index] = pin;
+  } else {
+    ESP_LOGE(TAG, "Invalid data pin index: %d", index);
+  }
+}
+
 }  // namespace ili9xxx
 }  // namespace esphome
