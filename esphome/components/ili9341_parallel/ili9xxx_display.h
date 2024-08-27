@@ -33,17 +33,20 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
   void set_rd_pin(GPIOPin *rd_pin) { this->rd_pin_ = rd_pin; }
   void set_reset_pin(GPIOPin *reset_pin) { this->reset_pin_ = reset_pin; }
   void set_cs_pin(GPIOPin *cs_pin) { this->cs_pin_ = cs_pin; }
+  void set_rotation(display::DisplayRotation rotation);
 
  protected:
   void draw_absolute_pixel_internal(int x, int y, Color color) override;
-  void setup_pins_();
+  void write_display_data_();
   void init_lcd_();
-  void command(uint8_t value);
-  void data(uint8_t value);
-  void send_command(uint8_t command_byte, const uint8_t *data_bytes, uint8_t num_data_bytes);
   void reset_();
+  void send_command_(uint8_t cmd);
+  void send_data_(uint8_t data);
   void write_byte(uint8_t value);
   void write_array(const uint8_t *data, uint16_t length);
+  uint8_t read_byte();
+  uint32_t read_command(uint8_t command, uint8_t index);
+  void read_display_identification_information();
 
   GPIOPin *data_pins_[8];
   GPIOPin *dc_pin_;
@@ -52,21 +55,9 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
   GPIOPin *reset_pin_{nullptr};
   GPIOPin *cs_pin_{nullptr};
 
-  int16_t width_{0};   ///< Display width as modified by current rotation
-  int16_t height_{0};  ///< Display height as modified by current rotation
-  int16_t offset_x_{0};
-  int16_t offset_y_{0};
-  uint16_t x_low_{0};
-  uint16_t y_low_{0};
-  uint16_t x_high_{0};
-  uint16_t y_high_{0};
-  const uint8_t *palette_{};
-
-  bool pre_invertcolors_ = false;
-  display::ColorOrder color_order_{display::COLOR_ORDER_BGR};
-  bool swap_xy_{};
-  bool mirror_x_{};
-  bool mirror_y_{};
+  int16_t width_{240};
+  int16_t height_{320};
+  display::DisplayRotation rotation_{display::DISPLAY_ROTATION_0_DEGREES};
 };
 
 }  // namespace ili9xxx
