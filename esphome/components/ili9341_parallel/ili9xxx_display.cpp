@@ -126,14 +126,15 @@ void ILI9341ParallelDisplay::draw_line(int x1, int y1, int x2, int y2, Color col
 
 void ILI9341ParallelDisplay::dump_config() {
   ESP_LOGCONFIG(TAG, "ILI9341 Parallel Display:");
-  ESP_LOGCONFIG(TAG, "  Model: %s", this->model_.c_str());
+  ESP_LOGCONFIG(TAG, "  Width: %d, Height: %d", this->width_, this->height_);
   LOG_PIN("  DC Pin: ", this->dc_pin_);
   LOG_PIN("  Reset Pin: ", this->reset_pin_);
   LOG_PIN("  WR Pin: ", this->wr_pin_);
   LOG_PIN("  RD Pin: ", this->rd_pin_);
   LOG_PIN("  CS Pin: ", this->cs_pin_);
-  ESP_LOGCONFIG(TAG, "  Data Pins: D0-D7");
-  ESP_LOGCONFIG(TAG, "  Width: %d, Height: %d", this->width_, this->height_);
+  for (int i = 0; i < 8; i++) {
+    LOG_PIN("  Data Pin %d: ", i, this->data_pins_[i]);
+  }
 }
 
 void ILI9341ParallelDisplay::update() {
@@ -235,6 +236,14 @@ void ILI9341ParallelDisplay::set_data_pin(uint8_t index, GPIOPin *pin) {
   if (index < 8) {
     this->data_pins_[index] = pin;
   }
+}
+
+void ILI9341ParallelDisplay::set_width(uint16_t width) {
+  this->width_ = width;
+}
+
+void ILI9341ParallelDisplay::set_height(uint16_t height) {
+  this->height_ = height;
 }
 
 }  // namespace ili9xxx
