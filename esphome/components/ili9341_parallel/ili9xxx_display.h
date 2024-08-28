@@ -26,6 +26,7 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
   void set_width(uint16_t width) { width_ = width; }
   void set_height(uint16_t height) { height_ = height; }
   void set_rotation(uint8_t rotation) { rotation_ = rotation; }
+  void set_model(const std::string &model) { model_ = model; }
 
   // Elimina la función print de aquí, ya que está definida en la clase base
 
@@ -48,6 +49,10 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
   uint16_t width_{320};
   uint16_t height_{240};
   uint8_t rotation_{0};
+  std::string model_{"ILI9341"};
+
+  void set_addr_window_(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
+  void write_color_(Color color);
 };
 
 }  // namespace ili9xxx
