@@ -3,6 +3,17 @@
 #include "esphome/components/display/display_buffer.h"
 #include "esphome/core/gpio.h"
 
+// Definiciones de comandos ILI9XXX
+#define ILI9XXX_CASET 0x2A
+#define ILI9XXX_PASET 0x2B
+#define ILI9XXX_RAMWR 0x2C
+#define ILI9XXX_SWRESET 0x01
+#define ILI9XXX_SLPOUT 0x11
+#define ILI9XXX_PIXFMT 0x3A
+#define ILI9XXX_GAMMASET 0x26
+#define ILI9XXX_DISPON 0x29
+#define ILI9XXX_MADCTL 0x36
+
 namespace esphome {
 namespace ili9xxx {
 
@@ -29,6 +40,7 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
   void set_rotation(display::DisplayRotation rotation);
 
  protected:
+  static uint16_t color_to_rgb565(Color color);
   void draw_absolute_pixel_internal(int x, int y, Color color) override;
   int get_width_internal() override;
   int get_height_internal() override;
