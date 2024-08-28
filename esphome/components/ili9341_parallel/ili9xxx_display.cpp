@@ -10,6 +10,18 @@ static const char *const TAG = "ili9341_parallel";
 
 void ILI9341ParallelDisplay::setup() {
   ESP_LOGCONFIG(TAG, "Setting up ILI9341 Parallel Display...");
+  if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr) {
+    ESP_LOGE(TAG, "DC or WR pin not set!");
+    this->mark_failed();
+    return;
+  }
+  for (int i = 0; i < 8; i++) {
+    if (this->data_pins_[i] == nullptr) {
+      ESP_LOGE(TAG, "Data pin %d not set!", i);
+      this->mark_failed();
+      return;
+    }
+  }
   this->init_lcd_();
   this->set_rotation(this->rotation_);
 }
@@ -34,10 +46,16 @@ void ILI9341ParallelDisplay::update() {
 }
 
 void ILI9341ParallelDisplay::write_display_data_() {
+  ESP_LOGV(TAG, "Writing display data...");
   uint16_t x1 = 0;
   uint16_t x2 = this->get_width_internal() - 1;
   uint16_t y1 = 0;
   uint16_t y2 = this->get_height_internal() - 1;
+
+  if (x2 >= this->width_ || y2 >= this->height_) {
+    ESP_LOGE(TAG, "Display dimensions exceed set width/height!");
+    return;
+  }
 
   this->send_command_(ILI9XXX_CASET);
   this->send_data_(x1 >> 8);
@@ -61,6 +79,8 @@ void ILI9341ParallelDisplay::write_display_data_() {
       this->send_data_(rgb565);
     }
   }
+
+  ESP_LOGV(TAG, "Display data write complete");
 }
 
 void ILI9341ParallelDisplay::draw_absolute_pixel_internal(int x, int y, Color color) {
@@ -87,6 +107,7 @@ void ILI9341ParallelDisplay::draw_absolute_pixel_internal(int x, int y, Color co
 }
 
 void ILI9341ParallelDisplay::init_lcd_() {
+  ESP_LOGD(TAG, "Initializing LCD...");
   this->reset_();
   
   // Inicialización del LCD
@@ -98,15 +119,15 @@ void ILI9341ParallelDisplay::init_lcd_() {
     ILI9XXX_PWCTRSEQ, 4, 0x39, 0x2C, 0x00, 0x34,
     ILI9XXX_PUMPCTRL, 1, 0x20,
     ILI9XXX_DTCTRLB, 2, 0x00, 0x00,
-    ILI9XXX_PWCTRL1, 1, 0x23,
-    ILI9XXX_PWCTRL2, 1, 0x10,
-    ILI9XXX_VMCTRL1, 2, 0x3e, 0x28,
-    ILI9XXX_VMCTRL2, 1, 0x86,
+    ILI9XXX_PWCTR1, 1, 0x23,
+    ILI9XXX_PWCTR2, 1, 0x10,
+    ILI9XXX_VMCTR1, 2, 0x3e, 0x28,
+    ILI9XXX_VMCTR2, 1, 0x86,
     ILI9XXX_MADCTL, 1, 0x48,
     ILI9XXX_PIXFMT, 1, 0x55,
     ILI9XXX_FRMCTR1, 2, 0x00, 0x18,
     ILI9XXX_DFUNCTR, 3, 0x08, 0x82, 0x27,
-    ILI9XXX_ENGMCTRL, 1, 0x00,
+    0xF2, 1, 0x00,  // 3Gamma Function Disable
     ILI9XXX_GAMMASET, 1, 0x01,
     ILI9XXX_GMCTRP1, 15, 0x0F, 0x31, 0x2B, 0x0C, 0x0E, 0x08, 0x4E, 0xF1, 0x37, 0x07, 0x10, 0x03, 0x0E, 0x09, 0x00,
     ILI9XXX_GMCTRN1, 15, 0x00, 0x0E, 0x14, 0x03, 0x11, 0x07, 0x31, 0xC1, 0x48, 0x08, 0x0F, 0x0C, 0x31, 0x36, 0x0F,
@@ -130,6 +151,8 @@ void ILI9341ParallelDisplay::init_lcd_() {
       delay(120);
     }
   }
+
+  ESP_LOGD(TAG, "LCD initialization complete");
 }
 
 void ILI9341ParallelDisplay::reset_() {
@@ -175,7 +198,7 @@ void ILI9341ParallelDisplay::write_byte(uint8_t value) {
   delayMicroseconds(1);  // Tiempo de espera entre bytes
 }
 
-void ILI9341ParallelDisplay::set_rotation(int rotation) {
+void ILI9341ParallelDisplay::set_rotation(uint8_t rotation) {
   this->rotation_ = rotation % 4;
   switch (this->rotation_) {
     case 0:
@@ -207,25 +230,8 @@ uint16_t ILI9341ParallelDisplay::color_to_rgb565(Color color) {
   return ((color.r & 0xF8) << 8) | ((color.g & 0xFC) << 3) | (color.b >> 3);
 }
 
-void ILI9341ParallelDisplay::fill(Color color) {
-  uint16_t rgb565 = color_to_rgb565(color);
-  for (int y = 0; y < this->get_height_internal(); y++) {
-    for (int x = 0; x < this->get_width_internal(); x++) {
-      this->draw_absolute_pixel_internal(x, y, color);
-    }
-  }
-}
-
 int ILI9341ParallelDisplay::get_width_internal() { return this->width_; }
 int ILI9341ParallelDisplay::get_height_internal() { return this->height_; }
-
-void ILI9341ParallelDisplay::set_data_pin(uint8_t index, GPIOPin *pin) {
-  if (index < 8) {
-    this->data_pins_[index] = pin;
-  } else {
-    ESP_LOGE(TAG, "Invalid data pin index: %d", index);
-  }
-}
 
 void ILI9341ParallelDisplay::set_data_pins(GPIOPin *d0, GPIOPin *d1, GPIOPin *d2, GPIOPin *d3,
                                            GPIOPin *d4, GPIOPin *d5, GPIOPin *d6, GPIOPin *d7) {
