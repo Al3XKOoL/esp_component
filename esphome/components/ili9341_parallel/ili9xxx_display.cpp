@@ -154,39 +154,32 @@ void ILI9341ParallelDisplay::write_byte(uint8_t value) {
   this->wr_pin_->digital_write(true);
 }
 
--void ILI9341ParallelDisplay::set_rotation(display::DisplayRotation rotation) {
-+void ILI9341ParallelDisplay::set_rotation(int rotation) {
+void ILI9341ParallelDisplay::set_rotation(int rotation) {
   this->rotation_ = rotation;
   switch (rotation) {
--    case display::DISPLAY_ROTATION_0_DEGREES:
-+    case 0:
+    case 0:
       this->send_command_(ILI9XXX_MADCTL);
       this->send_data_(0x48);
       break;
--    case display::DISPLAY_ROTATION_90_DEGREES:
-+    case 1:
+    case 1:
       this->send_command_(ILI9XXX_MADCTL);
       this->send_data_(0x28);
       break;
--    case display::DISPLAY_ROTATION_180_DEGREES:
-+    case 2:
+    case 2:
       this->send_command_(ILI9XXX_MADCTL);
       this->send_data_(0x88);
       break;
--    case display::DISPLAY_ROTATION_270_DEGREES:
-+    case 3:
+    case 3:
       this->send_command_(ILI9XXX_MADCTL);
       this->send_data_(0xE8);
       break;
--    default:
-+    default:
+    default:
       ESP_LOGE(TAG, "Invalid rotation angle");
       break;
   }
--  this->init_internal_(this->get_width_internal(), this->get_height_internal());
-+  // Asegúrate de que esta línea sea compatible con tu implementación
-+  // this->init_internal_(this->get_width_internal(), this->get_height_internal());
- }
+  // Asegúrate de que esta línea sea compatible con tu implementación
+  // this->init_internal_(this->get_width_internal(), this->get_height_internal());
+}
 
 Color ILI9341ParallelDisplay::get_pixel_color_(int x, int y) const {
   return Color(this->buffer_[(x + y * this->width_) * 3],
