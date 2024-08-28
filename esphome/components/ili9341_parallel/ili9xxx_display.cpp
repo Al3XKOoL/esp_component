@@ -2,6 +2,7 @@
 #include "ili9xxx_init.h"
 #include "esphome/core/log.h"
 #include "esphome/core/application.h"
+#include "esphome/core/helpers.h"
 
 namespace esphome {
 namespace ili9xxx {
@@ -133,7 +134,7 @@ void ILI9341ParallelDisplay::dump_config() {
   LOG_PIN("  RD Pin: ", this->rd_pin_);
   LOG_PIN("  CS Pin: ", this->cs_pin_);
   for (int i = 0; i < 8; i++) {
-    LOG_PIN("  Data Pin %d: ", i, this->data_pins_[i]);
+    ESP_LOGCONFIG(TAG, "  Data Pin %d: %s", i, this->data_pins_[i] ? this->data_pins_[i]->dump_summary().c_str() : "None");
   }
 }
 
