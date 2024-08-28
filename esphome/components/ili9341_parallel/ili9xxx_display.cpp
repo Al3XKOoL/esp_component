@@ -11,38 +11,101 @@ static const char *const TAG = "ili9341";
 void ILI9341ParallelDisplay::setup() {
   ESP_LOGD(TAG, "Iniciando configuración...");
   
-  // Inicializar todos los pines
   this->init_pins_();
-  
-  // Realizar un reset por hardware
   this->hard_reset_();
-  
-  // Inicializar la pantalla
   this->init_lcd_();
   
   ESP_LOGD(TAG, "LCD inicializado");
   
-  // Configurar la orientación de la pantalla
   this->set_rotation(this->rotation_);
   
-  // Llenar la pantalla con color rojo para probar
   this->fill(Color(255, 0, 0));  // Rojo
-  
   ESP_LOGD(TAG, "Pantalla llenada con rojo");
   
-  // Dibujar un rectángulo verde en el centro
   int width = this->get_width_internal();
   int height = this->get_height_internal();
   this->fill_rect(width/4, height/4, width/2, height/2, Color(0, 255, 0));  // Verde
-  
   ESP_LOGD(TAG, "Rectángulo verde dibujado en el centro");
   
-  // Dibujar una línea azul diagonal
   this->draw_line(0, 0, width-1, height-1, Color(0, 0, 255));  // Azul
-  
   ESP_LOGD(TAG, "Línea azul diagonal dibujada");
   
   ESP_LOGD(TAG, "Configuración completada");
+}
+
+void ILI9341ParallelDisplay::init_pins_() {
+  this->dc_pin_->setup();
+  this->dc_pin_->digital_write(true);
+  if (this->reset_pin_ != nullptr) {
+    this->reset_pin_->setup();
+    this->reset_pin_->digital_write(true);
+  }
+  this->wr_pin_->setup();
+  this->wr_pin_->digital_write(true);
+  this->rd_pin_->setup();
+  this->rd_pin_->digital_write(true);
+  if (this->cs_pin_ != nullptr) {
+    this->cs_pin_->setup();
+    this->cs_pin_->digital_write(true);
+  }
+  for (int i = 0; i < 8; i++) {
+    this->data_pins_[i]->setup();
+    this->data_pins_[i]->digital_write(false);
+  }
+}
+
+void ILI9341ParallelDisplay::hard_reset_() {
+  if (this->reset_pin_ != nullptr) {
+    this->reset_pin_->digital_write(true);
+    delay(1);
+    this->reset_pin_->digital_write(false);
+    delay(10);
+    this->reset_pin_->digital_write(true);
+    delay(120);
+  }
+}
+
+void ILI9341ParallelDisplay::set_rotation(uint8_t rotation) {
+  ESP_LOGD(TAG, "Configurando rotación: %d", rotation);
+  uint8_t madctl = 0;
+  switch (rotation) {
+    case 0:
+      madctl = MADCTL_MX | MADCTL_BGR;
+      break;
+    case 1:
+      madctl = MADCTL_MV | MADCTL_BGR;
+      break;
+    case 2:
+      madctl = MADCTL_MY | MADCTL_BGR;
+      break;
+    case 3:
+      madctl = MADCTL_MX | MADCTL_MY | MADCTL_MV | MADCTL_BGR;
+      break;
+  }
+  this->send_command_(ILI9XXX_MADCTL);
+  this->send_data_(madctl);
+}
+
+void ILI9341ParallelDisplay::fill_rect(int x1, int y1, int width, int height, Color color) {
+  for (int y = y1; y < y1 + height; y++) {
+    for (int x = x1; x < x1 + width; x++) {
+      this->draw_absolute_pixel_internal(x, y, color);
+    }
+  }
+}
+
+void ILI9341ParallelDisplay::draw_line(int x1, int y1, int x2, int y2, Color color) {
+  int dx = abs(x2 - x1), sx = x1 < x2 ? 1 : -1;
+  int dy = -abs(y2 - y1), sy = y1 < y2 ? 1 : -1;
+  int err = dx + dy, e2;
+
+  while (true) {
+    this->draw_absolute_pixel_internal(x1, y1, color);
+    if (x1 == x2 && y1 == y2) break;
+    e2 = 2 * err;
+    if (e2 >= dy) { err += dy; x1 += sx; }
+    if (e2 <= dx) { err += dx; y1 += sy; }
+  }
 }
 
 void ILI9341ParallelDisplay::dump_config() {
@@ -155,28 +218,6 @@ void ILI9341ParallelDisplay::set_data_pins(GPIOPin *d0, GPIOPin *d1, GPIOPin *d2
 void ILI9341ParallelDisplay::set_data_pin(uint8_t index, GPIOPin *pin) {
   if (index < 8) {
     this->data_pins_[index] = pin;
-  }
-}
-
-void ILI9341ParallelDisplay::fill_rect(int x1, int y1, int width, int height, Color color) {
-  for (int y = y1; y < y1 + height; y++) {
-    for (int x = x1; x < x1 + width; x++) {
-      this->draw_absolute_pixel_internal(x, y, color);
-    }
-  }
-}
-
-void ILI9341ParallelDisplay::draw_line(int x1, int y1, int x2, int y2, Color color) {
-  int dx = abs(x2 - x1), sx = x1 < x2 ? 1 : -1;
-  int dy = -abs(y2 - y1), sy = y1 < y2 ? 1 : -1;
-  int err = dx + dy, e2;
-
-  while (true) {
-    this->draw_absolute_pixel_internal(x1, y1, color);
-    if (x1 == x2 && y1 == y2) break;
-    e2 = 2 * err;
-    if (e2 >= dy) { err += dy; x1 += sx; }
-    if (e2 <= dx) { err += dx; y1 += sy; }
   }
 }
 
