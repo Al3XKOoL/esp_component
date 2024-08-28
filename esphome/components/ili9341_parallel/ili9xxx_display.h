@@ -22,6 +22,10 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
   void set_cs_pin(GPIOPin *cs_pin) { cs_pin_ = cs_pin; }
   void set_data_pins(GPIOPin *d0, GPIOPin *d1, GPIOPin *d2, GPIOPin *d3,
                      GPIOPin *d4, GPIOPin *d5, GPIOPin *d6, GPIOPin *d7);
+  void set_data_pin(uint8_t index, GPIOPin *pin);
+  void set_width(uint16_t width) { width_ = width; }
+  void set_height(uint16_t height) { height_ = height; }
+  void set_rotation(uint8_t rotation) { rotation_ = rotation; }
 
  protected:
   void draw_absolute_pixel_internal(int x, int y, Color color) override;
@@ -31,6 +35,7 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
   void init_lcd_();
   void send_command_(uint8_t cmd);
   void send_data_(uint8_t data);
+  void write_byte_(uint8_t value);
 
   GPIOPin *data_pins_[8]{};
   GPIOPin *dc_pin_{nullptr};
@@ -40,6 +45,7 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
   GPIOPin *cs_pin_{nullptr};
   uint16_t width_{320};
   uint16_t height_{240};
+  uint8_t rotation_{0};
 };
 
 }  // namespace ili9xxx
