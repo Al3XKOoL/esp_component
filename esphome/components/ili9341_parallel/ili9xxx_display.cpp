@@ -10,6 +10,11 @@ namespace ili9xxx {
 static const char *const TAG = "ili9341";
 
 void ILI9341ParallelDisplay::setup() {
+  if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr || this->rd_pin_ == nullptr) {
+    ESP_LOGE(TAG, "Essential pins (DC, WR, RD) not set. Cannot initialize display.");
+    return;
+  }
+
   ESP_LOGD(TAG, "Iniciando configuración...");
   
   // Establecer las dimensiones por defecto
@@ -82,6 +87,11 @@ void ILI9341ParallelDisplay::hard_reset_() {
 }
 
 void ILI9341ParallelDisplay::set_rotation(uint8_t rotation) {
+  if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr) {
+    ESP_LOGE(TAG, "DC or WR pin not set. Cannot set rotation.");
+    return;
+  }
+
   ESP_LOGD(TAG, "Configurando rotación: %d", rotation);
   uint8_t madctl = 0;
   switch (rotation) {
@@ -97,10 +107,21 @@ void ILI9341ParallelDisplay::set_rotation(uint8_t rotation) {
     case 3:
       madctl = MADCTL_MX | MADCTL_MY | MADCTL_MV | MADCTL_BGR;
       break;
+    default:
+      ESP_LOGE(TAG, "Invalid rotation value: %d", rotation);
+      return;
   }
+  
   this->send_command_(ILI9XXX_MADCTL);
   this->send_data_(madctl);
   this->rotation_ = rotation;
+  
+  // Ajustar las dimensiones según la rotación
+  if (rotation == 1 || rotation == 3) {
+    this->set_dimensions(320, 240);
+  } else {
+    this->set_dimensions(240, 320);
+  }
 }
 
 void ILI9341ParallelDisplay::fill_rect(int x1, int y1, int width, int height, Color color) {
@@ -204,18 +225,32 @@ void ILI9341ParallelDisplay::init_lcd_() {
 }
 
 void ILI9341ParallelDisplay::send_command_(uint8_t cmd) {
+  if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr) {
+    ESP_LOGE(TAG, "DC or WR pin not set. Cannot send command.");
+    return;
+  }
   this->dc_pin_->digital_write(false);
   this->write_byte_(cmd);
 }
 
 void ILI9341ParallelDisplay::send_data_(uint8_t data) {
+  if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr) {
+    ESP_LOGE(TAG, "DC or WR pin not set. Cannot send data.");
+    return;
+  }
   this->dc_pin_->digital_write(true);
   this->write_byte_(data);
 }
 
 void ILI9341ParallelDisplay::write_byte_(uint8_t value) {
-  for (uint8_t i = 0; i < 8; i++) {
-    this->data_pins_[i]->digital_write((value >> i) & 0x01);
+  if (this->wr_pin_ == nullptr) {
+    ESP_LOGE(TAG, "WR pin not set. Cannot write byte.");
+    return;
+  }
+  for (int i = 0; i < 8; i++) {
+    if (this->data_pins_[i] != nullptr) {
+      this->data_pins_[i]->digital_write((value >> i) & 0x01);
+    }
   }
   this->wr_pin_->digital_write(false);
   this->wr_pin_->digital_write(true);
