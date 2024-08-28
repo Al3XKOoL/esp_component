@@ -9,8 +9,12 @@ namespace ili9xxx {
 static const char *const TAG = "ili9341";
 
 void ILI9341ParallelDisplay::setup() {
-  ESP_LOGCONFIG(TAG, "Setting up ILI9341 Parallel Display...");
+  ESP_LOGD("ILI9341", "Iniciando configuración...");
   this->init_lcd_();
+  ESP_LOGD("ILI9341", "LCD inicializado");
+  this->fill(Color::BLACK);
+  ESP_LOGD("ILI9341", "Pantalla limpiada");
+  ESP_LOGD("ILI9341", "Configuración completada");
 }
 
 void ILI9341ParallelDisplay::dump_config() {
