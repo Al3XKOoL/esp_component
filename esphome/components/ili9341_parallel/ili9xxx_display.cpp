@@ -183,7 +183,10 @@ void ILI9341ParallelDisplay::write_byte(uint8_t value) {
       ESP_LOGE(TAG, "Invalid rotation angle");
       break;
   }
-}
+-  this->init_internal_(this->get_width_internal(), this->get_height_internal());
++  // Asegúrate de que esta línea sea compatible con tu implementación
++  // this->init_internal_(this->get_width_internal(), this->get_height_internal());
+ }
 
 Color ILI9341ParallelDisplay::get_pixel_color_(int x, int y) const {
   return Color(this->buffer_[(x + y * this->width_) * 3],
