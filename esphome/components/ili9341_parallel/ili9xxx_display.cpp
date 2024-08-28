@@ -11,23 +11,38 @@ static const char *const TAG = "ili9341";
 void ILI9341ParallelDisplay::setup() {
   ESP_LOGD(TAG, "Iniciando configuración...");
   
+  // Establecer las dimensiones por defecto
+  this->set_dimensions(240, 320);
+  
+  // Inicializar todos los pines
   this->init_pins_();
+  
+  // Realizar un reset por hardware
   this->hard_reset_();
+  
+  // Inicializar la pantalla
   this->init_lcd_();
   
   ESP_LOGD(TAG, "LCD inicializado");
   
+  // Configurar la orientación de la pantalla
   this->set_rotation(this->rotation_);
   
+  // Llenar la pantalla con color rojo para probar
   this->fill(Color(255, 0, 0));  // Rojo
+  
   ESP_LOGD(TAG, "Pantalla llenada con rojo");
   
+  // Dibujar un rectángulo verde en el centro
   int width = this->get_width_internal();
   int height = this->get_height_internal();
   this->fill_rect(width/4, height/4, width/2, height/2, Color(0, 255, 0));  // Verde
+  
   ESP_LOGD(TAG, "Rectángulo verde dibujado en el centro");
   
+  // Dibujar una línea azul diagonal
   this->draw_line(0, 0, width-1, height-1, Color(0, 0, 255));  // Azul
+  
   ESP_LOGD(TAG, "Línea azul diagonal dibujada");
   
   ESP_LOGD(TAG, "Configuración completada");
