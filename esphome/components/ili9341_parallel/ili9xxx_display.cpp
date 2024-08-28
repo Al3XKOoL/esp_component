@@ -193,6 +193,7 @@ void ILI9341ParallelDisplay::set_addr_window_(uint16_t x1, uint16_t y1, uint16_t
   this->send_data_(y1 & 0xFF);  // YSTART
   this->send_data_(y2 >> 8);
   this->send_data_(y2 & 0xFF);  // YEND
+  this->send_command_(ILI9XXX_RAMWR);  // write to RAM
 }
 
 void ILI9341ParallelDisplay::write_color_(Color color) {
@@ -202,6 +203,7 @@ void ILI9341ParallelDisplay::write_color_(Color color) {
 }
 
 void ILI9341ParallelDisplay::init_lcd_() {
+  // Hard reset
   if (this->reset_pin_ != nullptr) {
     this->reset_pin_->digital_write(true);
     delay(1);
@@ -211,17 +213,40 @@ void ILI9341ParallelDisplay::init_lcd_() {
     delay(120);
   }
 
-  const uint8_t *addr = ILI9341_INIT_CMD;
-  uint8_t cmd, num_args;
-  while ((cmd = pgm_read_byte(addr++)) > 0) {
-    num_args = pgm_read_byte(addr++);
-    this->send_command_(cmd);
-    for (uint8_t x = 0; x < num_args; x++) {
-      this->send_data_(pgm_read_byte(addr++));
-    }
-    if (cmd == 0x01 || cmd == 0x11 || cmd == 0x29)
-      delay(120);
-  }
+  // Software reset
+  this->send_command_(ILI9XXX_SWRESET);
+  delay(120);
+
+  // Exit sleep
+  this->send_command_(ILI9XXX_SLPOUT);
+  delay(120);
+
+  // Set color mode to 16 bit
+  this->send_command_(ILI9XXX_COLMOD);
+  this->send_data_(0x55);
+  delay(10);
+
+  // Memory access control (directions)
+  this->send_command_(ILI9XXX_MADCTL);
+  this->send_data_(0x08); // Row/column address change, BGR color filter
+
+  // Inversion off
+  this->send_command_(ILI9XXX_INVOFF);
+
+  // Set pixel format
+  this->send_command_(ILI9XXX_PIXFMT);
+  this->send_data_(0x55);
+
+  // Normal display on
+  this->send_command_(ILI9XXX_NORON);
+  delay(10);
+
+  // Display on
+  this->send_command_(ILI9XXX_DISPON);
+  delay(120);
+
+  // Set rotation
+  this->set_rotation(this->rotation_);
 }
 
 void ILI9341ParallelDisplay::send_command_(uint8_t cmd) {
@@ -253,6 +278,7 @@ void ILI9341ParallelDisplay::write_byte_(uint8_t value) {
     }
   }
   this->wr_pin_->digital_write(false);
+  delayMicroseconds(1);  // Puede que necesites ajustar este delay
   this->wr_pin_->digital_write(true);
 }
 
