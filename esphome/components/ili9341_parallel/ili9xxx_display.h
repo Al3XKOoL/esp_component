@@ -55,6 +55,13 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
   void write_color_(Color color);
   void fill_rect(int x1, int y1, int width, int height, Color color);
   void draw_line(int x1, int y1, int x2, int y2, Color color);
+
+  void init_pins_();
+  void hard_reset_();
+  void set_rotation(uint8_t rotation);
+  void fill_rect(int x1, int y1, int width, int height, Color color);
+  void draw_line(int x1, int y1, int x2, int y2, Color color);
+
 };
 
 }  // namespace ili9xxx
