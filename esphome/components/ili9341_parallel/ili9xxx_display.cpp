@@ -1,8 +1,7 @@
 #include "ili9xxx_display.h"
-#include "ili9xxx_init.h"
+#include "ili9xxx_defines.h"
 #include "esphome/core/log.h"
 #include "esphome/core/application.h"
-#include "esphome/core/helpers.h"
 
 namespace esphome {
 namespace ili9xxx {
@@ -112,7 +111,7 @@ void ILI9341ParallelDisplay::set_rotation(uint8_t rotation) {
       return;
   }
   
-  this->send_command_(ILI9XXX_MADCTL);
+  this->send_command_(esphome::ili9xxx::ILI9XXX_MADCTL);
   this->send_data_(madctl);
   this->rotation_ = rotation;
   
@@ -170,7 +169,7 @@ void ILI9341ParallelDisplay::update() {
 void ILI9341ParallelDisplay::fill(Color color) {
   ESP_LOGD(TAG, "Llenando pantalla con color: %d, %d, %d", color.r, color.g, color.b);
   this->set_addr_window_(0, 0, this->get_width_internal() - 1, this->get_height_internal() - 1);
-  this->send_command_(ILI9XXX_RAMWR);
+  this->send_command_(esphome::ili9xxx::ILI9XXX_RAMWR);
   for (uint32_t i = 0; i < this->get_width_internal() * this->get_height_internal(); i++) {
     this->write_color_(color);
   }
@@ -178,22 +177,22 @@ void ILI9341ParallelDisplay::fill(Color color) {
 
 void ILI9341ParallelDisplay::draw_absolute_pixel_internal(int x, int y, Color color) {
   this->set_addr_window_(x, y, x, y);
-  this->send_command_(ILI9XXX_RAMWR);
+  this->send_command_(esphome::ili9xxx::ILI9XXX_RAMWR);
   this->write_color_(color);
 }
 
 void ILI9341ParallelDisplay::set_addr_window_(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2) {
-  this->send_command_(ILI9XXX_CASET);  // Column addr set
+  this->send_command_(esphome::ili9xxx::ILI9XXX_CASET);  // Column addr set
   this->send_data_(x1 >> 8);
   this->send_data_(x1 & 0xFF);  // XSTART
   this->send_data_(x2 >> 8);
   this->send_data_(x2 & 0xFF);  // XEND
-  this->send_command_(ILI9XXX_PASET);  // Row addr set
+  this->send_command_(esphome::ili9xxx::ILI9XXX_PASET);  // Row addr set
   this->send_data_(y1 >> 8);
   this->send_data_(y1 & 0xFF);  // YSTART
   this->send_data_(y2 >> 8);
   this->send_data_(y2 & 0xFF);  // YEND
-  this->send_command_(ILI9XXX_RAMWR);  // write to RAM
+  this->send_command_(esphome::ili9xxx::ILI9XXX_RAMWR);  // write to RAM
 }
 
 void ILI9341ParallelDisplay::write_color_(Color color) {
@@ -214,33 +213,33 @@ void ILI9341ParallelDisplay::init_lcd_() {
   }
 
   // Software reset
-  this->send_command_(ILI9XXX_SWRESET);
+  this->send_command_(esphome::ili9xxx::ILI9XXX_SWRESET);
   delay(120);
 
   // Exit sleep
-  this->send_command_(ILI9XXX_SLPOUT);
+  this->send_command_(esphome::ili9xxx::ILI9XXX_SLPOUT);
   delay(120);
 
   // Set color mode to 16 bit
-  this->send_command_(ILI9XXX_COLMOD);
+  this->send_command_(esphome::ili9xxx::ILI9XXX_COLMOD);
   this->send_data_(0x55);
   delay(10);
 
   // Memory access control (directions)
-  this->send_command_(ILI9XXX_MADCTL);
+  this->send_command_(esphome::ili9xxx::ILI9XXX_MADCTL);
   this->send_data_(0x08); // Row/column address change, BGR color filter
 
   // Pixel format set
-  this->send_command_(ILI9XXX_PIXFMT);
+  this->send_command_(esphome::ili9xxx::ILI9XXX_PIXFMT);
   this->send_data_(0x55);  // 16 bits per pixel
 
   // Frame rate control
-  this->send_command_(ILI9XXX_FRMCTR1);
+  this->send_command_(esphome::ili9xxx::ILI9XXX_FRMCTR1);
   this->send_data_(0x00);
   this->send_data_(0x18);
 
   // Display function control
-  this->send_command_(ILI9XXX_DFUNCTR);
+  this->send_command_(esphome::ili9xxx::ILI9XXX_DFUNCTR);
   this->send_data_(0x08);
   this->send_data_(0x82);
   this->send_data_(0x27);
@@ -250,11 +249,11 @@ void ILI9341ParallelDisplay::init_lcd_() {
   this->send_data_(0x00);
 
   // Gamma set
-  this->send_command_(ILI9XXX_GAMMASET);
+  this->send_command_(esphome::ili9xxx::ILI9XXX_GAMMASET);
   this->send_data_(0x01);
 
   // Positive gamma correction
-  this->send_command_(ILI9XXX_GMCTRP1);
+  this->send_command_(esphome::ili9xxx::ILI9XXX_GMCTRP1);
   this->send_data_(0x0F);
   this->send_data_(0x31);
   this->send_data_(0x2B);
@@ -272,7 +271,7 @@ void ILI9341ParallelDisplay::init_lcd_() {
   this->send_data_(0x00);
 
   // Negative gamma correction
-  this->send_command_(ILI9XXX_GMCTRN1);
+  this->send_command_(esphome::ili9xxx::ILI9XXX_GMCTRN1);
   this->send_data_(0x00);
   this->send_data_(0x0E);
   this->send_data_(0x14);
@@ -290,11 +289,11 @@ void ILI9341ParallelDisplay::init_lcd_() {
   this->send_data_(0x0F);
 
   // Normal display on
-  this->send_command_(ILI9XXX_NORON);
+  this->send_command_(esphome::ili9xxx::ILI9XXX_NORON);
   delay(10);
 
   // Display on
-  this->send_command_(ILI9XXX_DISPON);
+  this->send_command_(esphome::ili9xxx::ILI9XXX_DISPON);
   delay(120);
 
   // Set rotation
