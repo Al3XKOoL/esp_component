@@ -27,6 +27,10 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
   void set_height(uint16_t height) { height_ = height; }
   void set_rotation(uint8_t rotation) { rotation_ = rotation; }
 
+  void print(int x, int y, display::Font *font, Color color, const char *text) override {
+    this->display_buffer_->print(x, y, font, color, text);
+  }
+
  protected:
   void draw_absolute_pixel_internal(int x, int y, Color color) override;
   int get_width_internal() override { return width_; }
