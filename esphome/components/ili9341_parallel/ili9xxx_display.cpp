@@ -230,12 +230,64 @@ void ILI9341ParallelDisplay::init_lcd_() {
   this->send_command_(ILI9XXX_MADCTL);
   this->send_data_(0x08); // Row/column address change, BGR color filter
 
-  // Inversion off
-  this->send_command_(ILI9XXX_INVOFF);
-
-  // Set pixel format
+  // Pixel format set
   this->send_command_(ILI9XXX_PIXFMT);
-  this->send_data_(0x55);
+  this->send_data_(0x55);  // 16 bits per pixel
+
+  // Frame rate control
+  this->send_command_(ILI9XXX_FRMCTR1);
+  this->send_data_(0x00);
+  this->send_data_(0x18);
+
+  // Display function control
+  this->send_command_(ILI9XXX_DFUNCTR);
+  this->send_data_(0x08);
+  this->send_data_(0x82);
+  this->send_data_(0x27);
+
+  // Enable 3G (gamma control)
+  this->send_command_(0xF2);
+  this->send_data_(0x00);
+
+  // Gamma set
+  this->send_command_(ILI9XXX_GAMMASET);
+  this->send_data_(0x01);
+
+  // Positive gamma correction
+  this->send_command_(ILI9XXX_GMCTRP1);
+  this->send_data_(0x0F);
+  this->send_data_(0x31);
+  this->send_data_(0x2B);
+  this->send_data_(0x0C);
+  this->send_data_(0x0E);
+  this->send_data_(0x08);
+  this->send_data_(0x4E);
+  this->send_data_(0xF1);
+  this->send_data_(0x37);
+  this->send_data_(0x07);
+  this->send_data_(0x10);
+  this->send_data_(0x03);
+  this->send_data_(0x0E);
+  this->send_data_(0x09);
+  this->send_data_(0x00);
+
+  // Negative gamma correction
+  this->send_command_(ILI9XXX_GMCTRN1);
+  this->send_data_(0x00);
+  this->send_data_(0x0E);
+  this->send_data_(0x14);
+  this->send_data_(0x03);
+  this->send_data_(0x11);
+  this->send_data_(0x07);
+  this->send_data_(0x31);
+  this->send_data_(0xC1);
+  this->send_data_(0x48);
+  this->send_data_(0x08);
+  this->send_data_(0x0F);
+  this->send_data_(0x0C);
+  this->send_data_(0x31);
+  this->send_data_(0x36);
+  this->send_data_(0x0F);
 
   // Normal display on
   this->send_command_(ILI9XXX_NORON);
