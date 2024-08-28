@@ -1,4 +1,3 @@
-
 #include "ili9xxx_display.h"
 #include "esphome/core/log.h"
 #include "esphome/core/application.h"
