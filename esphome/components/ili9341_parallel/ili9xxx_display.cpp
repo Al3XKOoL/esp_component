@@ -84,6 +84,7 @@ void ILI9341ParallelDisplay::set_rotation(uint8_t rotation) {
   }
   this->send_command_(ILI9XXX_MADCTL);
   this->send_data_(madctl);
+  this->rotation_ = rotation;
 }
 
 void ILI9341ParallelDisplay::fill_rect(int x1, int y1, int width, int height, Color color) {
