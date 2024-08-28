@@ -9,16 +9,17 @@ namespace ili9xxx {
 static const char *const TAG = "ili9341";
 
 void ILI9341ParallelDisplay::setup() {
-  ESP_LOGD("ILI9341", "Iniciando configuración...");
+  ESP_LOGD(TAG, "Iniciando configuración...");
   this->init_lcd_();
-  ESP_LOGD("ILI9341", "LCD inicializado");
+  ESP_LOGD(TAG, "LCD inicializado");
   this->fill(Color::BLACK);
-  ESP_LOGD("ILI9341", "Pantalla limpiada");
-  ESP_LOGD("ILI9341", "Configuración completada");
+  ESP_LOGD(TAG, "Pantalla limpiada");
+  ESP_LOGD(TAG, "Configuración completada");
 }
 
 void ILI9341ParallelDisplay::dump_config() {
   ESP_LOGCONFIG(TAG, "ILI9341 Parallel Display:");
+  ESP_LOGCONFIG(TAG, "  Model: %s", this->model_.c_str());
   LOG_PIN("  DC Pin: ", this->dc_pin_);
   LOG_PIN("  Reset Pin: ", this->reset_pin_);
   LOG_PIN("  WR Pin: ", this->wr_pin_);
@@ -29,17 +30,45 @@ void ILI9341ParallelDisplay::dump_config() {
 }
 
 void ILI9341ParallelDisplay::update() {
-  ESP_LOGD("ILI9341", "Actualizando pantalla");
+  ESP_LOGD(TAG, "Iniciando actualización de pantalla");
+  uint32_t start_time = millis();
   this->do_update_();
-  ESP_LOGD("ILI9341", "Actualización completada");
+  uint32_t end_time = millis();
+  ESP_LOGD(TAG, "Actualización completada en %u ms", end_time - start_time);
 }
 
 void ILI9341ParallelDisplay::fill(Color color) {
-  // Implementa el llenado de la pantalla aquí
+  ESP_LOGD(TAG, "Llenando pantalla con color: %d, %d, %d", color.r, color.g, color.b);
+  this->set_addr_window_(0, 0, this->get_width_internal() - 1, this->get_height_internal() - 1);
+  this->send_command_(ILI9XXX_RAMWR);
+  for (uint32_t i = 0; i < this->get_width_internal() * this->get_height_internal(); i++) {
+    this->write_color_(color);
+  }
 }
 
 void ILI9341ParallelDisplay::draw_absolute_pixel_internal(int x, int y, Color color) {
-  // Implementa el dibujo de píxeles aquí
+  this->set_addr_window_(x, y, x, y);
+  this->send_command_(ILI9XXX_RAMWR);
+  this->write_color_(color);
+}
+
+void ILI9341ParallelDisplay::set_addr_window_(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2) {
+  this->send_command_(ILI9XXX_CASET);  // Column addr set
+  this->send_data_(x1 >> 8);
+  this->send_data_(x1 & 0xFF);  // XSTART
+  this->send_data_(x2 >> 8);
+  this->send_data_(x2 & 0xFF);  // XEND
+  this->send_command_(ILI9XXX_PASET);  // Row addr set
+  this->send_data_(y1 >> 8);
+  this->send_data_(y1 & 0xFF);  // YSTART
+  this->send_data_(y2 >> 8);
+  this->send_data_(y2 & 0xFF);  // YEND
+}
+
+void ILI9341ParallelDisplay::write_color_(Color color) {
+  uint16_t color565 = color.to_565();
+  this->send_data_(color565 >> 8);
+  this->send_data_(color565 & 0xFF);
 }
 
 void ILI9341ParallelDisplay::init_lcd_() {
