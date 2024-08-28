@@ -8,20 +8,9 @@ namespace ili9xxx {
 
 static const char *const TAG = "ili9341_parallel";
 
-void ILI9341ParallelDisplay::fill(Color color) {
-  uint16_t rgb565 = color_to_rgb565(color);
-  for (int y = 0; y < this->get_height_internal(); y++) {
-    for (int x = 0; x < this->get_width_internal(); x++) {
-      this->draw_absolute_pixel_internal(x, y, color);
-    }
-  }
-}
-
 void ILI9341ParallelDisplay::setup() {
   this->init_lcd_();
-  
-  // Configurar la rotación
-  this->set_rotation(display::DISPLAY_ROTATION_0_DEGREES);
+  this->set_rotation(this->rotation_);
 }
 
 void ILI9341ParallelDisplay::dump_config() {
@@ -66,7 +55,7 @@ void ILI9341ParallelDisplay::write_display_data_() {
   for (int y = 0; y < this->get_height_internal(); y++) {
     for (int x = 0; x < this->get_width_internal(); x++) {
       auto color = this->get_pixel_color_(x, y);
-      uint16_t rgb565 = color_to_rgb565(color);
+      uint16_t rgb565 = ILI9341ParallelDisplay::color_to_rgb565(color);
       this->send_data_(rgb565 >> 8);
       this->send_data_(rgb565);
     }
@@ -77,7 +66,7 @@ void ILI9341ParallelDisplay::draw_absolute_pixel_internal(int x, int y, Color co
   if (x >= this->get_width_internal() || x < 0 || y >= this->get_height_internal() || y < 0)
     return;
 
-  uint16_t rgb565 = color_to_rgb565(color);
+  uint16_t rgb565 = ILI9341ParallelDisplay::color_to_rgb565(color);
 
   this->send_command_(ILI9XXX_CASET);
   this->send_data_(x >> 8);
@@ -240,6 +229,18 @@ void ILI9341ParallelDisplay::set_data_pin(uint8_t index, GPIOPin *pin) {
 uint16_t ILI9341ParallelDisplay::color_to_rgb565(Color color) {
   return ((color.r & 0xF8) << 8) | ((color.g & 0xFC) << 3) | (color.b >> 3);
 }
+
+void ILI9341ParallelDisplay::fill(Color color) {
+  uint16_t rgb565 = ILI9341ParallelDisplay::color_to_rgb565(color);
+  for (int y = 0; y < this->get_height_internal(); y++) {
+    for (int x = 0; x < this->get_width_internal(); x++) {
+      this->draw_absolute_pixel_internal(x, y, color);
+    }
+  }
+}
+
+int ILI9341ParallelDisplay::get_width_internal() { return this->width_; }
+int ILI9341ParallelDisplay::get_height_internal() { return this->height_; }
 
 }  // namespace ili9xxx
 }  // namespace esphome
