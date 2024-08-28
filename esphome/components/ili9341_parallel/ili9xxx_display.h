@@ -1,6 +1,7 @@
 #pragma once
 #include "esphome/core/component.h"
 #include "esphome/components/display/display_buffer.h"
+#include "esphome/core/gpio.h"
 
 namespace esphome {
 namespace ili9xxx {
@@ -25,10 +26,15 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
     this->width_ = width;
     this->height_ = height;
   }
-  void set_rotation(uint8_t rotation) { rotation_ = rotation; }
+  void set_rotation(uint8_t rotation);
 
   void fill_rect(int x1, int y1, int width, int height, Color color);
   void draw_line(int x1, int y1, int x2, int y2, Color color);
+
+  // Implement pure virtual functions
+  display::DisplayType get_display_type() override { return display::DisplayType::DISPLAY_TYPE_COLOR; }
+  int get_height_internal() override { return height_; }
+  int get_width_internal() override { return width_; }
 
  protected:
   void init_pins_();
