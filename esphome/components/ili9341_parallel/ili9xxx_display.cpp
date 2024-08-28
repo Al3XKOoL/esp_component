@@ -66,7 +66,7 @@ void ILI9341ParallelDisplay::set_addr_window_(uint16_t x1, uint16_t y1, uint16_t
 }
 
 void ILI9341ParallelDisplay::write_color_(Color color) {
-  uint16_t color565 = color.to_565();
+  uint16_t color565 = ((color.r & 0xF8) << 8) | ((color.g & 0xFC) << 3) | (color.b >> 3);
   this->send_data_(color565 >> 8);
   this->send_data_(color565 & 0xFF);
 }
