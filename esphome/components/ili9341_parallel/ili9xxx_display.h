@@ -37,7 +37,7 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
 
   void set_width(uint16_t width) { this->width_ = width; }
   void set_height(uint16_t height) { this->height_ = height; }
-  void set_rotation(display::DisplayRotation rotation);
+  void set_rotation(int rotation);
 
  protected:
   static uint16_t color_to_rgb565(Color color);
@@ -62,7 +62,7 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
   GPIOPin *cs_pin_{nullptr};
   uint16_t width_{320};
   uint16_t height_{240};
-  display::DisplayRotation rotation_{display::DISPLAY_ROTATION_0_DEGREES};
+  int rotation_{0};
 };
 
 }  // namespace ili9xxx
