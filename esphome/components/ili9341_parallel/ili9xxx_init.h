@@ -2,12 +2,13 @@
 
 #include "esphome/core/hal.h"
 #include "ili9xxx_defines.h"
+#include <pgmspace.h>
 
 namespace esphome {
 namespace ili9xxx {
 
 // Secuencia de inicialización para ILI9341 en modo paralelo MCU 8080-8 bits
-static const uint8_t ILI9341_INIT_CMD[] = {
+const uint8_t ILI9341_INIT_CMD[] PROGMEM = {
     ILI9XXX_SWRESET, 0x80,  // Soft reset, esperar 120ms
     0xEF, 3, 0x03, 0x80, 0x02,
     0xCF, 3, 0x00, 0xC1, 0x30,
