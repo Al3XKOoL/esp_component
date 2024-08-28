@@ -1,4 +1,5 @@
 #include "ili9xxx_display.h"
+#include "ili9xxx_defines.h"
 #include "esphome/core/log.h"
 #include "esphome/core/application.h"
 #include "esphome/core/helpers.h"
@@ -198,7 +199,7 @@ void ILI9341ParallelDisplay::write_byte(uint8_t value) {
   delayMicroseconds(1);  // Tiempo de espera entre bytes
 }
 
-void ILI9341ParallelDisplay::set_rotation(uint8_t rotation) {
+void ILI9341ParallelDisplay::set_rotation(int rotation) {
   this->rotation_ = rotation % 4;
   switch (this->rotation_) {
     case 0:
