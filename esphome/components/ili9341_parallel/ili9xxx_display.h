@@ -26,6 +26,8 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
     this->width_ = width;
     this->height_ = height;
   }
+  void set_width(uint16_t width) { this->width_ = width; }
+  void set_height(uint16_t height) { this->height_ = height; }
   void set_rotation(uint8_t rotation);
 
   void fill_rect(int x1, int y1, int width, int height, Color color);
