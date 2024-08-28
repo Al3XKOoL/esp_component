@@ -29,7 +29,9 @@ void ILI9341ParallelDisplay::dump_config() {
 }
 
 void ILI9341ParallelDisplay::update() {
-  // Implementa la actualización de la pantalla aquí
+  ESP_LOGD("ILI9341", "Actualizando pantalla");
+  this->do_update_();
+  ESP_LOGD("ILI9341", "Actualización completada");
 }
 
 void ILI9341ParallelDisplay::fill(Color color) {
