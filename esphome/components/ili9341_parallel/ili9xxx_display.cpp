@@ -51,6 +51,16 @@ void ILI9341ParallelDisplay::setup() {
   }
   
   this->init_lcd_();
+  
+  this->buffer_ = new uint8_t[this->get_width_internal() * this->get_height_internal() * 3];
+  if (this->buffer_ == nullptr) {
+    ESP_LOGE(TAG, "Failed to allocate display buffer");
+    this->mark_failed();
+    return;
+  }
+  
+  // Inicializa el buffer con negro
+  memset(this->buffer_, 0, this->get_width_internal() * this->get_height_internal() * 3);
 }
 
 void ILI9341ParallelDisplay::init_lcd_() {
@@ -259,7 +269,17 @@ void ILI9341ParallelDisplay::set_data_pin(uint8_t index, GPIOPin *pin) {
 }
 
 Color ILI9341ParallelDisplay::get_pixel_color(int x, int y) {
-  return this->get_buffer()[y * this->get_width_internal() + x];
+  if (x < 0 || x >= this->get_width_internal() || y < 0 || y >= this->get_height_internal()) {
+    return Color::BLACK;
+  }
+  uint32_t index = (y * this->get_width_internal() + x) * 3;
+  return Color(this->buffer_[index], this->buffer_[index + 1], this->buffer_[index + 2]);
+}
+
+ILI9341ParallelDisplay::~ILI9341ParallelDisplay() {
+  if (this->buffer_ != nullptr) {
+    delete[] this->buffer_;
+  }
 }
 
 }  // namespace ili9xxx
