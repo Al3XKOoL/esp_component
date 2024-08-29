@@ -125,20 +125,13 @@ void ILI9341ParallelDisplay::set_rotation(uint8_t rotation) {
 }
 
 void ILI9341ParallelDisplay::write_byte_(uint8_t value) {
-  // Asumiendo que los pines de datos están en orden y son contiguos
-  uint32_t mask = 0xFF << this->data_pins_[0]->get_pin();
-  uint32_t val = value << this->data_pins_[0]->get_pin();
-  GPIO.out_w1tc = mask;
-  GPIO.out_w1ts = val;
-  
+  for (int i = 0; i < 8; i++) {
+    if (this->data_pins_[i] != nullptr) {
+      this->data_pins_[i]->digital_write((value >> i) & 0x01);
+    }
+  }
   this->wr_pin_->digital_write(false);
   this->wr_pin_->digital_write(true);
-}
-
-void ILI9341ParallelDisplay::write_buffer_(const uint8_t *buffer, size_t len) {
-  for (size_t i = 0; i < len; i++) {
-    this->write_byte_(buffer[i]);
-  }
 }
 
 void ILI9341ParallelDisplay::send_command_(uint8_t cmd) {
@@ -160,34 +153,26 @@ void ILI9341ParallelDisplay::update() {
     return;
   
   this->do_update_();
-  
-  if (this->writer_->get_dirty_end() == 0)
-    return;
-  
   this->write_display_();
 }
 
 void ILI9341ParallelDisplay::write_display_() {
-  uint32_t start_pos = this->writer_->get_dirty_start();
-  uint32_t end_pos = this->writer_->get_dirty_end();
+  uint32_t start_pos = 0;
+  uint32_t end_pos = this->get_width_internal() * this->get_height_internal();
   
-  this->set_addr_window_(start_pos % this->get_width_internal(), start_pos / this->get_width_internal(),
-                         (end_pos - 1) % this->get_width_internal(), (end_pos - 1) / this->get_height_internal());
+  this->set_addr_window_(0, 0, this->get_width_internal() - 1, this->get_height_internal() - 1);
   
-  size_t len = end_pos - start_pos;
-  for (size_t i = 0; i < len; i++) {
-    uint16_t color = this->writer_->get_pixel(start_pos + i);
+  for (uint32_t pos = start_pos; pos < end_pos; pos++) {
+    uint16_t color = display::ColorUtil::color_to_565(this->get_pixel_(pos));
     this->write_byte_(color >> 8);
     this->write_byte_(color & 0xFF);
   }
-  
-  this->writer_->clear_dirty();
 }
 
 void ILI9341ParallelDisplay::fill(Color color) {
   ESP_LOGD(TAG, "Filling screen with color: %d, %d, %d", color.r, color.g, color.b);
   this->set_addr_window_(0, 0, this->get_width_internal() - 1, this->get_height_internal() - 1);
-  uint16_t color565 = color.to_565();
+  uint16_t color565 = display::ColorUtil::color_to_565(color);
   uint8_t hi = color565 >> 8, lo = color565 & 0xFF;
   
   uint32_t num_pixels = this->get_width_internal() * this->get_height_internal();
