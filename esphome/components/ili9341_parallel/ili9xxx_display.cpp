@@ -14,6 +14,20 @@ static const char *const TAG = "ili9xxx";
 void ILI9341ParallelDisplay::setup() {
   ESP_LOGD(TAG, "Setting up ILI9341 Parallel Display");
   
+  if (!this->dc_pin_ || !this->wr_pin_ || !this->rd_pin_) {
+    ESP_LOGE(TAG, "Required pins (DC, WR, RD) not set. Cannot set up display.");
+    this->mark_failed();
+    return;
+  }
+
+  for (int i = 0; i < 8; i++) {
+    if (!this->data_pins_[i]) {
+      ESP_LOGE(TAG, "Data pin %d not set. Cannot set up display.", i);
+      this->mark_failed();
+      return;
+    }
+  }
+
   this->init_pins_();
   this->init_lcd_();
   
@@ -60,7 +74,10 @@ void ILI9341ParallelDisplay::init_lcd_() {
 
 void ILI9341ParallelDisplay::set_rotation(uint8_t rotation) {
   ESP_LOGD("ILI9341", "Setting rotation to %d", rotation);
-  this->rotation_ = rotation % 4;
+  if (this->width_internal_ == 0 || this->height_internal_ == 0) {
+    ESP_LOGE("ILI9341", "Internal dimensions not set. Cannot set rotation.");
+    return;
+  }
   uint8_t madctl = MADCTL_BGR;
   switch (this->rotation_) {
     case 0:
@@ -91,6 +108,10 @@ void ILI9341ParallelDisplay::set_rotation(uint8_t rotation) {
 
 void ILI9341ParallelDisplay::write_byte_(uint8_t value) {
   for (int i = 0; i < 8; i++) {
+    if (this->data_pins_[i] == nullptr) {
+      ESP_LOGE(TAG, "Data pin %d not set. Cannot write byte.", i);
+      return;
+    }
     this->data_pins_[i]->digital_write((value >> i) & 0x01);
   }
   this->wr_pin_->digital_write(false);
@@ -124,6 +145,11 @@ void ILI9341ParallelDisplay::update() {
 }
 
 void ILI9341ParallelDisplay::write_display_() {
+  if (this->buffer_ == nullptr) {
+    ESP_LOGE(TAG, "Display buffer not initialized. Cannot write display.");
+    return;
+  }
+  
   uint16_t buffer_width = this->get_width_internal();
   uint16_t buffer_height = this->get_height_internal();
 
@@ -193,6 +219,10 @@ void ILI9341ParallelDisplay::set_addr_window_(uint16_t x1, uint16_t y1, uint16_t
 }
 
 Color ILI9341ParallelDisplay::get_pixel_color(int x, int y) {
+  if (this->buffer_ == nullptr) {
+    ESP_LOGE(TAG, "Display buffer not initialized. Cannot get pixel color.");
+    return Color::BLACK;
+  }
   if (x < 0 || x >= this->get_width_internal() || y < 0 || y >= this->get_height_internal()) {
     return Color::BLACK;
   }
@@ -207,6 +237,15 @@ ILI9341ParallelDisplay::~ILI9341ParallelDisplay() {
 }
 
 ILI9341ParallelDisplay::ILI9341ParallelDisplay() : display::DisplayBuffer() {
+  for (int i = 0; i < 8; i++) {
+    this->data_pins_[i] = nullptr;
+  }
+  this->dc_pin_ = nullptr;
+  this->wr_pin_ = nullptr;
+  this->rd_pin_ = nullptr;
+  this->reset_pin_ = nullptr;
+  this->cs_pin_ = nullptr;
+  this->buffer_ = nullptr;
 }
 
 void ILI9341ParallelDisplay::init_pins_() {
