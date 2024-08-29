@@ -3,6 +3,8 @@
 #include "ili9xxx_init.h"
 #include "esphome/core/log.h"
 #include "esphome/core/application.h"
+#include "esphome/components/display/display_buffer.h"
+#include "esphome/components/display/display_color_utils.h"
 
 namespace esphome {
 namespace ili9xxx {
