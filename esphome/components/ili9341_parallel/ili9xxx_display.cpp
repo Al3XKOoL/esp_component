@@ -50,6 +50,11 @@ void ILI9341ParallelDisplay::setup() {
 void ILI9341ParallelDisplay::init_lcd_() {
   ESP_LOGD(TAG, "Initializing ILI9341 Parallel Display");
 
+  if (!this->dc_pin_ || !this->wr_pin_) {
+    ESP_LOGE(TAG, "DC or WR pin not set. Cannot initialize LCD.");
+    return;
+  }
+
   if (this->reset_pin_ != nullptr) {
     this->reset_pin_->digital_write(true);
     delay(5);
@@ -75,11 +80,11 @@ void ILI9341ParallelDisplay::init_lcd_() {
     }
   }
 
-  ESP_LOGD(TAG, "ILI9341 Parallel Display initialized");
+  ESP_LOGD(TAG, "ILI9341 Parallel Display initialized successfully");
 }
 
 void ILI9341ParallelDisplay::set_rotation(uint8_t rotation) {
-  if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr) {
+  if (!this->dc_pin_ || !this->wr_pin_) {
     ESP_LOGE(TAG, "DC or WR pin not set. Cannot set rotation.");
     return;
   }
@@ -129,7 +134,8 @@ void ILI9341ParallelDisplay::write_byte_(uint8_t value) {
 }
 
 void ILI9341ParallelDisplay::send_command_(uint8_t cmd) {
-  if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr) {
+  ESP_LOGV(TAG, "Sending command: 0x%02X", cmd);
+  if (!this->dc_pin_ || !this->wr_pin_) {
     ESP_LOGE(TAG, "DC pin: %s, WR pin: %s. Cannot send command.",
              this->dc_pin_ ? "Set" : "Not set",
              this->wr_pin_ ? "Set" : "Not set");
@@ -140,7 +146,8 @@ void ILI9341ParallelDisplay::send_command_(uint8_t cmd) {
 }
 
 void ILI9341ParallelDisplay::send_data_(uint8_t data) {
-  if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr) {
+  ESP_LOGV(TAG, "Sending data: 0x%02X", data);
+  if (!this->dc_pin_ || !this->wr_pin_) {
     ESP_LOGE(TAG, "DC pin: %s, WR pin: %s. Cannot send data.",
              this->dc_pin_ ? "Set" : "Not set",
              this->wr_pin_ ? "Set" : "Not set");
@@ -263,29 +270,13 @@ ILI9341ParallelDisplay::ILI9341ParallelDisplay() : display::DisplayBuffer() {
 }
 
 void ILI9341ParallelDisplay::init_pins_() {
-  if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr) {
-    ESP_LOGE(TAG, "DC or WR pin not set. Cannot initialize display.");
-    this->mark_failed();
-    return;
-  }
-
   for (int i = 0; i < 8; i++) {
-    if (this->data_pins_[i] != nullptr) {
-      this->data_pins_[i]->setup();
-    }
+    this->data_pins_[i]->setup();
   }
   
-  if (this->dc_pin_ != nullptr) {
-    this->dc_pin_->setup();
-  }
-  
-  if (this->wr_pin_ != nullptr) {
-    this->wr_pin_->setup();
-  }
-  
-  if (this->rd_pin_ != nullptr) {
-    this->rd_pin_->setup();
-  }
+  this->dc_pin_->setup();
+  this->wr_pin_->setup();
+  this->rd_pin_->setup();
   
   if (this->reset_pin_ != nullptr) {
     this->reset_pin_->setup();
