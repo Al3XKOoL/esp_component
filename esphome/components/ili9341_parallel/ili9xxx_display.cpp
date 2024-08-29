@@ -16,11 +16,19 @@ void ILI9341ParallelDisplay::setup() {
   
   this->init_pins_();
   
-  // Verificar que los pines DC y WR estén configurados antes de inicializar la pantalla
-  if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr) {
-    ESP_LOGE(TAG, "DC o WR pin no configurados. No se puede completar la configuración.");
+  // Verificar que todos los pines necesarios estén configurados
+  if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr || this->rd_pin_ == nullptr) {
+    ESP_LOGE(TAG, "Pines DC, WR o RD no configurados. No se puede completar la configuración.");
     this->mark_failed();
     return;
+  }
+  
+  for (int i = 0; i < 8; i++) {
+    if (this->data_pins_[i] == nullptr) {
+      ESP_LOGE(TAG, "Pin de datos %d no configurado. No se puede completar la configuración.", i);
+      this->mark_failed();
+      return;
+    }
   }
   
   this->init_lcd_();
@@ -38,7 +46,6 @@ void ILI9341ParallelDisplay::setup() {
   
   ESP_LOGD(TAG, "Configuración de ILI9341 Parallel Display completada");
 }
-
 void ILI9341ParallelDisplay::init_lcd_() {
   ESP_LOGD(TAG, "Inicializando ILI9341 Parallel Display");
 
@@ -71,13 +78,8 @@ void ILI9341ParallelDisplay::init_lcd_() {
 }
 
 void ILI9341ParallelDisplay::set_rotation(uint8_t rotation) {
-  ESP_LOGD(TAG, "Entrando en set_rotation con rotación: %d", rotation);
+  ESP_LOGD(TAG, "Estableciendo rotación: %d", rotation);
   
-  if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr) {
-    ESP_LOGE(TAG, "DC o WR pin no configurados. No se puede establecer la rotación.");
-    return;
-  }
-
   this->rotation_ = rotation % 4;
   
   uint8_t madctl = 0;
@@ -111,10 +113,6 @@ void ILI9341ParallelDisplay::set_rotation(uint8_t rotation) {
 
 void ILI9341ParallelDisplay::write_byte_(uint8_t value) {
   for (int i = 0; i < 8; i++) {
-    if (this->data_pins_[i] == nullptr) {
-      ESP_LOGE(TAG, "Data pin %d no configurado. No se puede escribir byte.", i);
-      return;
-    }
     this->data_pins_[i]->digital_write((value >> i) & 0x01);
   }
   this->wr_pin_->digital_write(false);
