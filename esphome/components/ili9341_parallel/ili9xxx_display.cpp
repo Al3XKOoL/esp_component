@@ -14,9 +14,6 @@ static const char *const TAG = "ili9xxx";
 void ILI9341ParallelDisplay::setup() {
   ESP_LOGD(TAG, "Setting up ILI9341 Parallel Display");
   
-  ESP_LOGD(TAG, "DC pin: %s", this->dc_pin_ ? "Set" : "Not set");
-  ESP_LOGD(TAG, "WR pin: %s", this->wr_pin_ ? "Set" : "Not set");
-  
   if (!this->dc_pin_ || !this->wr_pin_ || !this->rd_pin_) {
     ESP_LOGE(TAG, "Required pins (DC, WR, RD) not set. Cannot set up display.");
     this->mark_failed();
@@ -34,6 +31,9 @@ void ILI9341ParallelDisplay::setup() {
   this->init_pins_();
   this->init_lcd_();
   
+  // Mueve la configuración de la rotación aquí, después de la inicialización
+  this->set_rotation(this->rotation_);
+  
   this->buffer_ = new uint8_t[this->get_width_internal() * this->get_height_internal() * 3];
   if (this->buffer_ == nullptr) {
     ESP_LOGE(TAG, "Failed to allocate display buffer");
@@ -42,9 +42,6 @@ void ILI9341ParallelDisplay::setup() {
   }
   
   memset(this->buffer_, 0, this->get_width_internal() * this->get_height_internal() * 3);
-
-  // Configura la rotación al final de la configuración
-  this->set_rotation(this->rotation_);
 }
 
 void ILI9341ParallelDisplay::init_lcd_() {
@@ -271,12 +268,30 @@ ILI9341ParallelDisplay::ILI9341ParallelDisplay() : display::DisplayBuffer() {
 
 void ILI9341ParallelDisplay::init_pins_() {
   for (int i = 0; i < 8; i++) {
-    this->data_pins_[i]->setup();
+    if (this->data_pins_[i] != nullptr) {
+      this->data_pins_[i]->setup();
+    } else {
+      ESP_LOGE(TAG, "Data pin %d is null", i);
+    }
   }
   
-  this->dc_pin_->setup();
-  this->wr_pin_->setup();
-  this->rd_pin_->setup();
+  if (this->dc_pin_ != nullptr) {
+    this->dc_pin_->setup();
+  } else {
+    ESP_LOGE(TAG, "DC pin is null");
+  }
+  
+  if (this->wr_pin_ != nullptr) {
+    this->wr_pin_->setup();
+  } else {
+    ESP_LOGE(TAG, "WR pin is null");
+  }
+  
+  if (this->rd_pin_ != nullptr) {
+    this->rd_pin_->setup();
+  } else {
+    ESP_LOGE(TAG, "RD pin is null");
+  }
   
   if (this->reset_pin_ != nullptr) {
     this->reset_pin_->setup();
