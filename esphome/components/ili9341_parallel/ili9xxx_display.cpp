@@ -240,5 +240,28 @@ void ILI9341ParallelDisplay::init_pins_() {
   }
 }
 
+void ILI9341ParallelDisplay::draw_absolute_pixel_internal(int x, int y, Color color) {
+  if (x >= this->get_width_internal() || y >= this->get_height_internal() || x < 0 || y < 0)
+    return;
+
+  this->set_addr_window_(x, y, x, y);
+  this->send_command_(ILI9XXX_RAMWR);
+  this->write_color_(color);
+}
+
+void ILI9341ParallelDisplay::set_width(uint16_t width) {
+  this->width_ = width;
+}
+
+void ILI9341ParallelDisplay::set_height(uint16_t height) {
+  this->height_ = height;
+}
+
+void ILI9341ParallelDisplay::set_data_pin(uint8_t index, GPIOPin *pin) {
+  if (index < 8) {
+    this->data_pins_[index] = pin;
+  }
+}
+
 }  // namespace ili9xxx
 }  // namespace esphome
