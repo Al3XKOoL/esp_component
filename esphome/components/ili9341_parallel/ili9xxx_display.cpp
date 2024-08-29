@@ -14,24 +14,15 @@ static const char *const TAG = "ili9xxx";
 void ILI9341ParallelDisplay::setup() {
   ESP_LOGD(TAG, "Configurando ILI9341 Parallel Display");
   
-  this->init_pins_();
-  
-  // Verificar que todos los pines necesarios estén configurados
-  if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr || this->rd_pin_ == nullptr) {
-    ESP_LOGE(TAG, "Pines DC, WR o RD no configurados. No se puede completar la configuración.");
+  if (!this->init_pins_()) {
     this->mark_failed();
     return;
   }
   
-  for (int i = 0; i < 8; i++) {
-    if (this->data_pins_[i] == nullptr) {
-      ESP_LOGE(TAG, "Pin de datos %d no configurado. No se puede completar la configuración.", i);
-      this->mark_failed();
-      return;
-    }
+  if (!this->init_lcd_()) {
+    this->mark_failed();
+    return;
   }
-  
-  this->init_lcd_();
   
   this->buffer_ = new uint8_t[this->get_width_internal() * this->get_height_internal() * 3];
   if (this->buffer_ == nullptr) {
@@ -42,11 +33,60 @@ void ILI9341ParallelDisplay::setup() {
   
   memset(this->buffer_, 0, this->get_width_internal() * this->get_height_internal() * 3);
   
-  this->set_rotation(this->rotation_);
+  if (!this->set_rotation(this->rotation_)) {
+    this->mark_failed();
+    return;
+  }
   
-  ESP_LOGD(TAG, "Configuración de ILI9341 Parallel Display completada");
+  ESP_LOGD(TAG, "Configuración de ILI9341 Parallel Display completada con éxito");
 }
-void ILI9341ParallelDisplay::init_lcd_() {
+
+bool ILI9341ParallelDisplay::init_pins_() {
+  ESP_LOGD(TAG, "Inicializando pines");
+  
+  for (int i = 0; i < 8; i++) {
+    if (this->data_pins_[i] != nullptr) {
+      this->data_pins_[i]->setup();
+      ESP_LOGD(TAG, "Pin de datos %d configurado", i);
+    } else {
+      ESP_LOGW(TAG, "Pin de datos %d no configurado", i);
+      return false;
+    }
+  }
+  
+  if (this->dc_pin_ != nullptr) {
+    this->dc_pin_->setup();
+    ESP_LOGD(TAG, "DC pin configurado");
+  } else {
+    ESP_LOGE(TAG, "DC pin no configurado");
+    return false;
+  }
+  
+  if (this->wr_pin_ != nullptr) {
+    this->wr_pin_->setup();
+    ESP_LOGD(TAG, "WR pin configurado");
+  } else {
+    ESP_LOGE(TAG, "WR pin no configurado");
+    return false;
+  }
+  
+  if (this->rd_pin_ != nullptr) {
+    this->rd_pin_->setup();
+  }
+  
+  if (this->reset_pin_ != nullptr) {
+    this->reset_pin_->setup();
+  }
+  
+  if (this->cs_pin_ != nullptr) {
+    this->cs_pin_->setup();
+  }
+  
+  ESP_LOGD(TAG, "Inicialización de pines completada");
+  return true;
+}
+
+bool ILI9341ParallelDisplay::init_lcd_() {
   ESP_LOGD(TAG, "Inicializando ILI9341 Parallel Display");
 
   if (this->reset_pin_ != nullptr) {
@@ -75,9 +115,10 @@ void ILI9341ParallelDisplay::init_lcd_() {
   }
 
   ESP_LOGD(TAG, "ILI9341 Parallel Display inicializado correctamente");
+  return true;
 }
 
-void ILI9341ParallelDisplay::set_rotation(uint8_t rotation) {
+bool ILI9341ParallelDisplay::set_rotation(uint8_t rotation) {
   ESP_LOGD(TAG, "Estableciendo rotación: %d", rotation);
   
   this->rotation_ = rotation % 4;
@@ -109,6 +150,7 @@ void ILI9341ParallelDisplay::set_rotation(uint8_t rotation) {
   this->send_command_(ILI9XXX_MADCTL);
   this->send_data_(madctl);
   ESP_LOGD(TAG, "Rotación establecida, ancho: %d, alto: %d", this->width_, this->height_);
+  return true;
 }
 
 void ILI9341ParallelDisplay::write_byte_(uint8_t value) {
@@ -250,56 +292,6 @@ ILI9341ParallelDisplay::ILI9341ParallelDisplay() : display::DisplayBuffer() {
   this->reset_pin_ = nullptr;
   this->cs_pin_ = nullptr;
   this->buffer_ = nullptr;
-}
-
-void ILI9341ParallelDisplay::init_pins_() {
-  ESP_LOGD(TAG, "Inicializando pines");
-  
-  for (int i = 0; i < 8; i++) {
-    if (this->data_pins_[i] != nullptr) {
-      this->data_pins_[i]->setup();
-      ESP_LOGD(TAG, "Pin de datos %d configurado", i);
-    } else {
-      ESP_LOGW(TAG, "Pin de datos %d no configurado", i);
-    }
-  }
-  
-  if (this->dc_pin_ != nullptr) {
-    this->dc_pin_->setup();
-    ESP_LOGD(TAG, "DC pin configurado");
-  } else {
-    ESP_LOGE(TAG, "DC pin no configurado");
-  }
-  
-  if (this->wr_pin_ != nullptr) {
-    this->wr_pin_->setup();
-    ESP_LOGD(TAG, "WR pin configurado");
-  } else {
-    ESP_LOGE(TAG, "WR pin no configurado");
-  }
-  
-  if (this->rd_pin_ != nullptr) {
-    this->rd_pin_->setup();
-  }
-  
-  if (this->reset_pin_ != nullptr) {
-    this->reset_pin_->setup();
-  }
-  
-  if (this->cs_pin_ != nullptr) {
-    this->cs_pin_->setup();
-  }
-  
-  ESP_LOGD(TAG, "Inicialización de pines completada");
-}
-
-void ILI9341ParallelDisplay::draw_absolute_pixel_internal(int x, int y, Color color) {
-  if (x >= this->get_width_internal() || y >= this->get_height_internal() || x < 0 || y < 0)
-    return;
-
-  this->set_addr_window_(x, y, x, y);
-  this->send_command_(ILI9XXX_RAMWR);
-  this->write_color_(color);
 }
 
 void ILI9341ParallelDisplay::set_width(uint16_t width) {
