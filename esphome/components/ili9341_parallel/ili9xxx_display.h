@@ -9,6 +9,7 @@ namespace ili9xxx {
 
 class ILI9341ParallelDisplay : public display::DisplayBuffer {
  public:
+  ILI9341ParallelDisplay(); // Constructor
   void setup() override;
   void dump_config() override;
   void update() override;
