@@ -314,5 +314,13 @@ void ILI9341ParallelDisplay::write_color_(Color color) {
   this->write_byte_(color.blue);
 }
 
+void ILI9341ParallelDisplay::draw_absolute_pixel_internal(int x, int y, Color color) {
+  if (x >= this->get_width_internal() || x < 0 || y >= this->get_height_internal() || y < 0)
+    return;
+
+  this->set_addr_window_(x, y, x, y);
+  this->write_color_(color);
+}
+
 }  // namespace ili9xxx
 }  // namespace esphome
