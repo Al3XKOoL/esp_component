@@ -15,6 +15,14 @@ void ILI9341ParallelDisplay::setup() {
   ESP_LOGD(TAG, "Configurando ILI9341 Parallel Display");
   
   this->init_pins_();
+  
+  // Verificar que los pines DC y WR estén configurados antes de inicializar la pantalla
+  if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr) {
+    ESP_LOGE(TAG, "DC o WR pin no configurados. No se puede completar la configuración.");
+    this->mark_failed();
+    return;
+  }
+  
   this->init_lcd_();
   
   this->buffer_ = new uint8_t[this->get_width_internal() * this->get_height_internal() * 3];
@@ -26,13 +34,6 @@ void ILI9341ParallelDisplay::setup() {
   
   memset(this->buffer_, 0, this->get_width_internal() * this->get_height_internal() * 3);
   
-  // Verificar que los pines DC y WR estén configurados antes de establecer la rotación
-  if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr) {
-    ESP_LOGE(TAG, "DC o WR pin no configurados. No se puede completar la configuración.");
-    this->mark_failed();
-    return;
-  }
-  
   this->set_rotation(this->rotation_);
   
   ESP_LOGD(TAG, "Configuración de ILI9341 Parallel Display completada");
@@ -40,11 +41,6 @@ void ILI9341ParallelDisplay::setup() {
 
 void ILI9341ParallelDisplay::init_lcd_() {
   ESP_LOGD(TAG, "Inicializando ILI9341 Parallel Display");
-
-  if (!this->dc_pin_ || !this->wr_pin_) {
-    ESP_LOGE(TAG, "DC o WR pin no configurados. No se puede inicializar LCD.");
-    return;
-  }
 
   if (this->reset_pin_ != nullptr) {
     this->reset_pin_->digital_write(true);
@@ -55,29 +51,20 @@ void ILI9341ParallelDisplay::init_lcd_() {
     delay(150);
   }
 
-  for (uint8_t i = 0; ILI9341_INIT_CMD[i] != 0; i += 3) {
-    uint8_t cmd = pgm_read_byte(&ILI9341_INIT_CMD[i]);
-    uint8_t num_args = pgm_read_byte(&ILI9341_INIT_CMD[i + 1]);
-    uint8_t delay_time = pgm_read_byte(&ILI9341_INIT_CMD[i + 2]);
+  const uint8_t *addr = ILI9341_INIT_CMD;
+  while (true) {
+    uint8_t cmd = pgm_read_byte(addr++);
+    uint8_t num_args = pgm_read_byte(addr++);
+    if (cmd == 0x00) break;
 
     this->send_command_(cmd);
-    ESP_LOGV(TAG, "Enviando comando: 0x%02X", cmd);
-
-    for (uint8_t j = 0; j < num_args; j++) {
-      uint8_t arg = pgm_read_byte(&ILI9341_INIT_CMD[i + 3 + j]);
-      this->send_data_(arg);
-      ESP_LOGV(TAG, "Enviando dato: 0x%02X", arg);
+    for (uint8_t i = 0; i < num_args; i++) {
+      this->send_data_(pgm_read_byte(addr++));
     }
 
-    if (delay_time > 0) {
-      if (delay_time == 0x80) {
-        delay(150);
-      } else {
-        delay(delay_time);
-      }
+    if (num_args & 0x80) {
+      delay(150);
     }
-
-    i += num_args;
   }
 
   ESP_LOGD(TAG, "ILI9341 Parallel Display inicializado correctamente");
@@ -135,11 +122,8 @@ void ILI9341ParallelDisplay::write_byte_(uint8_t value) {
 }
 
 void ILI9341ParallelDisplay::send_command_(uint8_t cmd) {
-  ESP_LOGV(TAG, "Enviando comando: 0x%02X", cmd);
-  if (!this->dc_pin_ || !this->wr_pin_) {
-    ESP_LOGE(TAG, "DC pin: %s, WR pin: %s. No se puede enviar comando.",
-             this->dc_pin_ ? "Configurado" : "No configurado",
-             this->wr_pin_ ? "Configurado" : "No configurado");
+  if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr) {
+    ESP_LOGE(TAG, "DC o WR pin no configurados. No se puede enviar el comando.");
     return;
   }
   this->dc_pin_->digital_write(false);
@@ -147,11 +131,8 @@ void ILI9341ParallelDisplay::send_command_(uint8_t cmd) {
 }
 
 void ILI9341ParallelDisplay::send_data_(uint8_t data) {
-  ESP_LOGV(TAG, "Enviando dato: 0x%02X", data);
-  if (!this->dc_pin_ || !this->wr_pin_) {
-    ESP_LOGE(TAG, "DC pin: %s, WR pin: %s. No se puede enviar dato.",
-             this->dc_pin_ ? "Configurado" : "No configurado",
-             this->wr_pin_ ? "Configurado" : "No configurado");
+  if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr) {
+    ESP_LOGE(TAG, "DC o WR pin no configurados. No se pueden enviar datos.");
     return;
   }
   this->dc_pin_->digital_write(true);
