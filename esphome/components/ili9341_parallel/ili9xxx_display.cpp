@@ -88,32 +88,24 @@ bool ILI9341ParallelDisplay::init_pins_() {
 
 bool ILI9341ParallelDisplay::init_lcd_() {
   ESP_LOGD(TAG, "Inicializando ILI9341 Parallel Display");
-
-  if (this->reset_pin_ != nullptr) {
-    this->reset_pin_->digital_write(true);
-    delay(5);
-    this->reset_pin_->digital_write(false);
-    delay(20);
-    this->reset_pin_->digital_write(true);
-    delay(150);
-  }
-
-  const uint8_t *addr = ILI9341_INIT_CMD;
-  while (true) {
-    uint8_t cmd = pgm_read_byte(addr++);
-    uint8_t num_args = pgm_read_byte(addr++);
-    if (cmd == 0x00) break;
-
-    this->send_command_(cmd);
-    for (uint8_t i = 0; i < num_args; i++) {
-      this->send_data_(pgm_read_byte(addr++));
-    }
-
+  
+  this->hard_reset_();
+  
+  // Enviar secuencia de inicialización
+  for (uint8_t i = 0; ILI9341_INIT_CMD[i] != 0; i += 2) {
+    uint8_t cmd = pgm_read_byte(&ILI9341_INIT_CMD[i]);
+    uint8_t num_args = pgm_read_byte(&ILI9341_INIT_CMD[i + 1]);
     if (num_args & 0x80) {
-      delay(150);
+      delay(100);
+    } else {
+      this->send_command_(cmd);
+      for (uint8_t j = 0; j < num_args; j++) {
+        this->send_data_(pgm_read_byte(&ILI9341_INIT_CMD[i + 2 + j]));
+      }
+      i += num_args;
     }
   }
-
+  
   ESP_LOGD(TAG, "ILI9341 Parallel Display inicializado correctamente");
   return true;
 }
@@ -302,6 +294,18 @@ void ILI9341ParallelDisplay::set_height(uint16_t height) {
   this->height_ = height;
 }
 
+void ILI9341ParallelDisplay::set_data_pins(GPIOPin *d0, GPIOPin *d1, GPIOPin *d2, GPIOPin *d3,
+                                           GPIOPin *d4, GPIOPin *d5, GPIOPin *d6, GPIOPin *d7) {
+  this->data_pins_[0] = d0;
+  this->data_pins_[1] = d1;
+  this->data_pins_[2] = d2;
+  this->data_pins_[3] = d3;
+  this->data_pins_[4] = d4;
+  this->data_pins_[5] = d5;
+  this->data_pins_[6] = d6;
+  this->data_pins_[7] = d7;
+}
+
 void ILI9341ParallelDisplay::set_data_pin(uint8_t index, GPIOPin *pin) {
   if (index < 8) {
     this->data_pins_[index] = pin;
@@ -320,6 +324,17 @@ void ILI9341ParallelDisplay::draw_absolute_pixel_internal(int x, int y, Color co
 
   this->set_addr_window_(x, y, x, y);
   this->write_color_(color);
+}
+
+void ILI9341ParallelDisplay::hard_reset_() {
+  if (this->reset_pin_ != nullptr) {
+    this->reset_pin_->digital_write(true);
+    delay(10);
+    this->reset_pin_->digital_write(false);
+    delay(10);
+    this->reset_pin_->digital_write(true);
+    delay(10);
+  }
 }
 
 }  // namespace ili9xxx
