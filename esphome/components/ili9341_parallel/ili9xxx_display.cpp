@@ -217,5 +217,23 @@ void ILI9341ParallelDisplay::set_addr_window_(uint16_t x1, uint16_t y1, uint16_t
   this->send_command_(ILI9XXX_RAMWR);  // write to RAM
 }
 
+void ILI9341ParallelDisplay::draw_absolute_pixel_internal(int x, int y, Color color) {
+    if (x >= this->get_width_internal() || y >= this->get_height_internal() || x < 0 || y < 0)
+        return;
+
+    uint32_t pos = (y * this->get_width_internal() + x) * 3;
+    this->buffer_[pos] = color.r;
+    this->buffer_[pos + 1] = color.g;
+    this->buffer_[pos + 2] = color.b;
+}
+
+void ILI9341ParallelDisplay::set_width(unsigned short width) {
+    this->width_ = width;
+}
+
+void ILI9341ParallelDisplay::set_height(unsigned short height) {
+    this->height_ = height;
+}
+
 }  // namespace ili9xxx
 }  // namespace esphome
