@@ -12,45 +12,13 @@ namespace ili9xxx {
 static const char *const TAG = "ili9341";
 
 void ILI9341ParallelDisplay::setup() {
-  ESP_LOGD(TAG, "Setting up ILI9341 Parallel Display");
+  ESP_LOGD("ili9341", "Setting up ILI9341 Parallel Display");
   
-  // Initialize all pins
-  for (int i = 0; i < 8; i++) {
-    if (this->data_pins_[i] != nullptr) {
-      this->data_pins_[i]->setup();
-    }
-  }
-  
-  if (this->dc_pin_ != nullptr) {
-    this->dc_pin_->setup();
-  } else {
-    ESP_LOGE(TAG, "DC pin not set");
-    return;
-  }
-  
-  if (this->wr_pin_ != nullptr) {
-    this->wr_pin_->setup();
-  } else {
-    ESP_LOGE(TAG, "WR pin not set");
-    return;
-  }
-  
-  if (this->rd_pin_ != nullptr) {
-    this->rd_pin_->setup();
-  } else {
-    ESP_LOGE(TAG, "RD pin not set");
-    return;
-  }
-  
-  if (this->reset_pin_ != nullptr) {
-    this->reset_pin_->setup();
-  }
-  
-  if (this->cs_pin_ != nullptr) {
-    this->cs_pin_->setup();
-  }
-  
+  this->init_pins_();
   this->init_lcd_();
+  
+  // Configura la rotación después de inicializar la pantalla
+  this->set_rotation(this->rotation_);
   
   this->buffer_ = new uint8_t[this->get_width_internal() * this->get_height_internal() * 3];
   if (this->buffer_ == nullptr) {
@@ -93,50 +61,41 @@ void ILI9341ParallelDisplay::init_lcd_() {
     }
   }
 
-  // Set rotation
-  this->set_rotation(this->rotation_);
-
   ESP_LOGD(TAG, "ILI9341 Parallel Display initialized");
 }
 
 void ILI9341ParallelDisplay::set_rotation(uint8_t rotation) {
-  ESP_LOGD(TAG, "Setting rotation: %d", rotation);
-  
-  if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr) {
-    ESP_LOGE(TAG, "DC or WR pin not set. Cannot set rotation.");
-    return;
-  }
+  this->rotation_ = rotation % 4;
+  uint8_t madctl = 0;
 
-  uint8_t madctl = MADCTL_BGR;
-  switch (rotation % 4) {
+  switch (this->rotation_) {
     case 0:
-      madctl |= MADCTL_MX;
-      this->width_ = 240;
-      this->height_ = 320;
+      madctl = MADCTL_MX | MADCTL_BGR;
+      this->width_ = this->width_internal_;
+      this->height_ = this->height_internal_;
       break;
     case 1:
-      madctl |= MADCTL_MV;
-      this->width_ = 320;
-      this->height_ = 240;
+      madctl = MADCTL_MV | MADCTL_BGR;
+      this->width_ = this->height_internal_;
+      this->height_ = this->width_internal_;
       break;
     case 2:
-      madctl |= MADCTL_MY;
-      this->width_ = 240;
-      this->height_ = 320;
+      madctl = MADCTL_MY | MADCTL_BGR;
+      this->width_ = this->width_internal_;
+      this->height_ = this->height_internal_;
       break;
     case 3:
-      madctl |= MADCTL_MX | MADCTL_MY | MADCTL_MV;
-      this->width_ = 320;
-      this->height_ = 240;
+      madctl = MADCTL_MX | MADCTL_MY | MADCTL_MV | MADCTL_BGR;
+      this->width_ = this->height_internal_;
+      this->height_ = this->width_internal_;
       break;
   }
-  
+
+  ESP_LOGD(TAG, "Setting rotation: %d", this->rotation_);
   ESP_LOGD(TAG, "MADCTL value: 0x%02X", madctl);
-  
+
   this->send_command_(ILI9XXX_MADCTL);
   this->send_data_(madctl);
-  
-  ESP_LOGD(TAG, "Rotation set successfully");
 }
 
 void ILI9341ParallelDisplay::write_byte_(uint8_t value) {
@@ -244,30 +203,6 @@ void ILI9341ParallelDisplay::set_addr_window_(uint16_t x1, uint16_t y1, uint16_t
   this->send_data_(y2 & 0xFF);  // YEND
 }
 
-void ILI9341ParallelDisplay::draw_absolute_pixel_internal(int x, int y, Color color) {
-    if (x >= this->get_width_internal() || y >= this->get_height_internal() || x < 0 || y < 0)
-        return;
-
-    uint32_t pos = (y * this->get_width_internal() + x) * 3;
-    this->buffer_[pos] = color.r;
-    this->buffer_[pos + 1] = color.g;
-    this->buffer_[pos + 2] = color.b;
-}
-
-void ILI9341ParallelDisplay::set_width(unsigned short width) {
-    this->width_ = width;
-}
-
-void ILI9341ParallelDisplay::set_height(unsigned short height) {
-    this->height_ = height;
-}
-
-void ILI9341ParallelDisplay::set_data_pin(uint8_t index, GPIOPin *pin) {
-  if (index < 8) {
-    this->data_pins_[index] = pin;
-  }
-}
-
 Color ILI9341ParallelDisplay::get_pixel_color(int x, int y) {
   if (x < 0 || x >= this->get_width_internal() || y < 0 || y >= this->get_height_internal()) {
     return Color::BLACK;
@@ -284,6 +219,34 @@ ILI9341ParallelDisplay::~ILI9341ParallelDisplay() {
 
 ILI9341ParallelDisplay::ILI9341ParallelDisplay() : display::DisplayBuffer() {
   // Inicialización si es necesaria
+}
+
+void ILI9341ParallelDisplay::init_pins_() {
+  for (int i = 0; i < 8; i++) {
+    if (this->data_pins_[i] != nullptr) {
+      this->data_pins_[i]->setup();
+    }
+  }
+  
+  if (this->dc_pin_ != nullptr) {
+    this->dc_pin_->setup();
+  }
+  
+  if (this->wr_pin_ != nullptr) {
+    this->wr_pin_->setup();
+  }
+  
+  if (this->rd_pin_ != nullptr) {
+    this->rd_pin_->setup();
+  }
+  
+  if (this->reset_pin_ != nullptr) {
+    this->reset_pin_->setup();
+  }
+  
+  if (this->cs_pin_ != nullptr) {
+    this->cs_pin_->setup();
+  }
 }
 
 }  // namespace ili9xxx
