@@ -33,7 +33,6 @@ void ILI9341ParallelDisplay::setup() {
     return;
   }
   
-  // Establecer la rotación después de la inicialización
   this->set_rotation(this->rotation_);
   
   ESP_LOGD(TAG, "Configuración de ILI9341 Parallel Display completada");
@@ -94,32 +93,32 @@ void ILI9341ParallelDisplay::set_rotation(uint8_t rotation) {
 
   this->rotation_ = rotation % 4;
   
-  ESP_LOGD(TAG, "Enviando comando MADCTL");
-  this->send_command_(ILI9XXX_MADCTL);
-  
+  uint8_t madctl = 0;
   switch (this->rotation_) {
     case 0:
-      this->send_data_(MADCTL_MX | MADCTL_BGR);
+      madctl = MADCTL_MX | MADCTL_BGR;
       this->width_ = this->width_internal_;
       this->height_ = this->height_internal_;
       break;
     case 1:
-      this->send_data_(MADCTL_MV | MADCTL_BGR);
+      madctl = MADCTL_MV | MADCTL_BGR;
       this->width_ = this->height_internal_;
       this->height_ = this->width_internal_;
       break;
     case 2:
-      this->send_data_(MADCTL_MY | MADCTL_BGR);
+      madctl = MADCTL_MY | MADCTL_BGR;
       this->width_ = this->width_internal_;
       this->height_ = this->height_internal_;
       break;
     case 3:
-      this->send_data_(MADCTL_MX | MADCTL_MY | MADCTL_MV | MADCTL_BGR);
+      madctl = MADCTL_MX | MADCTL_MY | MADCTL_MV | MADCTL_BGR;
       this->width_ = this->height_internal_;
       this->height_ = this->width_internal_;
       break;
   }
   
+  this->send_command_(ILI9XXX_MADCTL);
+  this->send_data_(madctl);
   ESP_LOGD(TAG, "Rotación establecida, ancho: %d, alto: %d", this->width_, this->height_);
 }
 
