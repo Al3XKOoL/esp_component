@@ -195,5 +195,21 @@ void ILI9341ParallelDisplay::dump_config() {
   }
 }
 
+void ILI9341ParallelDisplay::set_addr_window_(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2) {
+  this->send_command_(ILI9XXX_CASET);  // Column addr set
+  this->send_data_(x1 >> 8);
+  this->send_data_(x1 & 0xFF);  // XSTART
+  this->send_data_(x2 >> 8);
+  this->send_data_(x2 & 0xFF);  // XEND
+
+  this->send_command_(ILI9XXX_PASET);  // Row addr set
+  this->send_data_(y1 >> 8);
+  this->send_data_(y1 & 0xFF);  // YSTART
+  this->send_data_(y2 >> 8);
+  this->send_data_(y2 & 0xFF);  // YEND
+
+  this->send_command_(ILI9XXX_RAMWR);  // write to RAM
+}
+
 }  // namespace ili9xxx
 }  // namespace esphome
