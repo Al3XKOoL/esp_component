@@ -14,18 +14,10 @@ static const char *const TAG = "ili9xxx";
 void ILI9341ParallelDisplay::setup() {
   ESP_LOGD(TAG, "Setting up ILI9341 Parallel Display");
   
-  if (!this->dc_pin_ || !this->wr_pin_ || !this->rd_pin_) {
-    ESP_LOGE(TAG, "Required pins (DC, WR, RD) not set. Cannot set up display.");
+  if (!this->dc_pin_ || !this->wr_pin_) {
+    ESP_LOGE(TAG, "DC or WR pin not set. Cannot set up display.");
     this->mark_failed();
     return;
-  }
-
-  for (int i = 0; i < 8; i++) {
-    if (!this->data_pins_[i]) {
-      ESP_LOGE(TAG, "Data pin %d not set. Cannot set up display.", i);
-      this->mark_failed();
-      return;
-    }
   }
 
   this->init_pins_();
@@ -277,20 +269,20 @@ void ILI9341ParallelDisplay::init_pins_() {
   
   if (this->dc_pin_ != nullptr) {
     this->dc_pin_->setup();
+    ESP_LOGD(TAG, "DC pin set up");
   } else {
     ESP_LOGE(TAG, "DC pin is null");
   }
   
   if (this->wr_pin_ != nullptr) {
     this->wr_pin_->setup();
+    ESP_LOGD(TAG, "WR pin set up");
   } else {
     ESP_LOGE(TAG, "WR pin is null");
   }
   
   if (this->rd_pin_ != nullptr) {
     this->rd_pin_->setup();
-  } else {
-    ESP_LOGE(TAG, "RD pin is null");
   }
   
   if (this->reset_pin_ != nullptr) {
