@@ -162,10 +162,12 @@ void ILI9341ParallelDisplay::write_display_() {
   
   this->set_addr_window_(0, 0, this->get_width_internal() - 1, this->get_height_internal() - 1);
   
-  for (uint32_t pos = start_pos; pos < end_pos; pos++) {
-    uint16_t color = display::ColorUtil::color_to_565(this->get_pixel_(pos));
-    this->write_byte_(color >> 8);
-    this->write_byte_(color & 0xFF);
+  for (int y = 0; y < this->get_height_internal(); y++) {
+    for (int x = 0; x < this->get_width_internal(); x++) {
+      uint16_t color = display::ColorUtil::color_to_565(this->get_pixel(x, y));
+      this->write_byte_(color >> 8);
+      this->write_byte_(color & 0xFF);
+    }
   }
 }
 
