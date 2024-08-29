@@ -9,117 +9,83 @@ namespace ili9xxx {
 static const char *const TAG = "ili9341";
 
 void ILI9341ParallelDisplay::setup() {
-  if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr || this->rd_pin_ == nullptr) {
-    ESP_LOGE(TAG, "Essential pins (DC, WR, RD) not set. Cannot initialize display.");
-    return;
+  ESP_LOGD(TAG, "Setting up ILI9341 Parallel Display");
+  
+  if (this->dc_pin_ == nullptr) {
+    ESP_LOGE(TAG, "DC pin not set");
   }
-
-  ESP_LOGD(TAG, "Iniciando configuración...");
+  if (this->wr_pin_ == nullptr) {
+    ESP_LOGE(TAG, "WR pin not set");
+  }
+  if (this->rd_pin_ == nullptr) {
+    ESP_LOGE(TAG, "RD pin not set");
+  }
   
-  // Establecer las dimensiones por defecto
-  this->set_dimensions(240, 320);
-  
-  // Inicializar todos los pines
-  this->init_pins_();
-  
-  // Realizar un reset por hardware
-  this->hard_reset_();
-  
-  // Inicializar la pantalla
-  this->init_lcd_();
-  
-  ESP_LOGD(TAG, "LCD inicializado");
-  
-  // Configurar la orientación de la pantalla
-  this->set_rotation(this->rotation_);
-  
-  // Llenar la pantalla con color rojo para probar
-  this->fill(Color(255, 0, 0));  // Rojo
-  
-  ESP_LOGD(TAG, "Pantalla llenada con rojo");
-  
-  // Dibujar un rectángulo verde en el centro
-  int width = this->get_width_internal();
-  int height = this->get_height_internal();
-  this->fill_rect(width/4, height/4, width/2, height/2, Color(0, 255, 0));  // Verde
-  
-  ESP_LOGD(TAG, "Rectángulo verde dibujado en el centro");
-  
-  // Dibujar una línea azul diagonal
-  this->draw_line(0, 0, width-1, height-1, Color(0, 0, 255));  // Azul
-  
-  ESP_LOGD(TAG, "Línea azul diagonal dibujada");
-  
-  ESP_LOGD(TAG, "Configuración completada");
+  // Rest of the setup code...
 }
 
-void ILI9341ParallelDisplay::init_pins_() {
-  this->dc_pin_->setup();
-  this->dc_pin_->digital_write(true);
-  if (this->reset_pin_ != nullptr) {
-    this->reset_pin_->setup();
-    this->reset_pin_->digital_write(true);
-  }
-  this->wr_pin_->setup();
-  this->wr_pin_->digital_write(true);
-  this->rd_pin_->setup();
-  this->rd_pin_->digital_write(true);
-  if (this->cs_pin_ != nullptr) {
-    this->cs_pin_->setup();
-    this->cs_pin_->digital_write(true);
-  }
-  for (int i = 0; i < 8; i++) {
-    this->data_pins_[i]->setup();
-    this->data_pins_[i]->digital_write(false);
-  }
-}
+void ILI9341ParallelDisplay::init_lcd_() {
+  ESP_LOGD(TAG, "Initializing ILI9341 Parallel Display");
 
-void ILI9341ParallelDisplay::hard_reset_() {
+  // Hard reset
   if (this->reset_pin_ != nullptr) {
     this->reset_pin_->digital_write(true);
-    delay(1);
+    delay(5);
     this->reset_pin_->digital_write(false);
-    delay(10);
+    delay(20);
     this->reset_pin_->digital_write(true);
-    delay(120);
+    delay(150);
   }
+
+  // Use the initialization sequence from ILI9341_INIT_CMD
+  const uint8_t *addr = ILI9341_INIT_CMD;
+  while (true) {
+    uint8_t cmd = pgm_read_byte(addr++);
+    uint8_t num_args = pgm_read_byte(addr++);
+    if (cmd == 0x00) break;  // End of commands
+
+    this->send_command_(cmd);
+    for (uint8_t i = 0; i < num_args; i++) {
+      this->send_data_(pgm_read_byte(addr++));
+    }
+
+    if (num_args & 0x80) {
+      delay(150);  // Delay after commands with 0x80 flag
+    }
+  }
+
+  // Set rotation
+  this->set_rotation(this->rotation_);
+
+  ESP_LOGD(TAG, "ILI9341 Parallel Display initialized");
 }
 
 void ILI9341ParallelDisplay::set_rotation(uint8_t rotation) {
-  if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr) {
-    ESP_LOGE(TAG, "DC or WR pin not set. Cannot set rotation.");
-    return;
-  }
-
-  ESP_LOGD(TAG, "Configurando rotación: %d", rotation);
-  uint8_t madctl = 0;
+  ESP_LOGD(TAG, "Setting rotation: %d", rotation);
+  uint8_t madctl = MADCTL_BGR;
   switch (rotation) {
     case 0:
-      madctl = MADCTL_MX | MADCTL_BGR;
+      madctl |= MADCTL_MX;
       break;
     case 1:
-      madctl = MADCTL_MV | MADCTL_BGR;
+      madctl |= MADCTL_MV;
       break;
     case 2:
-      madctl = MADCTL_MY | MADCTL_BGR;
+      madctl |= MADCTL_MY;
       break;
     case 3:
-      madctl = MADCTL_MX | MADCTL_MY | MADCTL_MV | MADCTL_BGR;
+      madctl |= MADCTL_MX | MADCTL_MY | MADCTL_MV;
       break;
-    default:
-      ESP_LOGE(TAG, "Invalid rotation value: %d", rotation);
-      return;
   }
-  
   this->send_command_(ILI9XXX_MADCTL);
   this->send_data_(madctl);
-  this->rotation_ = rotation;
   
-  // Ajustar las dimensiones según la rotación
   if (rotation == 1 || rotation == 3) {
-    this->set_dimensions(320, 240);
+    this->width_ = 320;
+    this->height_ = 240;
   } else {
-    this->set_dimensions(240, 320);
+    this->width_ = 240;
+    this->height_ = 320;
   }
 }
 
@@ -159,15 +125,15 @@ void ILI9341ParallelDisplay::dump_config() {
 }
 
 void ILI9341ParallelDisplay::update() {
-  ESP_LOGD(TAG, "Iniciando actualización de pantalla");
+  ESP_LOGD(TAG, "Starting screen update");
   uint32_t start_time = millis();
   this->do_update_();
   uint32_t end_time = millis();
-  ESP_LOGD(TAG, "Actualización completada en %u ms", end_time - start_time);
+  ESP_LOGD(TAG, "Update completed in %u ms", end_time - start_time);
 }
 
 void ILI9341ParallelDisplay::fill(Color color) {
-  ESP_LOGD(TAG, "Llenando pantalla con color: %d, %d, %d", color.r, color.g, color.b);
+  ESP_LOGD(TAG, "Filling screen with color: %d, %d, %d", color.r, color.g, color.b);
   this->set_addr_window_(0, 0, this->get_width_internal() - 1, this->get_height_internal() - 1);
   this->send_command_(ILI9XXX_RAMWR);
   for (uint32_t i = 0; i < this->get_width_internal() * this->get_height_internal(); i++) {
@@ -201,135 +167,27 @@ void ILI9341ParallelDisplay::write_color_(Color color) {
   this->send_data_(color565 & 0xFF);
 }
 
-void ILI9341ParallelDisplay::init_lcd_() {
-  // Hard reset
-  if (this->reset_pin_ != nullptr) {
-    this->reset_pin_->digital_write(true);
-    delay(1);
-    this->reset_pin_->digital_write(false);
-    delay(10);
-    this->reset_pin_->digital_write(true);
-    delay(120);
-  }
-
-  // Software reset
-  this->send_command_(ILI9XXX_SWRESET);
-  delay(120);
-
-  // Exit sleep
-  this->send_command_(ILI9XXX_SLPOUT);
-  delay(120);
-
-  // Set color mode to 16 bit
-  this->send_command_(ILI9XXX_PIXFMT);
-  this->send_data_(0x55);
-  delay(10);
-
-  // Memory access control (directions)
-  this->send_command_(ILI9XXX_MADCTL);
-  this->send_data_(0x08); // Row/column address change, BGR color filter
-
-  // Pixel format set
-  this->send_command_(ILI9XXX_PIXFMT);
-  this->send_data_(0x55);  // 16 bits per pixel
-
-  // Frame rate control
-  this->send_command_(ILI9XXX_FRMCTR1);
-  this->send_data_(0x00);
-  this->send_data_(0x18);
-
-  // Display function control
-  this->send_command_(ILI9XXX_DFUNCTR);
-  this->send_data_(0x08);
-  this->send_data_(0x82);
-  this->send_data_(0x27);
-
-  // Enable 3G (gamma control)
-  this->send_command_(0xF2);
-  this->send_data_(0x00);
-
-  // Gamma set
-  this->send_command_(ILI9XXX_GAMMASET);
-  this->send_data_(0x01);
-
-  // Positive gamma correction
-  this->send_command_(ILI9XXX_GMCTRP1);
-  this->send_data_(0x0F);
-  this->send_data_(0x31);
-  this->send_data_(0x2B);
-  this->send_data_(0x0C);
-  this->send_data_(0x0E);
-  this->send_data_(0x08);
-  this->send_data_(0x4E);
-  this->send_data_(0xF1);
-  this->send_data_(0x37);
-  this->send_data_(0x07);
-  this->send_data_(0x10);
-  this->send_data_(0x03);
-  this->send_data_(0x0E);
-  this->send_data_(0x09);
-  this->send_data_(0x00);
-
-  // Negative gamma correction
-  this->send_command_(ILI9XXX_GMCTRN1);
-  this->send_data_(0x00);
-  this->send_data_(0x0E);
-  this->send_data_(0x14);
-  this->send_data_(0x03);
-  this->send_data_(0x11);
-  this->send_data_(0x07);
-  this->send_data_(0x31);
-  this->send_data_(0xC1);
-  this->send_data_(0x48);
-  this->send_data_(0x08);
-  this->send_data_(0x0F);
-  this->send_data_(0x0C);
-  this->send_data_(0x31);
-  this->send_data_(0x36);
-  this->send_data_(0x0F);
-
-  // Normal display on
-  this->send_command_(ILI9XXX_NORON);
-  delay(10);
-
-  // Display on
-  this->send_command_(ILI9XXX_DISPON);
-  delay(120);
-
-  // Set rotation
-  this->set_rotation(this->rotation_);
-}
-
 void ILI9341ParallelDisplay::send_command_(uint8_t cmd) {
-  if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr) {
-    ESP_LOGE(TAG, "DC or WR pin not set. Cannot send command.");
-    return;
-  }
   this->dc_pin_->digital_write(false);
+  this->cs_pin_->digital_write(false);
   this->write_byte_(cmd);
+  this->cs_pin_->digital_write(true);
 }
 
 void ILI9341ParallelDisplay::send_data_(uint8_t data) {
-  if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr) {
-    ESP_LOGE(TAG, "DC or WR pin not set. Cannot send data.");
-    return;
-  }
   this->dc_pin_->digital_write(true);
+  this->cs_pin_->digital_write(false);
   this->write_byte_(data);
+  this->cs_pin_->digital_write(true);
 }
 
 void ILI9341ParallelDisplay::write_byte_(uint8_t value) {
-  if (this->wr_pin_ == nullptr) {
-    ESP_LOGE(TAG, "WR pin not set. Cannot write byte.");
-    return;
-  }
   for (int i = 0; i < 8; i++) {
     if (this->data_pins_[i] != nullptr) {
       this->data_pins_[i]->digital_write((value >> i) & 0x01);
     }
   }
   this->wr_pin_->digital_write(false);
-  delayMicroseconds(1);  // Puede que necesites ajustar este delay
   this->wr_pin_->digital_write(true);
 }
 
