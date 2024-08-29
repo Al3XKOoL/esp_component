@@ -1,5 +1,6 @@
 #include "ili9xxx_display.h"
 #include "ili9xxx_defines.h"
+#include "ili9xxx_init.h"
 #include "esphome/core/log.h"
 #include "esphome/core/application.h"
 
