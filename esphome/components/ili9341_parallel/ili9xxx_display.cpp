@@ -235,5 +235,11 @@ void ILI9341ParallelDisplay::set_height(unsigned short height) {
     this->height_ = height;
 }
 
+void ILI9341ParallelDisplay::set_data_pin(uint8_t index, GPIOPin *pin) {
+  if (index < 8) {
+    this->data_pins_[index] = pin;
+  }
+}
+
 }  // namespace ili9xxx
 }  // namespace esphome
