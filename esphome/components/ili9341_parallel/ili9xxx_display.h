@@ -58,9 +58,12 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
   uint16_t width_{240};
   uint16_t height_{320};
   uint8_t rotation_{0};
+  uint8_t *buffer_{nullptr};
 
   Color get_pixel_color(int x, int y);
 };
+
+~ILI9341ParallelDisplay();
 
 }  // namespace ili9xxx
 }  // namespace esphome
