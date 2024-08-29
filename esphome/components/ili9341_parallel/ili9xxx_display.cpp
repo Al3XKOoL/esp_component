@@ -166,15 +166,24 @@ void ILI9341ParallelDisplay::update() {
 }
 
 void ILI9341ParallelDisplay::write_display_() {
-  uint32_t start_pos = 0;
-  uint32_t end_pos = this->get_width_internal() * this->get_height_internal();
-  
-  this->set_addr_window_(0, 0, this->get_width_internal() - 1, this->get_height_internal() - 1);
-  
-  for (uint32_t pos = start_pos; pos < end_pos; pos++) {
-    uint16_t color = display::ColorUtil::color_to_565(this->get_pixel_(pos));
-    this->write_byte_(color >> 8);
-    this->write_byte_(color & 0xFF);
+  uint16_t buffer_width = this->get_width_internal();
+  uint16_t buffer_height = this->get_height_internal();
+
+  this->set_addr_window_(0, 0, buffer_width - 1, buffer_height - 1);
+  this->send_command_(ILI9XXX_RAMWR);
+
+  uint16_t line_buffer[buffer_width];
+
+  for (int y = 0; y < buffer_height; y++) {
+    for (int x = 0; x < buffer_width; x++) {
+      Color color = this->get_pixel_color(x, y);
+      line_buffer[x] = display::ColorUtil::color_to_565(color);
+    }
+
+    for (int x = 0; x < buffer_width; x++) {
+      this->send_data_(line_buffer[x] >> 8);
+      this->send_data_(line_buffer[x] & 0xFF);
+    }
   }
 }
 
@@ -247,6 +256,10 @@ void ILI9341ParallelDisplay::set_data_pin(uint8_t index, GPIOPin *pin) {
   if (index < 8) {
     this->data_pins_[index] = pin;
   }
+}
+
+Color ILI9341ParallelDisplay::get_pixel_color(int x, int y) {
+  return this->get_buffer()[y * this->get_width_internal() + x];
 }
 
 }  // namespace ili9xxx
