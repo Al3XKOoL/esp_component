@@ -263,5 +263,11 @@ void ILI9341ParallelDisplay::set_data_pin(uint8_t index, GPIOPin *pin) {
   }
 }
 
+void ILI9341ParallelDisplay::write_color_(Color color) {
+  this->write_byte_(color.red);
+  this->write_byte_(color.green);
+  this->write_byte_(color.blue);
+}
+
 }  // namespace ili9xxx
 }  // namespace esphome
