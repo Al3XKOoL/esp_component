@@ -1,6 +1,5 @@
 #include "ili9xxx_display.h"
 #include "ili9xxx_defines.h"
-#include "ili9xxx_init.h"
 #include "esphome/core/log.h"
 #include "esphome/core/application.h"
 
@@ -12,17 +11,40 @@ static const char *const TAG = "ili9341";
 void ILI9341ParallelDisplay::setup() {
   ESP_LOGD(TAG, "Setting up ILI9341 Parallel Display");
   
-  if (this->dc_pin_ == nullptr) {
+  // Initialize all pins
+  for (int i = 0; i < 8; i++) {
+    if (this->data_pins_[i] != nullptr) {
+      this->data_pins_[i]->setup();
+    }
+  }
+  
+  if (this->dc_pin_ != nullptr) {
+    this->dc_pin_->setup();
+  } else {
     ESP_LOGE(TAG, "DC pin not set");
   }
-  if (this->wr_pin_ == nullptr) {
+  
+  if (this->wr_pin_ != nullptr) {
+    this->wr_pin_->setup();
+  } else {
     ESP_LOGE(TAG, "WR pin not set");
   }
-  if (this->rd_pin_ == nullptr) {
+  
+  if (this->rd_pin_ != nullptr) {
+    this->rd_pin_->setup();
+  } else {
     ESP_LOGE(TAG, "RD pin not set");
   }
   
-  // Rest of the setup code...
+  if (this->reset_pin_ != nullptr) {
+    this->reset_pin_->setup();
+  }
+  
+  if (this->cs_pin_ != nullptr) {
+    this->cs_pin_->setup();
+  }
+  
+  this->init_lcd_();
 }
 
 void ILI9341ParallelDisplay::init_lcd_() {
@@ -63,31 +85,42 @@ void ILI9341ParallelDisplay::init_lcd_() {
 
 void ILI9341ParallelDisplay::set_rotation(uint8_t rotation) {
   ESP_LOGD(TAG, "Setting rotation: %d", rotation);
+  
+  if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr) {
+    ESP_LOGE(TAG, "DC or WR pin not set. Cannot set rotation.");
+    return;
+  }
+
   uint8_t madctl = MADCTL_BGR;
-  switch (rotation) {
+  switch (rotation % 4) {
     case 0:
       madctl |= MADCTL_MX;
+      this->width_ = 240;
+      this->height_ = 320;
       break;
     case 1:
       madctl |= MADCTL_MV;
+      this->width_ = 320;
+      this->height_ = 240;
       break;
     case 2:
       madctl |= MADCTL_MY;
+      this->width_ = 240;
+      this->height_ = 320;
       break;
     case 3:
       madctl |= MADCTL_MX | MADCTL_MY | MADCTL_MV;
+      this->width_ = 320;
+      this->height_ = 240;
       break;
   }
+  
+  ESP_LOGD(TAG, "MADCTL value: 0x%02X", madctl);
+  
   this->send_command_(ILI9XXX_MADCTL);
   this->send_data_(madctl);
   
-  if (rotation == 1 || rotation == 3) {
-    this->width_ = 320;
-    this->height_ = 240;
-  } else {
-    this->width_ = 240;
-    this->height_ = 320;
-  }
+  ESP_LOGD(TAG, "Rotation set successfully");
 }
 
 void ILI9341ParallelDisplay::fill_rect(int x1, int y1, int width, int height, Color color) {
@@ -189,6 +222,7 @@ void ILI9341ParallelDisplay::write_byte_(uint8_t value) {
     }
   }
   this->wr_pin_->digital_write(false);
+  delayMicroseconds(1);
   this->wr_pin_->digital_write(true);
 }
 
