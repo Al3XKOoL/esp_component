@@ -14,6 +14,9 @@ static const char *const TAG = "ili9xxx";
 void ILI9341ParallelDisplay::setup() {
   ESP_LOGD(TAG, "Setting up ILI9341 Parallel Display");
   
+  ESP_LOGD(TAG, "DC pin: %s", this->dc_pin_ ? "Set" : "Not set");
+  ESP_LOGD(TAG, "WR pin: %s", this->wr_pin_ ? "Set" : "Not set");
+  
   if (!this->dc_pin_ || !this->wr_pin_ || !this->rd_pin_) {
     ESP_LOGE(TAG, "Required pins (DC, WR, RD) not set. Cannot set up display.");
     this->mark_failed();
@@ -39,6 +42,9 @@ void ILI9341ParallelDisplay::setup() {
   }
   
   memset(this->buffer_, 0, this->get_width_internal() * this->get_height_internal() * 3);
+
+  // Configura la rotación al final de la configuración
+  this->set_rotation(this->rotation_);
 }
 
 void ILI9341ParallelDisplay::init_lcd_() {
@@ -73,6 +79,10 @@ void ILI9341ParallelDisplay::init_lcd_() {
 }
 
 void ILI9341ParallelDisplay::set_rotation(uint8_t rotation) {
+  if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr) {
+    ESP_LOGE(TAG, "DC or WR pin not set. Cannot set rotation.");
+    return;
+  }
   ESP_LOGD("ILI9341", "Setting rotation to %d", rotation);
   if (this->width_internal_ == 0 || this->height_internal_ == 0) {
     ESP_LOGE("ILI9341", "Internal dimensions not set. Cannot set rotation.");
@@ -120,7 +130,9 @@ void ILI9341ParallelDisplay::write_byte_(uint8_t value) {
 
 void ILI9341ParallelDisplay::send_command_(uint8_t cmd) {
   if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr) {
-    ESP_LOGE(TAG, "DC or WR pin not set. Cannot send command.");
+    ESP_LOGE(TAG, "DC pin: %s, WR pin: %s. Cannot send command.",
+             this->dc_pin_ ? "Set" : "Not set",
+             this->wr_pin_ ? "Set" : "Not set");
     return;
   }
   this->dc_pin_->digital_write(false);
@@ -129,7 +141,9 @@ void ILI9341ParallelDisplay::send_command_(uint8_t cmd) {
 
 void ILI9341ParallelDisplay::send_data_(uint8_t data) {
   if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr) {
-    ESP_LOGE(TAG, "DC or WR pin not set. Cannot send data.");
+    ESP_LOGE(TAG, "DC pin: %s, WR pin: %s. Cannot send data.",
+             this->dc_pin_ ? "Set" : "Not set",
+             this->wr_pin_ ? "Set" : "Not set");
     return;
   }
   this->dc_pin_->digital_write(true);
@@ -249,6 +263,12 @@ ILI9341ParallelDisplay::ILI9341ParallelDisplay() : display::DisplayBuffer() {
 }
 
 void ILI9341ParallelDisplay::init_pins_() {
+  if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr) {
+    ESP_LOGE(TAG, "DC or WR pin not set. Cannot initialize display.");
+    this->mark_failed();
+    return;
+  }
+
   for (int i = 0; i < 8; i++) {
     if (this->data_pins_[i] != nullptr) {
       this->data_pins_[i]->setup();
