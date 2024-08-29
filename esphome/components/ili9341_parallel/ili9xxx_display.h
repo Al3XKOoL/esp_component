@@ -63,7 +63,7 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
   Color get_pixel_color(int x, int y);
 };
 
-~ILI9341ParallelDisplay();
+ILI9341ParallelDisplay();
 
 }  // namespace ili9xxx
 }  // namespace esphome
