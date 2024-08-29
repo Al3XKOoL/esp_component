@@ -48,7 +48,7 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
   void send_data_(uint8_t data);
   void write_byte_(uint8_t value);
   void write_color_(Color color);
-
+  void write_display_();
   GPIOPin *dc_pin_;
   GPIOPin *reset_pin_{nullptr};
   GPIOPin *wr_pin_;
