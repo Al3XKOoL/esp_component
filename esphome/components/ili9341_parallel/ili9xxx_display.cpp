@@ -282,5 +282,9 @@ ILI9341ParallelDisplay::~ILI9341ParallelDisplay() {
   }
 }
 
+ILI9341ParallelDisplay::ILI9341ParallelDisplay() : display::DisplayBuffer() {
+  // Inicialización si es necesaria
+}
+
 }  // namespace ili9xxx
 }  // namespace esphome
