@@ -19,6 +19,23 @@ void ILI9341ParallelDisplay::setup() {
     return;
   }
   
+  // Configura los pines DC y WR aquí
+  if (this->dc_pin_ != nullptr) {
+    this->dc_pin_->setup();
+  } else {
+    ESP_LOGE(TAG, "DC pin no configurado");
+    this->mark_failed();
+    return;
+  }
+  
+  if (this->wr_pin_ != nullptr) {
+    this->wr_pin_->setup();
+  } else {
+    ESP_LOGE(TAG, "WR pin no configurado");
+    this->mark_failed();
+    return;
+  }
+  
   if (!this->init_lcd_()) {
     this->mark_failed();
     return;
@@ -72,14 +89,17 @@ bool ILI9341ParallelDisplay::init_pins_() {
   
   if (this->rd_pin_ != nullptr) {
     this->rd_pin_->setup();
+    ESP_LOGD(TAG, "RD pin configurado");
   }
   
   if (this->reset_pin_ != nullptr) {
     this->reset_pin_->setup();
+    ESP_LOGD(TAG, "Reset pin configurado");
   }
   
   if (this->cs_pin_ != nullptr) {
     this->cs_pin_->setup();
+    ESP_LOGD(TAG, "CS pin configurado");
   }
   
   ESP_LOGD(TAG, "Inicialización de pines completada");
@@ -106,11 +126,22 @@ bool ILI9341ParallelDisplay::init_lcd_() {
     }
   }
   
+  // Establecer la rotación inicial
+  if (!this->set_rotation(this->rotation_)) {
+    ESP_LOGE(TAG, "No se pudo establecer la rotación inicial");
+    return false;
+  }
+  
   ESP_LOGD(TAG, "ILI9341 Parallel Display inicializado correctamente");
   return true;
 }
 
 bool ILI9341ParallelDisplay::set_rotation(uint8_t rotation) {
+  if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr) {
+    ESP_LOGE(TAG, "DC o WR pin no configurados. No se puede establecer la rotación.");
+    return false;
+  }
+  
   ESP_LOGD(TAG, "Estableciendo rotación: %d", rotation);
   
   this->rotation_ = rotation % 4;
