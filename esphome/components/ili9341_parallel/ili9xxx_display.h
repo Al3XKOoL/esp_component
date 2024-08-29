@@ -64,8 +64,6 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
   uint8_t *buffer_{nullptr};
 
   Color get_pixel_color(int x, int y);
-  ~ILI9341ParallelDisplay(); // Mueve esta línea dentro de la clase
-
   uint16_t width_internal_{240};
   uint16_t height_internal_{320};
 };
