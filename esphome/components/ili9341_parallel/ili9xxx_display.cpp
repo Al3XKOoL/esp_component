@@ -59,37 +59,34 @@ void ILI9341ParallelDisplay::init_lcd_() {
 }
 
 void ILI9341ParallelDisplay::set_rotation(uint8_t rotation) {
+  ESP_LOGD("ILI9341", "Setting rotation to %d", rotation);
   this->rotation_ = rotation % 4;
-  uint8_t madctl = 0;
-
+  uint8_t madctl = MADCTL_BGR;
   switch (this->rotation_) {
     case 0:
-      madctl = MADCTL_MX | MADCTL_BGR;
+      madctl |= MADCTL_MX;
       this->width_ = this->width_internal_;
       this->height_ = this->height_internal_;
       break;
     case 1:
-      madctl = MADCTL_MV | MADCTL_BGR;
+      madctl |= MADCTL_MV;
       this->width_ = this->height_internal_;
       this->height_ = this->width_internal_;
       break;
     case 2:
-      madctl = MADCTL_MY | MADCTL_BGR;
+      madctl |= MADCTL_MY;
       this->width_ = this->width_internal_;
       this->height_ = this->height_internal_;
       break;
     case 3:
-      madctl = MADCTL_MX | MADCTL_MY | MADCTL_MV | MADCTL_BGR;
+      madctl |= MADCTL_MX | MADCTL_MY | MADCTL_MV;
       this->width_ = this->height_internal_;
       this->height_ = this->width_internal_;
       break;
   }
-
-  ESP_LOGD(TAG, "Setting rotation: %d", this->rotation_);
-  ESP_LOGD(TAG, "MADCTL value: 0x%02X", madctl);
-
   this->send_command_(ILI9XXX_MADCTL);
   this->send_data_(madctl);
+  ESP_LOGD("ILI9341", "Rotation set, width: %d, height: %d", this->width_, this->height_);
 }
 
 void ILI9341ParallelDisplay::write_byte_(uint8_t value) {
