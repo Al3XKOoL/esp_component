@@ -26,6 +26,13 @@ void ILI9341ParallelDisplay::setup() {
   
   memset(this->buffer_, 0, this->get_width_internal() * this->get_height_internal() * 3);
   
+  // Verificar que los pines DC y WR estén configurados antes de establecer la rotación
+  if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr) {
+    ESP_LOGE(TAG, "DC o WR pin no configurados. No se puede completar la configuración.");
+    this->mark_failed();
+    return;
+  }
+  
   // Establecer la rotación después de la inicialización
   this->set_rotation(this->rotation_);
   
@@ -80,7 +87,7 @@ void ILI9341ParallelDisplay::init_lcd_() {
 void ILI9341ParallelDisplay::set_rotation(uint8_t rotation) {
   ESP_LOGD(TAG, "Entrando en set_rotation con rotación: %d", rotation);
   
-  if (!this->dc_pin_ || !this->wr_pin_) {
+  if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr) {
     ESP_LOGE(TAG, "DC o WR pin no configurados. No se puede establecer la rotación.");
     return;
   }
@@ -268,11 +275,14 @@ ILI9341ParallelDisplay::ILI9341ParallelDisplay() : display::DisplayBuffer() {
 }
 
 void ILI9341ParallelDisplay::init_pins_() {
+  ESP_LOGD(TAG, "Inicializando pines");
+  
   for (int i = 0; i < 8; i++) {
     if (this->data_pins_[i] != nullptr) {
       this->data_pins_[i]->setup();
+      ESP_LOGD(TAG, "Pin de datos %d configurado", i);
     } else {
-      ESP_LOGE(TAG, "Data pin %d es null", i);
+      ESP_LOGW(TAG, "Pin de datos %d no configurado", i);
     }
   }
   
@@ -280,14 +290,14 @@ void ILI9341ParallelDisplay::init_pins_() {
     this->dc_pin_->setup();
     ESP_LOGD(TAG, "DC pin configurado");
   } else {
-    ESP_LOGE(TAG, "DC pin es null");
+    ESP_LOGE(TAG, "DC pin no configurado");
   }
   
   if (this->wr_pin_ != nullptr) {
     this->wr_pin_->setup();
     ESP_LOGD(TAG, "WR pin configurado");
   } else {
-    ESP_LOGE(TAG, "WR pin es null");
+    ESP_LOGE(TAG, "WR pin no configurado");
   }
   
   if (this->rd_pin_ != nullptr) {
@@ -301,6 +311,8 @@ void ILI9341ParallelDisplay::init_pins_() {
   if (this->cs_pin_ != nullptr) {
     this->cs_pin_->setup();
   }
+  
+  ESP_LOGD(TAG, "Inicialización de pines completada");
 }
 
 void ILI9341ParallelDisplay::draw_absolute_pixel_internal(int x, int y, Color color) {
