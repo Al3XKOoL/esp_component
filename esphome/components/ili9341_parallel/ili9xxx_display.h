@@ -43,9 +43,10 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
   int get_width_internal() override { return width_; }
 
  protected:
-  void init_pins_();
+  bool init_pins_();
+  bool init_lcd_();
+  bool set_rotation(uint8_t rotation);
   void hard_reset_();
-  void init_lcd_();
   void set_addr_window_(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
   void send_command_(uint8_t cmd);
   void send_data_(uint8_t data);
