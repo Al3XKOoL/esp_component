@@ -32,7 +32,7 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
   }
   void set_width(unsigned short width);
   void set_height(unsigned short height);
-  void set_rotation(uint8_t rotation);
+  bool set_rotation(uint8_t rotation);
 
   void fill_rect(int x1, int y1, int width, int height, Color color);
   void draw_line(int x1, int y1, int x2, int y2, Color color);
@@ -45,7 +45,6 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
  protected:
   bool init_pins_();
   bool init_lcd_();
-  bool set_rotation(uint8_t rotation);
   void hard_reset_();
   void set_addr_window_(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
   void send_command_(uint8_t cmd);
