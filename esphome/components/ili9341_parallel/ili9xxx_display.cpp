@@ -25,18 +25,21 @@ void ILI9341ParallelDisplay::setup() {
     this->dc_pin_->setup();
   } else {
     ESP_LOGE(TAG, "DC pin not set");
+    return;
   }
   
   if (this->wr_pin_ != nullptr) {
     this->wr_pin_->setup();
   } else {
     ESP_LOGE(TAG, "WR pin not set");
+    return;
   }
   
   if (this->rd_pin_ != nullptr) {
     this->rd_pin_->setup();
   } else {
     ESP_LOGE(TAG, "RD pin not set");
+    return;
   }
   
   if (this->reset_pin_ != nullptr) {
@@ -137,17 +140,21 @@ void ILI9341ParallelDisplay::write_byte_(uint8_t value) {
 }
 
 void ILI9341ParallelDisplay::send_command_(uint8_t cmd) {
+  if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr) {
+    ESP_LOGE(TAG, "DC or WR pin not set. Cannot send command.");
+    return;
+  }
   this->dc_pin_->digital_write(false);
-  this->cs_pin_->digital_write(false);
   this->write_byte_(cmd);
-  this->cs_pin_->digital_write(true);
 }
 
 void ILI9341ParallelDisplay::send_data_(uint8_t data) {
+  if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr) {
+    ESP_LOGE(TAG, "DC or WR pin not set. Cannot send data.");
+    return;
+  }
   this->dc_pin_->digital_write(true);
-  this->cs_pin_->digital_write(false);
   this->write_byte_(data);
-  this->cs_pin_->digital_write(true);
 }
 
 void ILI9341ParallelDisplay::update() {
@@ -165,26 +172,29 @@ void ILI9341ParallelDisplay::write_display_() {
   this->set_addr_window_(0, 0, this->get_width_internal() - 1, this->get_height_internal() - 1);
   
   for (uint32_t pos = start_pos; pos < end_pos; pos++) {
-    uint8_t r = this->buffer_[pos * 3];
-    uint8_t g = this->buffer_[pos * 3 + 1];
-    uint8_t b = this->buffer_[pos * 3 + 2];
-    Color color(r, g, b);
-    uint16_t color565 = display::ColorUtil::color_to_565(color);
-    this->write_byte_(color565 >> 8);
-    this->write_byte_(color565 & 0xFF);
+    uint16_t color = display::ColorUtil::color_to_565(this->get_pixel_(pos));
+    this->write_byte_(color >> 8);
+    this->write_byte_(color & 0xFF);
   }
 }
 
 void ILI9341ParallelDisplay::fill(Color color) {
   ESP_LOGD(TAG, "Filling screen with color: %d, %d, %d", color.r, color.g, color.b);
-  this->set_addr_window_(0, 0, this->get_width_internal() - 1, this->get_height_internal() - 1);
-  uint16_t color565 = display::ColorUtil::color_to_565(color);
-  uint8_t hi = color565 >> 8, lo = color565 & 0xFF;
   
-  uint32_t num_pixels = this->get_width_internal() * this->get_height_internal();
-  for (uint32_t i = 0; i < num_pixels; i++) {
-    this->write_byte_(hi);
-    this->write_byte_(lo);
+  uint16_t color565 = display::ColorUtil::color_to_565(color);
+  uint16_t buffer[32];
+  for (int i = 0; i < 32; i++) {
+    buffer[i] = color565;
+  }
+
+  this->set_addr_window_(0, 0, this->get_width_internal() - 1, this->get_height_internal() - 1);
+  
+  for (int i = 0; i < this->get_width_internal() * this->get_height_internal(); i += 32) {
+    this->send_command_(ILI9XXX_RAMWR);
+    for (int j = 0; j < 32; j++) {
+      this->send_data_(buffer[j] >> 8);
+      this->send_data_(buffer[j] & 0xFF);
+    }
   }
 }
 
@@ -213,8 +223,6 @@ void ILI9341ParallelDisplay::set_addr_window_(uint16_t x1, uint16_t y1, uint16_t
   this->send_data_(y1 & 0xFF);  // YSTART
   this->send_data_(y2 >> 8);
   this->send_data_(y2 & 0xFF);  // YEND
-
-  this->send_command_(ILI9XXX_RAMWR);  // write to RAM
 }
 
 void ILI9341ParallelDisplay::draw_absolute_pixel_internal(int x, int y, Color color) {
