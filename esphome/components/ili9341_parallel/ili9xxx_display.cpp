@@ -9,16 +9,13 @@
 namespace esphome {
 namespace ili9xxx {
 
-static const char *const TAG = "ili9341";
+static const char *const TAG = "ili9xxx";
 
 void ILI9341ParallelDisplay::setup() {
-  ESP_LOGD("ili9341", "Setting up ILI9341 Parallel Display");
+  ESP_LOGD(TAG, "Setting up ILI9341 Parallel Display");
   
   this->init_pins_();
   this->init_lcd_();
-  
-  // Configura la rotación después de inicializar la pantalla
-  this->set_rotation(this->rotation_);
   
   this->buffer_ = new uint8_t[this->get_width_internal() * this->get_height_internal() * 3];
   if (this->buffer_ == nullptr) {
@@ -27,14 +24,12 @@ void ILI9341ParallelDisplay::setup() {
     return;
   }
   
-  // Inicializa el buffer con negro
   memset(this->buffer_, 0, this->get_width_internal() * this->get_height_internal() * 3);
 }
 
 void ILI9341ParallelDisplay::init_lcd_() {
   ESP_LOGD(TAG, "Initializing ILI9341 Parallel Display");
 
-  // Hard reset
   if (this->reset_pin_ != nullptr) {
     this->reset_pin_->digital_write(true);
     delay(5);
@@ -44,12 +39,11 @@ void ILI9341ParallelDisplay::init_lcd_() {
     delay(150);
   }
 
-  // Use the initialization sequence from ILI9341_INIT_CMD
   const uint8_t *addr = ILI9341_INIT_CMD;
   while (true) {
     uint8_t cmd = pgm_read_byte(addr++);
     uint8_t num_args = pgm_read_byte(addr++);
-    if (cmd == 0x00) break;  // End of commands
+    if (cmd == 0x00) break;
 
     this->send_command_(cmd);
     for (uint8_t i = 0; i < num_args; i++) {
@@ -57,7 +51,7 @@ void ILI9341ParallelDisplay::init_lcd_() {
     }
 
     if (num_args & 0x80) {
-      delay(150);  // Delay after commands with 0x80 flag
+      delay(150);
     }
   }
 
@@ -100,12 +94,10 @@ void ILI9341ParallelDisplay::set_rotation(uint8_t rotation) {
 
 void ILI9341ParallelDisplay::write_byte_(uint8_t value) {
   for (int i = 0; i < 8; i++) {
-    if (this->data_pins_[i] != nullptr) {
-      this->data_pins_[i]->digital_write((value >> i) & 0x01);
-    }
+    gpio_set_level(static_cast<gpio_num_t>(this->data_pins_[i]->get_pin()), (value >> i) & 0x01);
   }
-  this->wr_pin_->digital_write(false);
-  this->wr_pin_->digital_write(true);
+  gpio_set_level(static_cast<gpio_num_t>(this->wr_pin_->get_pin()), 0);
+  gpio_set_level(static_cast<gpio_num_t>(this->wr_pin_->get_pin()), 1);
 }
 
 void ILI9341ParallelDisplay::send_command_(uint8_t cmd) {
@@ -113,7 +105,7 @@ void ILI9341ParallelDisplay::send_command_(uint8_t cmd) {
     ESP_LOGE(TAG, "DC or WR pin not set. Cannot send command.");
     return;
   }
-  this->dc_pin_->digital_write(false);
+  gpio_set_level(static_cast<gpio_num_t>(this->dc_pin_->get_pin()), 0);
   this->write_byte_(cmd);
 }
 
@@ -122,7 +114,7 @@ void ILI9341ParallelDisplay::send_data_(uint8_t data) {
     ESP_LOGE(TAG, "DC or WR pin not set. Cannot send data.");
     return;
   }
-  this->dc_pin_->digital_write(true);
+  gpio_set_level(static_cast<gpio_num_t>(this->dc_pin_->get_pin()), 1);
   this->write_byte_(data);
 }
 
@@ -218,34 +210,33 @@ ILI9341ParallelDisplay::~ILI9341ParallelDisplay() {
 }
 
 ILI9341ParallelDisplay::ILI9341ParallelDisplay() : display::DisplayBuffer() {
-  // Inicialización si es necesaria
 }
 
 void ILI9341ParallelDisplay::init_pins_() {
   for (int i = 0; i < 8; i++) {
     if (this->data_pins_[i] != nullptr) {
-      this->data_pins_[i]->setup();
+      gpio_set_direction(static_cast<gpio_num_t>(this->data_pins_[i]->get_pin()), GPIO_MODE_OUTPUT);
     }
   }
   
   if (this->dc_pin_ != nullptr) {
-    this->dc_pin_->setup();
+    gpio_set_direction(static_cast<gpio_num_t>(this->dc_pin_->get_pin()), GPIO_MODE_OUTPUT);
   }
   
   if (this->wr_pin_ != nullptr) {
-    this->wr_pin_->setup();
+    gpio_set_direction(static_cast<gpio_num_t>(this->wr_pin_->get_pin()), GPIO_MODE_OUTPUT);
   }
   
   if (this->rd_pin_ != nullptr) {
-    this->rd_pin_->setup();
+    gpio_set_direction(static_cast<gpio_num_t>(this->rd_pin_->get_pin()), GPIO_MODE_OUTPUT);
   }
   
   if (this->reset_pin_ != nullptr) {
-    this->reset_pin_->setup();
+    gpio_set_direction(static_cast<gpio_num_t>(this->reset_pin_->get_pin()), GPIO_MODE_OUTPUT);
   }
   
   if (this->cs_pin_ != nullptr) {
-    this->cs_pin_->setup();
+    gpio_set_direction(static_cast<gpio_num_t>(this->cs_pin_->get_pin()), GPIO_MODE_OUTPUT);
   }
 }
 
