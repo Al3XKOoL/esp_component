@@ -21,12 +21,10 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
 
   Color get_pixel_color(int x, int y);
 
-  void set_data_pin(int index, GPIOPin *pin);
-  void set_dc_pin(GPIOPin *pin);
-  void set_wr_pin(GPIOPin *pin);
-  void set_rd_pin(GPIOPin *pin);
-  void set_reset_pin(GPIOPin *pin);
-  void set_cs_pin(GPIOPin *pin);
+  // Implementación de funciones virtuales puras
+  display::DisplayType get_display_type() override { return display::DisplayType::DISPLAY_TYPE_RGB; }
+  int get_height_internal() override { return this->height_; }
+  int get_width_internal() override { return this->width_; }
 
  protected:
   void init_pins_();
