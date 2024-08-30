@@ -22,7 +22,7 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
   Color get_pixel_color(int x, int y);
 
   // Implementación de funciones virtuales puras
-  display::DisplayType get_display_type() override { return display::DisplayType::DISPLAY_TYPE_OTHER; }
+  display::DisplayType get_display_type() override { return display::DisplayType::DISPLAY_TYPE_RGB; }
   int get_height_internal() override { return this->height_; }
   int get_width_internal() override { return this->width_; }
 
