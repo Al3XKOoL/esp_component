@@ -3,7 +3,6 @@
 #include "esphome/components/display/display_buffer.h"
 #include "esphome/core/gpio.h"
 #include "ili9xxx_defines.h"
-#include <driver/gpio.h>
 
 namespace esphome {
 namespace ili9xxx {
@@ -25,13 +24,10 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
  protected:
   void init_pins_();
   void init_lcd_();
-  void hard_reset_();
   void write_display_();
   void do_update_();
   void write_command_(uint8_t cmd);
   void write_data_(uint8_t data);
-  void write_byte_(uint8_t data);
-  void write_color_(Color color);
   void set_addr_window_(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
   void draw_absolute_pixel_internal(int x, int y, Color color) override;
 
