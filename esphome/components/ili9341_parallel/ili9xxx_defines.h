@@ -1,5 +1,7 @@
 #pragma once
 
+#include "esphome/core/hal.h"
+
 namespace esphome {
 namespace ili9xxx {
 
