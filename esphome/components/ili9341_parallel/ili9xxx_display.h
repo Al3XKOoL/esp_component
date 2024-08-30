@@ -44,6 +44,8 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
   GPIOPin *rd_pin_;
   GPIOPin *reset_pin_;
   GPIOPin *cs_pin_;
+
+  Color get_buffer_pixel(int x, int y);
 };
 
 }  // namespace ili9xxx
