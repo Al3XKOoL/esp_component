@@ -19,19 +19,9 @@ void ILI9341ParallelDisplay::setup() {
     return;
   }
   
-  // Configura los pines DC y WR aquí
-  if (this->dc_pin_ != nullptr) {
-    this->dc_pin_->setup();
-  } else {
-    ESP_LOGE(TAG, "DC pin no configurado");
-    this->mark_failed();
-    return;
-  }
-  
-  if (this->wr_pin_ != nullptr) {
-    this->wr_pin_->setup();
-  } else {
-    ESP_LOGE(TAG, "WR pin no configurado");
+  // Asegúrate de que los pines DC y WR estén configurados antes de usarlos
+  if (this->dc_pin_ == nullptr || this->wr_pin_ == nullptr) {
+    ESP_LOGE(TAG, "DC o WR pin no configurados");
     this->mark_failed();
     return;
   }
