@@ -31,6 +31,10 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
   void set_addr_window_(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
   void draw_absolute_pixel_internal(int x, int y, Color color) override;
 
+  // Declaraciones de funciones que faltaban
+  void write_color_(Color color);
+  void write_byte_(uint8_t data);
+
  private:
   int width_;
   int height_;
