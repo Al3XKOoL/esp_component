@@ -202,7 +202,7 @@ void ILI9341ParallelDisplay::write_display_() {
 
   for (int y = 0; y < buffer_height; y++) {
     for (int x = 0; x < buffer_width; x++) {
-      Color color = this->get_buffer_pixel_(x, y);
+      Color color = this->get_buffer_pixel(x, y);
       uint16_t color565 = display::ColorUtil::color_to_565(color);
       line_buffer[x] = color565;
     }
@@ -251,9 +251,7 @@ void ILI9341ParallelDisplay::dump_config() {
 }
 
 Color ILI9341ParallelDisplay::get_pixel_color(int x, int y) {
-  // Implementa la lógica para obtener el color del píxel en la posición (x, y)
-  // Por ejemplo:
-  return this->get_buffer_pixel_(x, y);
+  return this->get_buffer_pixel(x, y);
 }
 
 void ILI9341ParallelDisplay::draw_absolute_pixel_internal(int x, int y, Color color) {
@@ -262,6 +260,12 @@ void ILI9341ParallelDisplay::draw_absolute_pixel_internal(int x, int y, Color co
 
   this->set_addr_window_(x, y, x, y);
   this->write_color_(color);
+}
+
+Color ILI9341ParallelDisplay::get_buffer_pixel(int x, int y) {
+  if (x < 0 || x >= this->get_width_internal() || y < 0 || y >= this->get_height_internal())
+    return Color::BLACK;
+  return this->buffer_[y * this->get_width_internal() + x];
 }
 
 }  // namespace ili9xxx
