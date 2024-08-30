@@ -19,12 +19,12 @@ ILI9341ParallelDisplay = ili9xxx_ns.class_(
 CONFIG_SCHEMA = display.BASIC_DISPLAY_SCHEMA.extend(
     {
         cv.GenerateID(): cv.declare_id(ILI9341ParallelDisplay),
-        cv.Required("data_pins"): cv.All(cv.ensure_list(cv.gpio_pin_schema), cv.Length(min=8, max=8)),
-        cv.Required("dc_pin"): cv.gpio_pin_schema,
-        cv.Required("wr_pin"): cv.gpio_pin_schema,
-        cv.Required("rd_pin"): cv.gpio_pin_schema,
-        cv.Optional("reset_pin"): cv.gpio_pin_schema,
-        cv.Optional("cs_pin"): cv.gpio_pin_schema,
+        cv.Required("data_pins"): cv.All(cv.ensure_list(pins.internal_gpio_output_pin_schema), cv.Length(min=8, max=8)),
+        cv.Required("dc_pin"): pins.internal_gpio_output_pin_schema,
+        cv.Required("wr_pin"): pins.internal_gpio_output_pin_schema,
+        cv.Required("rd_pin"): pins.internal_gpio_output_pin_schema,
+        cv.Optional("reset_pin"): pins.internal_gpio_output_pin_schema,
+        cv.Optional("cs_pin"): pins.internal_gpio_output_pin_schema,
     }
 ).extend(cv.COMPONENT_SCHEMA)
 
