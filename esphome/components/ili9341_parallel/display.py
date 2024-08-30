@@ -5,6 +5,7 @@ from esphome.const import (
     CONF_ID,
     CONF_LAMBDA,
 )
+from esphome import pins  # Asegúrate de importar el módulo pins
 
 DEPENDENCIES = []
 AUTO_LOAD = ["psram"]
