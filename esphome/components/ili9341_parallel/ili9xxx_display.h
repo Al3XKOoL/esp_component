@@ -21,6 +21,13 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
 
   Color get_pixel_color(int x, int y);
 
+  void set_data_pin(int index, GPIOPin *pin);
+  void set_dc_pin(GPIOPin *pin);
+  void set_wr_pin(GPIOPin *pin);
+  void set_rd_pin(GPIOPin *pin);
+  void set_reset_pin(GPIOPin *pin);
+  void set_cs_pin(GPIOPin *pin);
+
  protected:
   void init_pins_();
   void init_lcd_();
