@@ -22,7 +22,7 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
   Color get_pixel_color(int x, int y);
 
   // Implementación de funciones virtuales puras
-  display::DisplayType get_display_type() override { return display::DisplayType::DISPLAY_TYPE_RGB; }
+  display::DisplayType get_display_type() override { return display::DisplayType::DISPLAY_TYPE_OTHER; }
   int get_height_internal() override { return this->height_; }
   int get_width_internal() override { return this->width_; }
 
@@ -39,6 +39,14 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
   // Declaraciones de funciones que faltaban
   void write_color_(Color color);
   void write_byte_(uint8_t data);
+
+  // Declaraciones de funciones set*
+  void set_data_pin(int index, GPIOPin *pin);
+  void set_dc_pin(GPIOPin *pin);
+  void set_wr_pin(GPIOPin *pin);
+  void set_rd_pin(GPIOPin *pin);
+  void set_reset_pin(GPIOPin *pin);
+  void set_cs_pin(GPIOPin *pin);
 
  private:
   int width_;
