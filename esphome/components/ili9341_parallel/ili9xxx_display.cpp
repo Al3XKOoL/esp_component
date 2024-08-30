@@ -11,9 +11,24 @@ namespace ili9xxx {
 
 static const char *const TAG = "ili9xxx";
 
+ILI9341ParallelDisplay::ILI9341ParallelDisplay() : display::DisplayBuffer() {
+  // Inicialización si es necesaria
+}
+
+ILI9341ParallelDisplay::~ILI9341ParallelDisplay() {
+  // Limpieza si es necesaria
+}
+
 void ILI9341ParallelDisplay::setup() {
-  ESP_LOGD(TAG, "Configurando ILI9341 Parallel Display");
-  this->init(this->width_, this->height_);
+  this->init(this->get_width_internal(), this->get_height_internal());
+}
+
+void ILI9341ParallelDisplay::update() {
+  this->do_update_();
+}
+
+void ILI9341ParallelDisplay::do_update_() {
+  // Implementa la lógica de actualización aquí
 }
 
 void ILI9341ParallelDisplay::init(int w, int h) {
@@ -171,14 +186,6 @@ void ILI9341ParallelDisplay::hard_reset_() {
   }
 }
 
-void ILI9341ParallelDisplay::update() {
-  if (!this->writer_.has_value())
-    return;
-  
-  this->do_update_();
-  this->write_display_();
-}
-
 void ILI9341ParallelDisplay::write_display_() {
   ESP_LOGD(TAG, "Iniciando write_display_");
   
@@ -252,50 +259,6 @@ Color ILI9341ParallelDisplay::get_pixel_color(int x, int y) {
   }
   uint32_t index = (y * this->get_width_internal() + x) * 3;
   return Color(this->buffer_[index], this->buffer_[index + 1], this->buffer_[index + 2]);
-}
-
-ILI9341ParallelDisplay::~ILI9341ParallelDisplay() {
-  if (this->buffer_ != nullptr) {
-    delete[] this->buffer_;
-  }
-}
-
-ILI9341ParallelDisplay::ILI9341ParallelDisplay() : display::DisplayBuffer() {
-  for (int i = 0; i < 8; i++) {
-    this->data_pins_[i] = nullptr;
-  }
-  this->dc_pin_ = nullptr;
-  this->wr_pin_ = nullptr;
-  this->rd_pin_ = nullptr;
-  this->reset_pin_ = nullptr;
-  this->cs_pin_ = nullptr;
-  this->buffer_ = nullptr;
-}
-
-void ILI9341ParallelDisplay::set_width(uint16_t width) {
-  this->width_ = width;
-}
-
-void ILI9341ParallelDisplay::set_height(uint16_t height) {
-  this->height_ = height;
-}
-
-void ILI9341ParallelDisplay::set_data_pins(GPIOPin *d0, GPIOPin *d1, GPIOPin *d2, GPIOPin *d3,
-                                           GPIOPin *d4, GPIOPin *d5, GPIOPin *d6, GPIOPin *d7) {
-  this->data_pins_[0] = d0;
-  this->data_pins_[1] = d1;
-  this->data_pins_[2] = d2;
-  this->data_pins_[3] = d3;
-  this->data_pins_[4] = d4;
-  this->data_pins_[5] = d5;
-  this->data_pins_[6] = d6;
-  this->data_pins_[7] = d7;
-}
-
-void ILI9341ParallelDisplay::set_data_pin(uint8_t index, GPIOPin *pin) {
-  if (index < 8) {
-    this->data_pins_[index] = pin;
-  }
 }
 
 void ILI9341ParallelDisplay::draw_absolute_pixel_internal(int x, int y, Color color) {
