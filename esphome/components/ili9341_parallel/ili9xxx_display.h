@@ -10,28 +10,29 @@ namespace ili9xxx {
 
 class ILI9341ParallelDisplay : public display::DisplayBuffer {
  public:
+  ILI9341ParallelDisplay();
+  ~ILI9341ParallelDisplay();
+
   void setup() override;
-  void dump_config() override;
   void update() override;
-  void fill(Color color) override;
-  void draw_absolute_pixel_internal(int x, int y, Color color) override;
+  void init(int w, int h);
+  void set_rotation(uint8_t rotation);
+  void set_width(uint16_t width);
+  void set_height(uint16_t height);
+  void set_data_pins(GPIOPin *d0, GPIOPin *d1, GPIOPin *d2, GPIOPin *d3,
+                     GPIOPin *d4, GPIOPin *d5, GPIOPin *d6, GPIOPin *d7);
+  void set_data_pin(uint8_t index, GPIOPin *pin);
+  Color get_pixel_color(int x, int y);
 
  protected:
-  void write_command_(uint8_t cmd);
-  void write_data_(uint8_t data);
-  void write_byte_(uint8_t data);
-  void write_color_(Color color);
-  void set_addr_window_(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
+  void init_pins_();
+  void init_lcd_();
+  void hard_reset_();
+  void write_display_();
+  void draw_absolute_pixel_internal(int x, int y, Color color) override;
 
-  GPIOPin *dc_pin_;
-  GPIOPin *reset_pin_{nullptr};
-  GPIOPin *wr_pin_;
-  GPIOPin *rd_pin_;
-  GPIOPin *cs_pin_{nullptr};
-  GPIOPin *data_pins_[8];
-  uint16_t width_{240};
-  uint16_t height_{320};
-  uint8_t rotation_{0};
+ private:
+  // ... (otros miembros privados)
 };
 
 }  // namespace ili9xxx
