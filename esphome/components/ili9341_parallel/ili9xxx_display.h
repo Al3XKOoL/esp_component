@@ -20,6 +20,8 @@ class ILI9341ParallelDisplay : public display::DisplayBuffer {
   void fill(Color color);
   void dump_config();
 
+  Color get_pixel_color(int x, int y);
+
  protected:
   void init_pins_();
   void init_lcd_();
