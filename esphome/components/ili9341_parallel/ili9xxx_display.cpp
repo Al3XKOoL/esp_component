@@ -1,10 +1,5 @@
 #include "ili9xxx_display.h"
-#include "ili9xxx_defines.h"
-#include "ili9xxx_init.h"
 #include "esphome/core/log.h"
-#include "esphome/core/application.h"
-#include "esphome/components/display/display_buffer.h"
-#include "esphome/components/display/display_color_utils.h"
 
 namespace esphome {
 namespace ili9xxx {
@@ -108,7 +103,7 @@ void ILI9341ParallelDisplay::set_addr_window_(uint16_t x1, uint16_t y1, uint16_t
 
 void ILI9341ParallelDisplay::write_command_(uint8_t cmd) {
   this->dc_pin_->digital_write(0);  // DC low para comando
-  this->write_byte_(cmd);
+  this->write_data_(cmd);
 }
 
 void ILI9341ParallelDisplay::write_data_(uint8_t data) {
