@@ -76,7 +76,12 @@ Color ILI9341ParallelDisplay::get_buffer_pixel(int x, int y) {
 
   size_t index = (y * this->width_ + x) * 2;  // Asumiendo RGB565
   uint16_t color565 = (this->buffer_[index] << 8) | this->buffer_[index + 1];
-  return display::ColorUtil::color565_to_color(color565);
+
+  // Conversión manual de RGB565 a Color
+  uint8_t r = (color565 >> 11) & 0x1F;
+  uint8_t g = (color565 >> 5) & 0x3F;
+  uint8_t b = color565 & 0x1F;
+  return Color(r << 3, g << 2, b << 3);  // Ajustar a 8 bits
 }
 
 void ILI9341ParallelDisplay::draw_absolute_pixel_internal(int x, int y, Color color) {
@@ -124,6 +129,32 @@ void ILI9341ParallelDisplay::write_color_(Color color) {
   uint16_t color565 = display::ColorUtil::color_to_565(color);
   this->write_data_(color565 >> 8);
   this->write_data_(color565 & 0xFF);
+}
+
+void ILI9341ParallelDisplay::set_data_pin(int index, GPIOPin *pin) {
+  if (index >= 0 && index < 8) {
+    this->data_pins_[index] = pin;
+  }
+}
+
+void ILI9341ParallelDisplay::set_dc_pin(GPIOPin *pin) {
+  this->dc_pin_ = pin;
+}
+
+void ILI9341ParallelDisplay::set_wr_pin(GPIOPin *pin) {
+  this->wr_pin_ = pin;
+}
+
+void ILI9341ParallelDisplay::set_rd_pin(GPIOPin *pin) {
+  this->rd_pin_ = pin;
+}
+
+void ILI9341ParallelDisplay::set_reset_pin(GPIOPin *pin) {
+  this->reset_pin_ = pin;
+}
+
+void ILI9341ParallelDisplay::set_cs_pin(GPIOPin *pin) {
+  this->cs_pin_ = pin;
 }
 
 }  // namespace ili9xxx
