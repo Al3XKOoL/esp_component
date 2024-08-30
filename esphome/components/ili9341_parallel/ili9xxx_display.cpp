@@ -265,7 +265,11 @@ void ILI9341ParallelDisplay::draw_absolute_pixel_internal(int x, int y, Color co
 Color ILI9341ParallelDisplay::get_buffer_pixel(int x, int y) {
   if (x < 0 || x >= this->get_width_internal() || y < 0 || y >= this->get_height_internal())
     return Color::BLACK;
-  return this->buffer_[y * this->get_width_internal() + x];
+  
+  size_t index = (y * this->get_width_internal() + x) * 2;  // 2 bytes por pixel para RGB565
+  uint16_t color565 = (this->buffer_[index] << 8) | this->buffer_[index + 1];
+  
+  return display::ColorUtil::color565_to_color(color565);
 }
 
 }  // namespace ili9xxx
