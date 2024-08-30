@@ -48,12 +48,12 @@ async def to_code(config):
         cg.add(var.set_data_pin(i, await cg.gpio_pin_expression(pin)))
 
     cg.add(var.set_wr_pin(await cg.gpio_pin_expression(config["wr_pin"])))
-    cg.add(var.set_rd_pin(await cg.gpio_pin_expression(config["rd_pin"])))
     cg.add(var.set_dc_pin(await cg.gpio_pin_expression(config["dc_pin"])))
-
+    
+    if "rd_pin" in config:
+        cg.add(var.set_rd_pin(await cg.gpio_pin_expression(config["rd_pin"])))
     if "reset_pin" in config:
         cg.add(var.set_reset_pin(await cg.gpio_pin_expression(config["reset_pin"])))
-
     if "cs_pin" in config:
         cg.add(var.set_cs_pin(await cg.gpio_pin_expression(config["cs_pin"])))
 
