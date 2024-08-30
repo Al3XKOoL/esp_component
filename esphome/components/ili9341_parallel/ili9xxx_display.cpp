@@ -202,8 +202,9 @@ void ILI9341ParallelDisplay::write_display_() {
 
   for (int y = 0; y < buffer_height; y++) {
     for (int x = 0; x < buffer_width; x++) {
-      Color color = this->get_pixel_color(x, y);
-      line_buffer[x] = display::ColorUtil::color_to_565(color);
+      Color color = this->get_buffer_pixel_(x, y);
+      uint16_t color565 = display::ColorUtil::color_to_565(color);
+      line_buffer[x] = color565;
     }
 
     ESP_LOGV(TAG, "Escribiendo línea %d", y);
@@ -250,15 +251,9 @@ void ILI9341ParallelDisplay::dump_config() {
 }
 
 Color ILI9341ParallelDisplay::get_pixel_color(int x, int y) {
-  if (this->buffer_ == nullptr) {
-    ESP_LOGE(TAG, "Buffer de pantalla no inicializado. No se puede obtener el color del píxel.");
-    return Color::BLACK;
-  }
-  if (x < 0 || x >= this->get_width_internal() || y < 0 || y >= this->get_height_internal()) {
-    return Color::BLACK;
-  }
-  uint32_t index = (y * this->get_width_internal() + x) * 3;
-  return Color(this->buffer_[index], this->buffer_[index + 1], this->buffer_[index + 2]);
+  // Implementa la lógica para obtener el color del píxel en la posición (x, y)
+  // Por ejemplo:
+  return this->get_buffer_pixel_(x, y);
 }
 
 void ILI9341ParallelDisplay::draw_absolute_pixel_internal(int x, int y, Color color) {
