@@ -15,7 +15,7 @@ public:
 private:
     int width_;
     int height_;
-    int interface_;
+    INTERFACE _interface; // Cambiar a tipo INTERFACE
 };
 
 #endif
