@@ -2,8 +2,18 @@
 #include "lcd_com.h"
 
 void ILI9341Component::setup() {
+    // Configurar pines de datos
+    _d0->setup();
+    _d1->setup();
+    _d2->setup();
+    _d3->setup();
+    _d4->setup();
+    _d5->setup();
+    _d6->setup();
+    _d7->setup();
+
     // Inicialización del LCD
-    lcd_interface_cfg(this, _interface); // Cambiar 'interface_' a '_interface'
+    lcd_interface_cfg(this, _interface);
     lcd_write_register_word(this, 0x01, 0); // Soft reset
     lcd_delay_ms(150);
     lcd_write_register_word(this, 0x28, 0); // Display off
