@@ -11,9 +11,9 @@ from esphome.const import (
 
 DEPENDENCIES = ['gpio']
 
-ili9341_ns = cg.esphome_ns.namespace('ili9341')
+ili9341_parallel_ns = cg.esphome_ns.namespace('ili9341_parallel')
 
-ILI9341Component = ili9341_ns.class_('ILI9341Component', cg.Component)
+ILI9341ParallelComponent = ili9341_parallel_ns.class_('ILI9341ParallelComponent', cg.Component)
 
 def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
