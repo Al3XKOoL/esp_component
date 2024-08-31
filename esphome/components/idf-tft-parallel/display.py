@@ -1,6 +1,7 @@
 # display.py
 import esphome.codegen as cg
 from esphome import pins
+from esphome.components.ili9341_parallel import display
 from esphome.const import (
     CONF_CS_PIN,
     CONF_DC_PIN,
