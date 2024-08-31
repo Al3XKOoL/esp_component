@@ -1,0 +1,25 @@
+# display.py
+import esphome.codegen as cg
+from esphome import pins
+from esphome.const import (
+    CONF_CS_PIN,
+    CONF_DC_PIN,
+    CONF_RST_PIN,
+    CONF_WIDTH,
+    CONF_HEIGHT,
+)
+
+DEPENDENCIES = ['gpio']
+
+ili9341_ns = cg.esphome_ns.namespace('ili9341')
+
+ILI9341Component = ili9341_ns.class_('ILI9341Component', cg.Component)
+
+def to_code(config):
+    var = cg.new_Pvariable(config[CONF_ID])
+    yield cg.register_component(var, config)
+    yield cg.register_gpio(var, config[CONF_CS_PIN], 'cs_pin')
+    yield cg.register_gpio(var, config[CONF_DC_PIN], 'dc_pin')
+    yield cg.register_gpio(var, config[CONF_RST_PIN], 'rst_pin')
+    cg.add(var.set_width(config[CONF_WIDTH]))
+    cg.add(var.set_height(config[CONF_HEIGHT]))
