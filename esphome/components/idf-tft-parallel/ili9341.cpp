@@ -3,7 +3,7 @@
 
 void ILI9341Component::setup() {
     // Inicialización del LCD
-    lcd_interface_cfg(this, interface_);
+    lcd_interface_cfg(this, _interface); // Cambiar 'interface_' a '_interface'
     lcd_write_register_word(this, 0x01, 0); // Soft reset
     lcd_delay_ms(150);
     lcd_write_register_word(this, 0x28, 0); // Display off
@@ -24,5 +24,5 @@ void ILI9341Component::set_height(int height) {
 }
 
 void ILI9341Component::set_interface(int interface) {
-    interface_ = interface;
+    _interface = interface; // Cambiar 'interface' a '_interface'
 }
