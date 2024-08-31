@@ -41,3 +41,15 @@ void lcd_write_data_word(TFT_t * dev, uint16_t data) {
 }
 
 // Implementar otras funciones como lcd_write_data_byte, lcd_write_data_word, etc.
+
+void lcdDrawPixel(TFT_t * dev, uint16_t x, uint16_t y, uint16_t color) {
+    lcd_write_comm_byte(dev, 0x2A); // Column Address Set
+    lcd_write_data_byte(dev, (x >> 8) & 0xFF);
+    lcd_write_data_byte(dev, x & 0xFF);
+    lcd_write_comm_byte(dev, 0x2B); // Row Address Set
+    lcd_write_data_byte(dev, (y >> 8) & 0xFF);
+    lcd_write_data_byte(dev, y & 0xFF);
+    lcd_write_comm_byte(dev, 0x2C); // Memory Write
+    lcd_write_data_byte(dev, (color >> 8) & 0xFF);
+    lcd_write_data_byte(dev, color & 0xFF);
+}
